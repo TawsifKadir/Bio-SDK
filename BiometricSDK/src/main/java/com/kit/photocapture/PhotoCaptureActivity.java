@@ -229,7 +229,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         }
 
         mComplianceResult = ComplianceResult.NOT_INITIALIZED;
-
+        disableControls();
         ///getPermissions();
     }
 
@@ -274,6 +274,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         mBgr = new Mat();
         mBgrScaled = new Mat();
         mFaces = new Mat();
+        enableControls();
     }
 
     public void onCameraViewStopped() {
@@ -281,6 +282,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         mBgr.release();
         mBgrScaled.release();
         mFaces.release();
+        disableControls();
     }
 
     public void visualize(Mat rgba, Mat faces) {
@@ -671,5 +673,22 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         }
     }
 
+    public void disableControls(){
+        if(mCapture!=null){
+            mCapture.setEnabled(false);
+        }
+        if(mSwitch!=null){
+            mSwitch.setEnabled(false);
+        }
+    }
+
+    public void enableControls(){
+        if(mCapture!=null){
+            mCapture.setEnabled(true);
+        }
+        if(mSwitch!=null){
+            mSwitch.setEnabled(true);
+        }
+    }
 
 }
