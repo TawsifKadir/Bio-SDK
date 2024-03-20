@@ -1,2 +1,2 @@
-ninja: Entering directory `F:\AndroidProjects\BiometricSDK\OpenCV\.cxx\Debug\2x6j294r\arm64-v8a'
+ninja: Entering directory `D:\Bio-SDK\OpenCV\.cxx\Debug\2x6j294r\arm64-v8a'
 ninja: no work to do.

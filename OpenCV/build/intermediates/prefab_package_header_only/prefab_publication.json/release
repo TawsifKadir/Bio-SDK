@@ -1,5 +1,5 @@
 {
-  "installationFolder": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
+  "installationFolder": "D:\\Bio-SDK\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "D:\\Bio-SDK\\OpenCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }
