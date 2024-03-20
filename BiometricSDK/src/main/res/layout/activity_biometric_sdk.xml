@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".BiometricSDK">
+
+    <ImageView
+        android:id="@+id/photoView"
+        android:layout_width="197dp"
+        android:layout_height="248dp"
+        android:layout_gravity="top|left"
+        android:layout_marginLeft="30dp"
+
+        />
+
+    <Button
+        android:id="@+id/photoCaptureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginBottom="30dp"
+        android:text="Capture Photo"
+        android:layout_gravity="bottom|left"
+         />
+
+    <Button
+        android:id="@+id/closeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="30dp"
+        android:text="Close"
+        android:layout_gravity="bottom|center"
+        />
+
+    <Button
+        android:id="@+id/fpCaptureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="30dp"
+        android:text="Capture FP"
+        android:layout_gravity="bottom|right"
+        />
+
+</FrameLayout>

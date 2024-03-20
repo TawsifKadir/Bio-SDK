@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="270dp"
+    android:paddingTop="10dp"
+    android:background="@drawable/border_dialog"
+    android:layout_marginTop="20dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="305dp"
+        android:paddingTop="10dp"
+        android:clickable="true"
+        android:padding="10dp"
+        android:background="@drawable/border_dialog"
+        android:focusableInTouchMode="true">
+
+        <LinearLayout
+            android:layout_width="468dp"
+            android:layout_height="100dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="178dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginBottom="60dp"
+            android:orientation="horizontal"
+            android:paddingTop="10dp">
+
+
+
+            <Button
+                android:id="@+id/okBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="35dp"
+                android:layout_marginEnd="40dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_circular"
+                android:backgroundTint="@color/material_dynamic_primary90"
+                android:shadowRadius="@integer/material_motion_duration_short_1"
+                android:text="Ok" />
+
+            <Button
+                android:id="@+id/closeBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/button_circular"
+                android:layout_marginEnd="26dp"
+                android:shadowRadius="@integer/material_motion_duration_short_1"
+                android:text="Close" />
+
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/msgTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:layout_above="@+id/spinner"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="39dp"
+
+            android:layout_marginEnd="31dp"
+            android:layout_marginBottom="10dp"
+            android:text="@string/noFingerprintExceptionMsg"
+            android:textColor="@color/black"
+            android:textSize="16dp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="341dp"
+            android:layout_height="48dp"
+            android:layout_above="@+id/otherReasonText"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="33dp"
+
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="15dp"
+            android:background="@android:drawable/btn_dropdown" />
+
+        <EditText
+            android:id="@+id/otherReasonText"
+            android:layout_width="361dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="33dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="120dp"
+            android:background="@drawable/border"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:text=""
+            android:textSize="16dp" />
+
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

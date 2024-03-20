@@ -1,0 +1,57 @@
+<resources>
+        <string name="app_name">BiometricSDK</string>
+        <string name="device_initizing">Initializing Device. Please wait...</string>
+
+        <string name="again_capture">Do you want to capture %1$s again?</string>
+        <string name="all_fingerprint_captured">All fingerprints are captured</string>
+
+        <string name="capturing">Capturing...</string>
+        <string name="remove_fingerprint">Please remove fingerprint</string>
+        <string name="click_fingerprint">Click on finger to capture</string>
+
+        <string name="done">Done</string>
+        <string name="fingerprint_captured">Fingerprint captured</string>
+        <string name="fingerprint_capture_failed">Capture Failed</string>
+
+        <string name="index">Index</string>
+        <string name="left">Left</string>
+        <string name="left_index">Left Index</string>
+        <string name="left_thumb">Left Thumb</string>
+
+        <string name="menu_settings">Settings</string>
+        <string name="no">No</string>
+
+        <string name="place_left_index">Place Left Index</string>
+        <string name="place_left_thumb">Place Left Thumb</string>
+        <string name="place_left_middle">Place Left Middle</string>
+        <string name="place_left_ring">Place Left Ring</string>
+        <string name="place_left_small">Place Left Small</string>
+
+        <string name="place_right_index">Place Right Index</string>
+        <string name="place_right_thumb">Place Right Thumb</string>
+        <string name="place_right_middle">Place Right Middle</string>
+        <string name="place_right_ring">Place Right Ring</string>
+        <string name="place_right_small">Place Right Small</string>
+
+        <string name="please_wait">Please wait…</string>
+        <string name="poor_image_quality">Poor image quality</string>
+        <string name="remove_same_finger">Remove the same finger</string>
+        <string name="right">Right</string>
+        <string name="right_index">Right Index</string>
+        <string name="right_thumb">Right Thumb</string>
+        <string name="score">Score</string>
+        <string name="thumb">Thumb</string>
+        <string name="middle">Middle</string>
+        <string name="ring">Ring</string>
+        <string name="small">Small</string>
+        <string name="yes">Yes</string>
+        <string name="duplicate_fingerprint">Duplicate Fingerprint</string>
+
+        <string name="noFingerprintExceptionDlgTitle">Fingerprint Capture Exception</string>
+        <string name="noAccessToDevice">Warning: cannot connect to fingerprint sensor.\n\nPlease open item \"Peripheral Management\" in this application main menu and check following settings :\n\t- Fingerprint sensor should be enabled\n\t- USB mode should be set to "Host". Or it should be set to "Auto" and PC shouldn\'t be connected to tablet.\n\nPlease also check that no other fingerprint sensor is connected to tablet.</string>
+        <string name="noFingerprintExceptionMsg">There was an exception during the fingerprint capture. Some fingers are missing.Please specify a reason</string>
+
+        <string name="toast_image_intent_null">Image picker option is missing!</string>
+        <string name="lbl_set_profile_photo">Set profile image</string>
+        <string name="lbl_take_camera_picture">Take a picture</string>
+</resources>
