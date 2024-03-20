@@ -60,6 +60,7 @@ import androidx.core.content.ContextCompat;
 
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
+import com.kit.common.CustomToastHandler;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
 
@@ -596,7 +597,8 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(PhotoCaptureActivity.this, mComplianceResult.getComplianceTxt(), Toast.LENGTH_LONG).show();
+//                            Toast.makeText(PhotoCaptureActivity.this, mComplianceResult.getComplianceTxt(), Toast.LENGTH_LONG).show();
+                            CustomToastHandler.showErrorToast(PhotoCaptureActivity.this,mComplianceResult.getComplianceTxt());
                         }
                     });
 

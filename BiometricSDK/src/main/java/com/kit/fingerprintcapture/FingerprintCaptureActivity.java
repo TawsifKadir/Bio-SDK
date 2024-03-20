@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
+import com.kit.common.CustomToastHandler;
 import com.kit.fingerprintcapture.adapters.FingerprintExceptionListAdapter;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
@@ -456,7 +457,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(FingerprintCaptureActivity.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show();
+//                                Toast.makeText(FingerprintCaptureActivity.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show();
+                                CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this,"Duplicate fingerprint captured. Please recapture different finger.");
                             }
                         });
 
@@ -656,7 +658,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                         Log.d(TAG, "Setting data for : " + fp.getFingerprintID().getName());
                     }
 
-                    data.putExtra(fp.getFingerprintID().getName(), fp.getFingerprintData().getFingerprintData());
+                    data.putExtra(fp.getFingerprintID().getName(), fp.getFingerprintData());
                 }
             }
             setResult(Activity.RESULT_OK, data);
