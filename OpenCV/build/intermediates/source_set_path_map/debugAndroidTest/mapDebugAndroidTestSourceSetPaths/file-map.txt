@@ -1,5 +1,5 @@
-org.opencv.test.OpenCV-androidTest-0 F:\AndroidProjects\BiometricSDK\OpenCV\build\generated\res\resValues\androidTest\debug
-org.opencv.test.OpenCV-mergeDebugAndroidTestResources-1 F:\AndroidProjects\BiometricSDK\OpenCV\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-org.opencv.test.OpenCV-mergeDebugAndroidTestResources-2 F:\AndroidProjects\BiometricSDK\OpenCV\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-org.opencv.test.OpenCV-debugAndroidTest-3 F:\AndroidProjects\BiometricSDK\OpenCV\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
-org.opencv.test.OpenCV-debug-4 F:\AndroidProjects\BiometricSDK\OpenCV\build\intermediates\packaged_res\debug\packageDebugResources
+org.opencv.test.OpenCV-androidTest-0 D:\Bio-SDK\OpenCV\build\generated\res\resValues\androidTest\debug
+org.opencv.test.OpenCV-mergeDebugAndroidTestResources-1 D:\Bio-SDK\OpenCV\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+org.opencv.test.OpenCV-mergeDebugAndroidTestResources-2 D:\Bio-SDK\OpenCV\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+org.opencv.test.OpenCV-debugAndroidTest-3 D:\Bio-SDK\OpenCV\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
+org.opencv.test.OpenCV-debug-4 D:\Bio-SDK\OpenCV\build\intermediates\packaged_res\debug\packageDebugResources
