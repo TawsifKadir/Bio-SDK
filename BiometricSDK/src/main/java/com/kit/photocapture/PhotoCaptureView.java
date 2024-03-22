@@ -70,17 +70,21 @@ public class PhotoCaptureView extends JavaCameraView implements PictureCallback 
     }
 
     public void takePicture() {
-        if(BuildConfig.isDebug)
+        if(BuildConfig.isDebug) {
             Log.i(TAG, "Taking picture");
-        mCamera.setPreviewCallback(null);
-        mCamera.takePicture(null, null, this);
+        }
+        if(mCamera!=null){
+            mCamera.setPreviewCallback(null);
+            mCamera.takePicture(null, null, this);
+        }
     }
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
-        if(BuildConfig.isDebug)
+        if(BuildConfig.isDebug) {
             Log.i(TAG, "Saving a bitmap to file");
-        // The camera preview was automatically stopped. Start it again.
+        }
+
         if(mPictureDataCallback!=null){
           mPictureDataCallback.onPictureData(data);
         }

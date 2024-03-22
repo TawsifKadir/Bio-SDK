@@ -185,7 +185,20 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
             mCapture.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ((PhotoCaptureView) mOpenCvCameraView).takePicture();
+                    boolean isError = false;
+                    Throwable errorObject = null;
+                    try {
+                        ((PhotoCaptureView) mOpenCvCameraView).takePicture();
+                    }catch (Throwable t){
+                        isError=true;
+                        errorObject=t;
+                    }finally{
+                        if(isError){
+                            Log.e(TAG,"Error occured while taking picture");
+                            errorObject.printStackTrace();
+                            errorObject = null;
+                        }
+                    }
                 }
             });
         }
@@ -199,6 +212,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     Throwable errorObject = null;
                     if(mOpenCvCameraView!=null){
                         mOpenCvCameraView.disableView();
+
                         try {
                             if (nowCameraIndex == CameraBridgeViewBase.CAMERA_ID_BACK) {
                                 mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT);
@@ -432,8 +446,9 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     @Override
     public void onPictureData(byte[] data) {
-        if(BuildConfig.isDebug)
-            Log.d(TAG,"Picture Data Available");
+        if(BuildConfig.isDebug) {
+            Log.d(TAG, "Picture Data Available");
+        }
         if(data!=null) {
             if(BuildConfig.isDebug)
                 Log.d(TAG, "Picture Data Size "+data.length);
