@@ -69,9 +69,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     private Fingerprint mCurrentFingerprint;
 
     private Animation mCurrentAnimation;
-
     private ThreadPoolExecutor taskExecutor;
-    private boolean isDummyDevice = true;
+    private boolean isDummyDevice = false;
     private boolean duplicateDetectionEnabled = true;
 
     private boolean mCloseClicked = false;

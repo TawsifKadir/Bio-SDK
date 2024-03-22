@@ -1,8 +1,8 @@
-#Thu Mar 21 02:29:05 BDT 2024
-base.0=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeExtDexDebugAndroidTest\\classes.dex
-base.1=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\0\\classes.dex
-base.2=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
-base.3=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\2\\classes.dex
+#Fri Mar 22 00:55:46 BDT 2024
+base.0=D\:\\Bio-SDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeExtDexDebugAndroidTest\\classes.dex
+base.1=D\:\\Bio-SDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\0\\classes.dex
+base.2=D\:\\Bio-SDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
+base.3=D\:\\Bio-SDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\2\\classes.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=0/classes.dex
