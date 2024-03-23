@@ -636,9 +636,9 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
                 if(mNoFingerprintReason==NoFingerprintReason.Other){
                     if(mOtherReasonTextView!=null) {
-                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText());
+                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText().toString());
                         if (BuildConfig.isDebug) {
-                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText());
+                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText().toString());
                         }
                     }
                     else {
