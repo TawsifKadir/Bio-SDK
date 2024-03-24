@@ -538,7 +538,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View mView = LayoutInflater.from(this).inflate(R.layout.no_finger_drop_down,viewGroup,false);
         builder.setTitle(R.string.noFingerprintExceptionDlgTitle);
-        builder.setIcon(R.drawable.no_finger_dialog_icon);
+//        builder.setIcon(R.drawable.no_finger_dialog_icon);
+        builder.setIcon(R.drawable.logo_splash);
         Spinner reasonSpinner = (Spinner) mView.findViewById(R.id.spinner);
 
         reasonSpinner.setOnItemSelectedListener(this);

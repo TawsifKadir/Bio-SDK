@@ -68,8 +68,8 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     private static final String    TAG  = "PhotoCaptureActivity";
 
-    private static final int MAX_IMAGE_WIDTH = 120;
-    private static final int MAX_IMAGE_HEIGHT = 176;
+    private static final int MAX_IMAGE_WIDTH = 240;
+    private static final int MAX_IMAGE_HEIGHT = 320;
 
     private static final Scalar    BOX_COLOR         = new Scalar(0, 255, 0);
     private static final Scalar    RIGHT_EYE_COLOR   = new Scalar(255, 0, 0);
