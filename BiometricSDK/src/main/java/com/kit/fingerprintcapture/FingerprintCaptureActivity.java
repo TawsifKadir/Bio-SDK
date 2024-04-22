@@ -69,7 +69,6 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     private Fingerprint mCurrentFingerprint;
 
     private Animation mCurrentAnimation;
-
     private ThreadPoolExecutor taskExecutor;
     private boolean isDummyDevice = true;
     private boolean duplicateDetectionEnabled = true;
@@ -539,7 +538,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View mView = LayoutInflater.from(this).inflate(R.layout.no_finger_drop_down,viewGroup,false);
         builder.setTitle(R.string.noFingerprintExceptionDlgTitle);
-        builder.setIcon(R.drawable.no_finger_dialog_icon);
+//        builder.setIcon(R.drawable.no_finger_dialog_icon);
+        builder.setIcon(R.drawable.logo_splash);
         Spinner reasonSpinner = (Spinner) mView.findViewById(R.id.spinner);
 
         reasonSpinner.setOnItemSelectedListener(this);
@@ -637,9 +637,9 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
                 if(mNoFingerprintReason==NoFingerprintReason.Other){
                     if(mOtherReasonTextView!=null) {
-                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText());
+                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText().toString());
                         if (BuildConfig.isDebug) {
-                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText());
+                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText().toString());
                         }
                     }
                     else {
