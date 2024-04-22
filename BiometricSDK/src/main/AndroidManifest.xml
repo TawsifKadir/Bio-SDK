@@ -55,6 +55,14 @@
                 </intent-filter>
         </activity>
 
+<!--        <activity-->
+<!--            android:name=".BiometricSDK"-->
+<!--            android:theme="@style/Theme.AppCompat.Light.NoActionBar"-->
+<!--            android:exported="true"-->
+<!--            />-->
+
+
+
         <activity
             android:name="com.kit.photocapture.PhotoCaptureActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"

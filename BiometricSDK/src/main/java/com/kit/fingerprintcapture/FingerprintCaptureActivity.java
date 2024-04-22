@@ -349,13 +349,15 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(fp.getStatus()!=FingerprintStatus.CAPTURED){
-                    fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                    fp.setStatus(FingerprintStatus.NOT_CAPTURED);
-                    resetMarker(fp);
-                }
+                synchronized (FingerprintCaptureActivity.this) {
+                    if (fp.getStatus() != FingerprintStatus.CAPTURED) {
+                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                        fp.setStatus(FingerprintStatus.NOT_CAPTURED);
+                        resetMarker(fp);
+                    }
 
-                mfpCaptureHandler.stopCapture();
+                    mfpCaptureHandler.stopCapture();
+                }
             }
         });
 
@@ -370,30 +372,26 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 if(BuildConfig.isDebug) {
                     Log.d("FaisalActivity", ">>>>> Entered in on onCaptureStart >>>> ");
                 }
+                synchronized (FingerprintCaptureActivity.this) {
+                    diableControls();
 
-                diableControls();
+                    mCurrentFingerprint = fp;
+                    mCurrentFingerprint.setStatus(FingerprintStatus.CAPTURE_IN_PROGRESS);
 
-                mCurrentFingerprint = fp;
-                mCurrentFingerprint.setStatus(FingerprintStatus.CAPTURE_IN_PROGRESS);
+                    setCaptureStartMarker(fp);
+                    setStartCaptureFpView(fp);
+                    startAnimation();
 
-                setCaptureStartMarker(fp);
-                setStartCaptureFpView(fp);
-                startAnimation();
-
-                if(BuildConfig.isDebug) {
-                    Log.d("FaisalActivity", ">>>>> Staring autoOn >>>> ");
+                    taskExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            mDeviceManager.startCapture();
+                        }
+                    });
                 }
-
-                taskExecutor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDeviceManager.startCapture();
-                    }
-                });
 
             }
         });
-
 
     }
 
@@ -402,14 +400,16 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        fp.setStatus(FingerprintStatus.NOT_CAPTURED);
-                        setCaptureFailedMarker(fp);
-                        setFailedCaptureFpView(fp);
-                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                        mfpCaptureHandler.captureFailed();
-                    }finally{
-                        enableControls();
+                    synchronized (FingerprintCaptureActivity.this) {
+                        try {
+                            fp.setStatus(FingerprintStatus.NOT_CAPTURED);
+                            setCaptureFailedMarker(fp);
+                            setFailedCaptureFpView(fp);
+                            fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                            mfpCaptureHandler.captureFailed();
+                        } finally {
+                            enableControls();
+                        }
                     }
                 }
             });
@@ -420,17 +420,17 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    fp.setStatus(FingerprintStatus.CAPTURED);
-                    setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
-                    setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
-                    fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                }finally {
-                    enableControls();
+                synchronized (FingerprintCaptureActivity.this) {
+                    try {
+                        fp.setStatus(FingerprintStatus.CAPTURED);
+                        setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
+                        setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
+                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                    } finally {
+                        enableControls();
+                    }
+                    mfpCaptureHandler.captureFinished();
                 }
-
-                mfpCaptureHandler.captureFinished();
-
             }
         });
     }

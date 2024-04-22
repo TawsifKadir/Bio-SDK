@@ -31,6 +31,7 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.objdetect.FaceDetectorYN;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.osgi.OpenCVInterface;
 
 import android.Manifest;
 import android.app.Activity;
@@ -57,19 +58,35 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
-
-import com.kit.BuildConfig;
-import com.kit.biometricsdk.R;
-import com.kit.common.CustomToastHandler;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
+
+import com.kit.biometricsdk.R;
 
 public class PhotoCaptureActivity extends CameraActivity implements CvCameraViewListener2 , PictureDataCallback {
 
     private static final String    TAG  = "PhotoCaptureActivity";
+    public static final String INTENT_IMAGE_PICKER_OPTION = "image_picker_option";
+    public static final String INTENT_ASPECT_RATIO_X = "aspect_ratio_x";
+    public static final String INTENT_ASPECT_RATIO_Y = "aspect_ratio_Y";
+    public static final String INTENT_LOCK_ASPECT_RATIO = "lock_aspect_ratio";
+    public static final String INTENT_IMAGE_COMPRESSION_QUALITY = "compression_quality";
+    public static final String INTENT_SET_BITMAP_MAX_WIDTH_HEIGHT = "set_bitmap_max_width_height";
+    public static final String INTENT_BITMAP_MAX_WIDTH = "max_width";
+    public static final String INTENT_BITMAP_MAX_HEIGHT = "max_height";
 
-    private static final int MAX_IMAGE_WIDTH = 120;
-    private static final int MAX_IMAGE_HEIGHT = 176;
+    private  float FACE_CONFIDENCE_THRESHHOLD = (float)0.5;
+
+    private  int MAX_IMAGE_WIDTH = 240;
+    private  int MAX_IMAGE_HEIGHT = 320;
+
+    private  int ASPECT_RATIO_X = 9;
+
+    private  int ASPECT_RATIO_Y = 16;
+
+    private boolean LOCK_ASPECT_RATIO = false;
+    private boolean SET_BITMAP_MAX_WIDTH_HEIGHT = true;
+    private int IMAGE_COMPRESSION = 80;
 
     private static final Scalar    BOX_COLOR         = new Scalar(0, 255, 0);
     private static final Scalar    RIGHT_EYE_COLOR   = new Scalar(255, 0, 0);
@@ -96,6 +113,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     private ImageButton mSwitch;
 
     private FaceDetectorYN         mFaceDetector;
+    private FaceDetectorYN         mComplianceFaceDetector;
     private Mat                    mFaces;
 
     private Uri mResultUri = null;
@@ -103,10 +121,12 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     private int nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_BACK;
 
+    public static boolean isDebug = false;
+
     private ComplianceResult mComplianceResult = null;
 
     public PhotoCaptureActivity() {
-        if(BuildConfig.isDebug)
+        if(PhotoCaptureActivity.isDebug)
             Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -116,7 +136,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    if(BuildConfig.isDebug)
+                    if(PhotoCaptureActivity.isDebug)
                         Log.i(TAG, "OpenCV loaded successfully");
 
                     loadFaceDetector();
@@ -135,115 +155,140 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        boolean isError = false;
+        Throwable errorObject = null;
 
-        if(BuildConfig.isDebug)
+        if(PhotoCaptureActivity.isDebug)
             Log.i(TAG, "called onCreate");
 
         super.onCreate(savedInstanceState);
 
-        if (!OpenCVLoader.initDebug()) {
-            if(BuildConfig.isDebug)
-                Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-           //// OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-        }else {
-            if(BuildConfig.isDebug)
-                Log.d(TAG, "OpenCV library found inside package. Using it!");
+        Intent intent = getIntent();
+        if (intent == null) {
+            Toast.makeText(getApplicationContext(), "Null intent received", Toast.LENGTH_LONG).show();
+            return;
         }
+        try {
+            if (intent.hasExtra(INTENT_ASPECT_RATIO_X)) {
+                ASPECT_RATIO_X = intent.getIntExtra(INTENT_ASPECT_RATIO_X, ASPECT_RATIO_X);
+            }
+            if (intent.hasExtra(INTENT_ASPECT_RATIO_Y)) {
+                ASPECT_RATIO_Y = intent.getIntExtra(INTENT_ASPECT_RATIO_Y, ASPECT_RATIO_Y);
+            }
+            if (intent.hasExtra(INTENT_IMAGE_COMPRESSION_QUALITY)) {
+                IMAGE_COMPRESSION = intent.getIntExtra(INTENT_IMAGE_COMPRESSION_QUALITY, IMAGE_COMPRESSION);
+            }
+            if (intent.hasExtra(INTENT_LOCK_ASPECT_RATIO)) {
+                LOCK_ASPECT_RATIO = intent.getBooleanExtra(INTENT_LOCK_ASPECT_RATIO, false);
+            }
+            if (intent.hasExtra(INTENT_SET_BITMAP_MAX_WIDTH_HEIGHT)) {
+                SET_BITMAP_MAX_WIDTH_HEIGHT = intent.getBooleanExtra(INTENT_SET_BITMAP_MAX_WIDTH_HEIGHT, false);
+            }
+            if (intent.hasExtra(INTENT_BITMAP_MAX_WIDTH)) {
+                MAX_IMAGE_WIDTH = intent.getIntExtra(INTENT_BITMAP_MAX_WIDTH, MAX_IMAGE_WIDTH);
+            }
+            if (intent.hasExtra(INTENT_BITMAP_MAX_HEIGHT)) {
+                MAX_IMAGE_HEIGHT = intent.getIntExtra(INTENT_BITMAP_MAX_HEIGHT, MAX_IMAGE_HEIGHT);
+            }
 
-        loadFaceDetector();
+            if (!OpenCVLoader.initDebug()) {
+                if (PhotoCaptureActivity.isDebug)
+                    Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+                //// OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+            } else {
+                if (PhotoCaptureActivity.isDebug)
+                    Log.d(TAG, "OpenCV library found inside package. Using it!");
+            }
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            loadFaceDetector();
 
-        setContentView(R.layout.photo_capture_activity);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.faisal_view);
+            setContentView(R.layout.photo_capture_activity);
 
-        if(BuildConfig.isDebug)
-            Log.i(TAG,"OpenCVCameraView = "+mOpenCvCameraView);
+            mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.faisal_view);
 
-        if(mOpenCvCameraView!=null) {
-            ((PhotoCaptureView) mOpenCvCameraView).setPictureDataCallback(this);
-            mOpenCvCameraView.setVisibility(CameraBridgeViewBase.VISIBLE);
-            mOpenCvCameraView.setCvCameraViewListener(this);
-            mOpenCvCameraView.setCameraIndex(nowCameraIndex);
-        }
-        mBack = findViewById(R.id.backBtn);
+            if (PhotoCaptureActivity.isDebug)
+                Log.i(TAG, "OpenCVCameraView = " + mOpenCvCameraView);
 
-        if(mBack!=null) {
-            mBack.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    prepareReturnData();
-                    PhotoCaptureActivity.this.finish();
-                }
-            });
-        }
+            if (mOpenCvCameraView != null) {
+                ((PhotoCaptureView) mOpenCvCameraView).setPictureDataCallback(this);
+                mOpenCvCameraView.setVisibility(CameraBridgeViewBase.VISIBLE);
+                mOpenCvCameraView.setCvCameraViewListener(this);
+                mOpenCvCameraView.setCameraIndex(nowCameraIndex);
+            }
+            mBack = findViewById(R.id.backBtn);
 
-        mCapture = findViewById(R.id.captureBtn);
+            if (mBack != null) {
+                mBack.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        prepareReturnData();
+                        PhotoCaptureActivity.this.finish();
+                    }
+                });
+            }
 
-        if(mCapture!=null) {
-            mCapture.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    boolean isError = false;
-                    Throwable errorObject = null;
-                    try {
+            mCapture = findViewById(R.id.captureBtn);
+
+            if (mCapture != null) {
+                mCapture.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
                         ((PhotoCaptureView) mOpenCvCameraView).takePicture();
-                    }catch (Throwable t){
-                        isError=true;
-                        errorObject=t;
-                    }finally{
-                        if(isError){
-                            Log.e(TAG,"Error occured while taking picture");
-                            errorObject.printStackTrace();
-                            errorObject = null;
-                        }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        mSwitch = findViewById(R.id.switchBtn);
-        if(mSwitch!=null) {
-            mSwitch.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    boolean isError = false;
-                    Throwable errorObject = null;
-                    if(mOpenCvCameraView!=null){
-                        mOpenCvCameraView.disableView();
-
-                        try {
-                            if (nowCameraIndex == CameraBridgeViewBase.CAMERA_ID_BACK) {
-                                mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT);
-                                nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_FRONT;
-                            } else if (nowCameraIndex == CameraBridgeViewBase.CAMERA_ID_FRONT) {
-                                mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_BACK);
-                                nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_BACK;
-                            }
-                        }catch(Throwable t){
-                            isError = true;
-                            errorObject = t;
-                        }finally {
-
-                            mOpenCvCameraView.enableView();
-
-                            if(isError){
-                                if(BuildConfig.isDebug){
-                                    Log.e(TAG,"Error occurred while switching camera : "+errorObject.getMessage());
-                                    errorObject.printStackTrace();
+            mSwitch = findViewById(R.id.switchBtn);
+            if (mSwitch != null) {
+                mSwitch.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean isError = false;
+                        Throwable errorObject = null;
+                        if (mOpenCvCameraView != null) {
+                            mOpenCvCameraView.disableView();
+                            try {
+                                if (nowCameraIndex == CameraBridgeViewBase.CAMERA_ID_BACK) {
+                                    mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT);
+                                    nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_FRONT;
+                                } else if (nowCameraIndex == CameraBridgeViewBase.CAMERA_ID_FRONT) {
+                                    mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_BACK);
+                                    nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_BACK;
                                 }
-                                errorObject = null;
-                            }
+                            } catch (Throwable t) {
+                                isError = true;
+                                errorObject = t;
+                            } finally {
 
+                                mOpenCvCameraView.enableView();
+
+                                if (isError) {
+                                    if (PhotoCaptureActivity.isDebug) {
+                                        Log.e(TAG, "Error occurred while switching camera : " + errorObject.getMessage());
+                                        errorObject.printStackTrace();
+                                    }
+                                    errorObject = null;
+                                }
+
+                            }
                         }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        mComplianceResult = ComplianceResult.NOT_INITIALIZED;
-        disableControls();
+            mComplianceResult = ComplianceResult.NOT_INITIALIZED;
+        }catch(Throwable t){
+            isError = true;
+            errorObject=t;
+        }finally {
+            if(isError){
+                Log.e(TAG,errorObject.getMessage());
+                errorObject.printStackTrace();
+                errorObject=null;
+            }
+        }
         ///getPermissions();
     }
 
@@ -288,7 +333,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         mBgr = new Mat();
         mBgrScaled = new Mat();
         mFaces = new Mat();
-        enableControls();
     }
 
     public void onCameraViewStopped() {
@@ -296,7 +340,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         mBgr.release();
         mBgrScaled.release();
         mFaces.release();
-        disableControls();
     }
 
     public void visualize(Mat rgba, Mat faces) {
@@ -308,9 +351,14 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         {
             faces.get(i, 0, faceData);
 
-            if(BuildConfig.isDebug)
+            if(PhotoCaptureActivity.isDebug) {
                 Log.d(TAG, "Detected face (" + faceData[0] + ", " + faceData[1] + ", " +
-                    faceData[2] + ", " + faceData[3] + ")");
+                        faceData[2] + ", " + faceData[3] + ")");
+                Log.d(TAG, "Detected face Score : " + faceData[14]);
+
+            }
+
+            if(faceData[14]<=FACE_CONFIDENCE_THRESHHOLD) continue;
 
             // Draw bounding box
             Imgproc.rectangle(rgba, new Rect(Math.round(mScale*faceData[0]), Math.round(mScale*faceData[1]),
@@ -327,38 +375,42 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     2, MOUTH_RIGHT_COLOR, thickness);
             Imgproc.circle(rgba, new Point(Math.round(mScale*faceData[12]), Math.round(mScale*faceData[13])),
                     2, MOUTH_LEFT_COLOR, thickness);
+
+
+
         }
     }
-    public ComplianceResult checkCompliance(Mat image,Mat nowRgba) {
+    public synchronized ComplianceResult checkCompliance(Mat nowRgba) {
 
         Mat nowMBgr = new Mat();
         Mat nowMBgrScaled = new Mat();
         Mat nowFaces = new Mat();
-        Size nowInputSize = new Size(Math.round(image.cols() / mScale), Math.round(image.rows() / mScale));
+        Size nowInputSize = new Size(Math.round(nowRgba.cols() / mScale), Math.round(nowRgba.rows() / mScale));
         boolean isError = false;
         Throwable errorObject = null;
 
         if(mFaceDetector!=null) {
             try {
-                mFaceDetector.setInputSize(nowInputSize);
-
-                if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-                    Core.flip(image.t(), nowRgba, 1);
-                }else{
-                    Core.flip(image.t(), nowRgba, 0);
-                }
+                mComplianceFaceDetector.setInputSize(nowInputSize);
 
                 Imgproc.cvtColor(nowRgba, nowMBgr, Imgproc.COLOR_RGBA2BGR);
                 Imgproc.resize(nowMBgr, nowMBgrScaled, nowInputSize);
 
-                int status = mFaceDetector.detect(nowMBgrScaled, nowFaces);
+                int status = mComplianceFaceDetector.detect(nowMBgrScaled, nowFaces);
 
-                if(BuildConfig.isDebug) {
+                if(PhotoCaptureActivity.isDebug) {
                     Log.d(TAG, "Detector returned status " + status);
                 }
 
                 if (nowFaces.rows() == 1) {
-                    return ComplianceResult.COMPLIED;
+
+                    float[] faceData = new float[nowFaces.cols() * nowFaces.channels()];
+                    nowFaces.get(0, 0, faceData);
+                    if(faceData[14]<=FACE_CONFIDENCE_THRESHHOLD){
+                        return ComplianceResult.LOW_QUALITY_FACE;
+                    }else {
+                        return ComplianceResult.COMPLIED;
+                    }
                 } else if (nowFaces.rows() > 1) {
                     return ComplianceResult.MULTIPLE_FACE;
                 } else if (nowFaces.rows() <= 0) {
@@ -370,13 +422,13 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 errorObject = t;
             }finally {
                 if(isError){
-                    Toast.makeText(PhotoCaptureActivity.this, "Error occured while checking compliance.", Toast.LENGTH_LONG).show();
+                   //// Toast.makeText(PhotoCaptureActivity.this, "Error occured while checking compliance.", Toast.LENGTH_LONG).show();
                     errorObject.printStackTrace();
                 }
                 nowMBgr.release();
                 nowMBgrScaled.release();
                 nowFaces.release();
-                mInputSize=null;
+               /// mInputSize=null;
                 errorObject=null;
 
             }
@@ -384,7 +436,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         }
         return ComplianceResult.UNKNOWN_ERROR;
     }
-    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+    public synchronized Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         boolean isError = false;
         Throwable errorObject = null;
         Mat rgbaFlipped = new Mat();
@@ -409,18 +461,11 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
             if (mFaceDetector != null) {
                 int status = mFaceDetector.detect(mBgrScaled, mFaces);
 
-                if(BuildConfig.isDebug)
+                if(PhotoCaptureActivity.isDebug)
                     Log.d(TAG, "Detector returned status " + status);
 
                 visualize(mRgba, mFaces);
 
-                if (mFaces.rows() == 1) {
-                    mComplianceResult = ComplianceResult.COMPLIED;
-                } else if (mFaces.rows() > 1) {
-                    mComplianceResult = ComplianceResult.MULTIPLE_FACE;
-                } else if (mFaces.rows() <= 0) {
-                    mComplianceResult = ComplianceResult.NO_FACE;
-                }
 
             }
 
@@ -430,6 +475,14 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 mRgba = mRgba.t();
             }
 
+//            if(mFaces!=null && mFaces.rows()==1) {
+//
+//                float[] faceData = new float[mFaces.cols() * mFaces.channels()];
+//                ///Drawing score
+//                //Adding text to the image
+//                Imgproc.putText(mRgba, "Score : " + Math.round(faceData[14]), new Point(mScale * faceData[0], (mScale * faceData[1]) - 20),
+//                        Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0, 0, 255), 3);
+//            }
         }catch(Throwable t){
             isError = true;
             errorObject = t;
@@ -446,11 +499,10 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     @Override
     public void onPictureData(byte[] data) {
-        if(BuildConfig.isDebug) {
-            Log.d(TAG, "Picture Data Available");
-        }
+        if(PhotoCaptureActivity.isDebug)
+            Log.d(TAG,"Picture Data Available");
         if(data!=null) {
-            if(BuildConfig.isDebug)
+            if(PhotoCaptureActivity.isDebug)
                 Log.d(TAG, "Picture Data Size "+data.length);
             CaptureDataProcessor captureDataProcessor = new CaptureDataProcessor();
             captureDataProcessor.execute(data);
@@ -475,18 +527,19 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 dstUri = Uri.fromFile(new File(getCacheDir(), Utility.queryName(getContentResolver(), bmpUri)));
 
 
-                if(BuildConfig.isDebug) {
+                if(PhotoCaptureActivity.isDebug) {
                     Log.d(TAG, "Source Uri is : " + bmpUri.toString());
                     Log.d(TAG, "Destination Uri is : " + dstUri.toString());
                 }
 
                 UCrop.Options options = new UCrop.Options();
                 options.setAllowedGestures(UCropActivity.SCALE, UCropActivity.ROTATE, UCropActivity.SCALE);
-                options.setCompressionQuality(100);
+                options.setCompressionQuality(IMAGE_COMPRESSION);
                 options.setFreeStyleCropEnabled(true);
 
+
                 UCrop.of(bmpUri, dstUri)
-                        .withAspectRatio(9, 16)
+                        .withAspectRatio(9-ASPECT_RATIO_X, ASPECT_RATIO_Y)
                         .withMaxResultSize(MAX_IMAGE_WIDTH,MAX_IMAGE_HEIGHT)
                         .withOptions(options)
                         .start(PhotoCaptureActivity.this);
@@ -514,7 +567,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(BuildConfig.isDebug) {
+        if(PhotoCaptureActivity.isDebug) {
             Log.d(TAG, ">>>>>Got Activity Result.");
             Log.d(TAG, ">>>>>Request Code : " + requestCode);
             Log.d(TAG, ">>>>>Result Code : " + resultCode);
@@ -581,6 +634,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
             Mat nowImage = new Mat();
             Mat flippedImage = new Mat();
+            Mat rotatedImage = new Mat();
             Bitmap flippedBmp = null;
             boolean isError = false;
             Throwable errorObject = null;
@@ -598,24 +652,32 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 Utils.bitmapToMat(bmp, nowImage, false);
 
                 if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-                    Core.flip(nowImage, flippedImage, 1);
+                    Core.rotate(nowImage, flippedImage, Core.ROTATE_90_CLOCKWISE);
                 }else{
-                    Core.flip(nowImage, flippedImage, 0);
+                    Core.rotate(nowImage, rotatedImage, Core.ROTATE_90_COUNTERCLOCKWISE);
+                    Core.flip(rotatedImage, flippedImage, 1);
                 }
 
-                Core.rotate(flippedImage,flippedImage,Core.ROTATE_90_COUNTERCLOCKWISE);
-                ///ComplianceResult nowResult = checkCompliance(nowImage, flippedImage);
 
-                if(mComplianceResult==null){
-                    mComplianceResult = ComplianceResult.UNKNOWN_ERROR;
+                ComplianceResult nowResult = checkCompliance(flippedImage);
+
+
+                if(nowResult==null){
+                    nowResult = ComplianceResult.UNKNOWN_ERROR;
                 }
 
-                if (mComplianceResult != ComplianceResult.COMPLIED) {
+                if (nowResult != ComplianceResult.COMPLIED) {
+                    mComplianceResult = nowResult;
+
+                   /* Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
+                    flippedBmp = Bitmap.createBitmap(flippedImage.cols(), flippedImage.rows(), conf);
+                    Utils.matToBitmap(flippedImage, flippedBmp);
+                    startImageCropActivity(flippedBmp);
+*/
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-//                            Toast.makeText(PhotoCaptureActivity.this, mComplianceResult.getComplianceTxt(), Toast.LENGTH_LONG).show();
-                            CustomToastHandler.showErrorToast(PhotoCaptureActivity.this,mComplianceResult.getComplianceTxt());
+                            Toast.makeText(PhotoCaptureActivity.this, mComplianceResult.getComplianceTxt(), Toast.LENGTH_LONG).show();
                         }
                     });
 
@@ -643,6 +705,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 }
                 nowImage.release();
                 flippedImage.release();
+                rotatedImage.release();
                 errorObject=null;
             }
             return null;
@@ -658,7 +721,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     R.raw.face_detection_yunet_2023mar);
 
             if (nowBuffer == null) {
-                if(BuildConfig.isDebug)
+                if(PhotoCaptureActivity.isDebug)
                     Log.e(TAG, "Could not load model file");
                 mFaceDetector = null;
             } else {
@@ -666,12 +729,13 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 mConfigBuffer = new MatOfByte();
 
                 mFaceDetector = FaceDetectorYN.create("onnx", mModelBuffer, mConfigBuffer, new Size(320, 320));
+                mComplianceFaceDetector = FaceDetectorYN.create("onnx", mModelBuffer, mConfigBuffer, new Size(320, 320));
 
                 if (mFaceDetector == null) {
-                    if(BuildConfig.isDebug)
+                    if(PhotoCaptureActivity.isDebug)
                         Log.e(TAG, "Failed to create FaceDetectorYN!");
                     (Toast.makeText(PhotoCaptureActivity.this, "Failed to create FaceDetectorYN!", Toast.LENGTH_LONG)).show();
-                } else if(BuildConfig.isDebug)
+                } else if(PhotoCaptureActivity.isDebug)
                     Log.i(TAG, "FaceDetectorYN initialized successfully!");
 
             }
@@ -688,22 +752,5 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         }
     }
 
-    public void disableControls(){
-        if(mCapture!=null){
-            mCapture.setEnabled(false);
-        }
-        if(mSwitch!=null){
-            mSwitch.setEnabled(false);
-        }
-    }
-
-    public void enableControls(){
-        if(mCapture!=null){
-            mCapture.setEnabled(true);
-        }
-        if(mSwitch!=null){
-            mSwitch.setEnabled(true);
-        }
-    }
 
 }

@@ -3,6 +3,7 @@ package com.kit.photocapture;
 public enum ComplianceResult {
     COMPLIED("Complied"),
     NO_FACE("No face present. Please recapture."),
+    LOW_QUALITY_FACE("Image quality is low. Please recapture."),
     MULTIPLE_FACE("Multiple faces present. Please recapture."),
     UNKNOWN_ERROR("Unknown error occured"),
     NOT_INITIALIZED("Preview not initialized");
