@@ -4,13 +4,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
 import android.graphics.Color;
-import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 
 import android.text.InputFilter;
@@ -41,7 +39,7 @@ import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
 import com.kit.fingerprintcapture.manager.DummyDeviceManager;
 import com.kit.fingerprintcapture.manager.IDeviceManager;
-import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
+import com.kit.fingerprintcapture.manager.DermalogDeviceManager;
 import com.kit.fingerprintcapture.model.Fingerprint;
 
 import com.kit.fingerprintcapture.model.FingerprintID;
@@ -57,8 +55,6 @@ import com.morpho.morphosmart.sdk.ErrorCodes;
 import com.morpho.morphosmart.sdk.TemplateType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,13 +63,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import SecuGen.FDxSDKPro.JSGFPLib;
-import SecuGen.FDxSDKPro.SGFDxDeviceName;
 import SecuGen.FDxSDKPro.SGFDxSecurityLevel;
-import SecuGen.FDxSDKPro.SGFDxTemplateFormat;
 
 
 public class FingerprintCaptureActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
@@ -209,7 +202,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         if(isDummyDevice)
             mDeviceManager = new DummyDeviceManager(this,this);
         else
-            mDeviceManager = new MorphoDeviceManager(this,this);
+            mDeviceManager = new DermalogDeviceManager(this,this);
 
     }
     @Override
@@ -272,8 +265,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     mFingerprintText.setVisibility(View.VISIBLE);
                     mClickFingerprint.setText(R.string.click_fingerprint);
                     if(!isDummyDevice) {
-
-                        mfpMatchHandler.setMorphoDevice( ((MorphoDeviceManager)mDeviceManager).getDeviceHandle() );
+                        mfpMatchHandler.setMorphoDevice( ((DermalogDeviceManager)mDeviceManager).getDeviceHandle() );
                     }else{
                         mfpMatchHandler.setMorphoDevice(null);
                     }
