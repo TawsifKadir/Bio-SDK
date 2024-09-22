@@ -22,6 +22,12 @@ android {
         versionCode genVersionCode(versionMajor, versionMinor, versionPatch)
         versionName genVersionName(versionMajor, versionMinor, versionPatch)
 
+        buildConfigField "String", "VERSION_NAME", "\"$versionName\""
+        //DermalogFingerCode3 and DermalogNistQualityCheck require a license if no DERMALOG scanner is attached (e.g. SVT4500SE and SVT5008).
+        buildConfigField "String", "LICENSE", "\"eyJ2ZXJzaW9uIjoxLCJjcmVhdGVkIjoiMjAyNC0wOC0xNCIsImN1c3RvbWVyIjoiZmFpc2FsQGthcm9vdGhpdGJkLmNvbSIsIm9yZGVyIjoiaHR0cHM6Ly90aWNrZXQuZGMuZGVybWFsb2cuY29tL290cnMvaW5kZXgucGw/QWN0aW9uPUFnZW50VGlja2V0Wm9vbTtUaWNrZXRJRD0xMTA4MCM5MjUxMSIsImxpY2Vuc2VUeXBlIjoiQVBQTElDQVRJT04iLCJsaWNlbnNlSWQiOiIzZWFjYjMwYmExZTUyOGEzMGRiYjM4Njg4N2ExOTI1NWMwMWMxYmFmNGY1ODg5YzE4OTcwZDU0OWNkNmNmOTA5Iiwib3MiOiJBbmRyb2lkIiwic2RrcyI6W3sicHJvZHVjdElkIjoxMTAxMDAyLCJkZXNjcmlwdGlvbiI6IkZpbmdlckNvZGUzIn1dfQ==.MEUCIBfh0aejrV2L54sLUHiGRLrIVDhlHyw5ZhFoyaIBsmAhAiEAgtfwbeBN9H2NzdS0OlxFt1JvNEtucWYIoxMv31L6f50=\""
+        buildConfigField "String", "HALDEVICE", "\"\""
+        setProperty("archivesBaseName", "DermalogHAL-$versionName")
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
@@ -34,6 +40,14 @@ android {
             }
         }
 
+    }
+
+    packagingOptions {
+        pickFirst "lib/arm64-v8a/libc++_shared.so"
+        pickFirst "lib/x86_64/libc++_shared.so"
+        pickFirst "lib/x86/libc++_shared.so"
+        pickFirst "lib/armeabi-v7a/libc++_shared.so"
+        pickFirst "lib/arm64-v8a/libusb1.0.so"
     }
 
     externalNativeBuild {
@@ -83,6 +97,17 @@ android {
 dependencies {
 
     implementation files('libs/FDxSDKProFDAndroid.jar','libs/MorphoSmart_SDK_6.42.0.0.jar')
+
+    implementation "com.dermalog.android:DermalogHardwareDevicesCommon:2.+"
+    implementation 'com.dermalog.android.biometricpassportsdk:DermalogBiometricPassportSdk:1.+'
+    implementation 'com.dermalog.android:DermalogImageContainer:2.+'
+    implementation 'com.dermalog.android:DermalogFingerCode3:4.+'
+    implementation 'com.dermalog.android:DermalogNistQualityCheck:2.+'
+
+    //SVT5008 uses a Integrated Biometrics or Suprema fingerprint scanner
+    implementation "com.dermalog.android:DermalogHardwareSVT5008:1.+"
+    implementation "com.dermalog.android.biometricpassportsdk:DermalogBPSupremaBioMiniPlugin:1.+"
+    implementation "com.dermalog.android.biometricpassportsdk:DermalogBPTF10:1.+"
 
     ////Photo Capture
     implementation ("com.github.yalantis:ucrop:2.2.8")
