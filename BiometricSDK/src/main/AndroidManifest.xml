@@ -24,6 +24,7 @@
         android:name="android.hardware.camera.front.autofocus"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USB_PERMISSION"/>
@@ -31,7 +32,7 @@
     <uses-permission android:name="android.permission.BROADCAST_STICKY"/>
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-->android:theme="@style/Theme.BiometricSDK"-->
+   
 
     <application
         android:allowBackup="true"
@@ -49,10 +50,10 @@
             android:theme="@style/AppTheme"
             android:exported="true"
             >
-<!--                <intent-filter>-->
-<!--                    <action android:name="android.intent.action.MAIN" />-->
-<!--                    <category android:name="android.intent.category.LAUNCHER" />-->
-<!--                </intent-filter>-->
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
         </activity>
 
 <!--        <activity-->
@@ -69,6 +70,7 @@
             android:screenOrientation="portrait"
             android:exported="true"
             />
+
         <activity
             android:name="com.kit.fingerprintcapture.FingerprintCaptureActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"

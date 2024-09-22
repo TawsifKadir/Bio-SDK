@@ -1,5 +1,9 @@
 package com.kit.fingerprintcapture.manager;
 
+import com.morpho.morphosmart.sdk.TemplateList;
+
+import java.util.Map;
+
 public interface IDeviceManager {
     long initDevice();
     long openDevice();
@@ -8,4 +12,6 @@ public interface IDeviceManager {
     long deInitDevice();
     boolean isDeviceOpen();
     boolean isPermissionAcquired();
+
+
 }

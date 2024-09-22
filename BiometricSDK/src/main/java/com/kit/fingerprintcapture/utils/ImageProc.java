@@ -6,15 +6,20 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.util.Log;
+
+
+import com.seamfix.calculatenfiq.NFIQUtil;
 
 import java.nio.ByteBuffer;
 
 import SecuGen.FDxSDKPro.SGWSQLib;
+import SecuGen.FDxSDKPro.SGNFIQLib;
 
 public class ImageProc {
     private static SGWSQLib wsqLib;
-    static{
 
+    static{
         wsqLib = new SGWSQLib();
     }
     public static Bitmap toGrayscale(byte[] mImageBuffer, int width, int height)
@@ -108,4 +113,42 @@ public class ImageProc {
         c.drawBitmap(bmpOriginal, 0, 0, paint);
         return bmpGrayscale;
     }
+
+    public static Long computeScore(byte[] mImageBuffer, int width, int height)
+    {
+        Long score = (long)-1;
+
+        Log.d("UTILS","Entered to compute score >>>>> ");
+
+        if(mImageBuffer==null || width<=0 || height<=0) return score;
+
+        try{
+
+//            score = nfiqLib.SGComputeNFIQ(mImageBuffer,width,height);
+            score = (long) NFIQUtil.calculateNFIQUsingRawBytes(mImageBuffer,width, height);
+        }catch(Throwable t){
+            t.printStackTrace();
+        }
+
+        return score;
+    }
+
+    public static int mapNFIQScore(int score){
+            switch (score){
+                case 1:
+                    return 100;
+                case 2:
+                    return 80;
+                case 3:
+                    return 60;
+                case 4:
+                    return 40;
+                case 5:
+                    return 20;
+                default:
+                    return 0;
+
+            }
+    }
+
 }

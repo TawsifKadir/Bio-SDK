@@ -10,6 +10,7 @@ import com.kit.biometricsdk.R;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.utils.ImageProc;
+import com.morpho.morphosmart.sdk.TemplateList;
 
 import java.io.BufferedInputStream;
 
@@ -18,6 +19,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 
 public class DummyDeviceManager implements IDeviceManager{
@@ -139,4 +141,5 @@ public class DummyDeviceManager implements IDeviceManager{
     public boolean isPermissionAcquired() {
         return true;
     }
+
 }
