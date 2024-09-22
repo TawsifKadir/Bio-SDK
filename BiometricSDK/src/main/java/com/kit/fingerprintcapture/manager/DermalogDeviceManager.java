@@ -224,9 +224,9 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
     public long closeDevice() {
         long ret = ErrorCodes.MORPHO_OK;
         try {
-            mainActivity.unbindService(serviceConn);
-            ret = closeMorphoDevice();
+            closeScanner();
         }catch(Exception exc){
+            ret = com.dermalog.common.exception.ErrorCodes.FPC_ERROR_EMPTY_HANDLE;
             Log.e(TAG,"In CloseDevice error : "+exc.getMessage());
         }
         deviceIsSet = false;
@@ -237,7 +237,7 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
     public long deInitDevice() {
         long ret = ErrorCodes.MORPHO_OK;
         if(deviceIsSet){
-            ret = closeMorphoDevice();
+            uninitializeSDK();
             deviceIsSet = false;
         }
         return ret;
@@ -270,6 +270,34 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
             Toast.makeText(mainActivity, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
 //            txtScore.setText("FC3\nN/A");
         }
+    }
+
+    private void uninitializeSDK() {
+        closeScanner();
+
+        if (biometricsSdk != null) {
+            biometricsSdk.dispose();
+            biometricsSdk = null;
+        }
+
+        if (fc3Encoder != null) {
+            try {
+                fc3Encoder.close();
+            } catch (FC3Exception e) {
+                e.printStackTrace();
+            }
+            fc3Encoder = null;
+        }
+
+        if (icDecoder != null) {
+            try {
+                icDecoder.close();
+            } catch (DICException e) {
+                e.printStackTrace();
+            }
+            icDecoder = null;
+        }
+
     }
 
     void getPermissions() {
@@ -767,6 +795,7 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
 
         return ErrorCodes.MORPHO_OK;
     }
+
     // Close the USB device
     public long closeMorphoDevice(){
 

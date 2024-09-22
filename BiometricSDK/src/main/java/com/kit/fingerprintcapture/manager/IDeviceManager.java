@@ -13,5 +13,4 @@ public interface IDeviceManager {
     boolean isDeviceOpen();
     boolean isPermissionAcquired();
 
-
 }

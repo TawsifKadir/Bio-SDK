@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-//    id 'com.android.library'
+//    alias(libs.plugins.androidApplication)
+    id 'com.android.library'
 
 }
 
@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
 //        applicationId "com.kit.biometricsdk"
-        applicationId "com.karooth.bio"
+//        applicationId "com.karooth.bio"
         minSdk 24
         targetSdk 34
 
@@ -26,7 +26,7 @@ android {
         //DermalogFingerCode3 and DermalogNistQualityCheck require a license if no DERMALOG scanner is attached (e.g. SVT4500SE and SVT5008).
         buildConfigField "String", "LICENSE", "\"eyJ2ZXJzaW9uIjoxLCJjcmVhdGVkIjoiMjAyNC0wOC0xNCIsImN1c3RvbWVyIjoiZmFpc2FsQGthcm9vdGhpdGJkLmNvbSIsIm9yZGVyIjoiaHR0cHM6Ly90aWNrZXQuZGMuZGVybWFsb2cuY29tL290cnMvaW5kZXgucGw/QWN0aW9uPUFnZW50VGlja2V0Wm9vbTtUaWNrZXRJRD0xMTA4MCM5MjUxMSIsImxpY2Vuc2VUeXBlIjoiQVBQTElDQVRJT04iLCJsaWNlbnNlSWQiOiIzZWFjYjMwYmExZTUyOGEzMGRiYjM4Njg4N2ExOTI1NWMwMWMxYmFmNGY1ODg5YzE4OTcwZDU0OWNkNmNmOTA5Iiwib3MiOiJBbmRyb2lkIiwic2RrcyI6W3sicHJvZHVjdElkIjoxMTAxMDAyLCJkZXNjcmlwdGlvbiI6IkZpbmdlckNvZGUzIn1dfQ==.MEUCIBfh0aejrV2L54sLUHiGRLrIVDhlHyw5ZhFoyaIBsmAhAiEAgtfwbeBN9H2NzdS0OlxFt1JvNEtucWYIoxMv31L6f50=\""
         buildConfigField "String", "HALDEVICE", "\"\""
-        setProperty("archivesBaseName", "DermalogHAL-$versionName")
+        setProperty("archivesBaseName", "BiometricSDK-Dermalog-v$versionName")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
