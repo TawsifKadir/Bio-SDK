@@ -5,17 +5,14 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ContextWrapper;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.BatteryManager;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Toast;
 
 
@@ -26,23 +23,21 @@ import com.idemia.peripherals.PeripheralsPowerInterface;
 import com.morpho.android.usb.USBManager;
 import com.morpho.morphosmart.sdk.CallbackMask;
 import com.morpho.morphosmart.sdk.CallbackMessage;
-import com.morpho.morphosmart.sdk.Coder;
+
 import com.morpho.morphosmart.sdk.CompressionAlgorithm;
 import com.morpho.morphosmart.sdk.CustomInteger;
 import com.morpho.morphosmart.sdk.DetectionMode;
-import com.morpho.morphosmart.sdk.EnrollmentType;
+
 import com.morpho.morphosmart.sdk.ErrorCodes;
 import com.morpho.morphosmart.sdk.LatentDetection;
 import com.morpho.morphosmart.sdk.MorphoDevice;
 import com.morpho.morphosmart.sdk.MorphoImage;
-import com.morpho.morphosmart.sdk.Template;
-import com.morpho.morphosmart.sdk.TemplateFVPType;
-import com.morpho.morphosmart.sdk.TemplateList;
-import com.morpho.morphosmart.sdk.TemplateType;
 
 import java.nio.ByteBuffer;
+
 import java.util.Observable;
 import java.util.Observer;
+
 
 public class MorphoDeviceManager implements IDeviceManager,Observer{
 
@@ -62,23 +57,18 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
 
     private PeripheralsPowerInterface mPeripheralsInterface;
 
+    private String mErr = "";
+
     private ServiceConnection serviceConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mPeripheralsInterface = PeripheralsPowerInterface.Stub.asInterface(service);
 
             if(BuildConfig.isDebug) {
+                showToastMessage("aidl connect succes",Toast.LENGTH_LONG);
                 Log.d(TAG, "aidl connect succes");
             }
 
-            if (!getFingerprintSensorState()){
-                android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(mainActivity).create();
-                alertDialog.setCancelable(false);
-                alertDialog.setTitle(R.string.app_name);
-                alertDialog.setMessage(mainActivity.getString(R.string.noAccessToDevice));
-                alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Ok", (DialogInterface.OnClickListener) null);
-                alertDialog.show();
-            }
         }
 
         @Override
@@ -87,6 +77,7 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
 
             if(BuildConfig.isDebug) {
                 Log.d(TAG, "aidl disconnected");
+                showToastMessage("aidl disconnected",Toast.LENGTH_LONG);
             }
         }
     };
@@ -113,12 +104,24 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
         Log.d(TAG, "initMorphoDevice");
 
         try {
+
             if(!mainActivity.bindService(getAidlIntent(), serviceConn, Service.BIND_AUTO_CREATE)) {
-                Log.e(TAG, "System couldn't find the service");
-                Toast.makeText(mainActivity, "System couldn't find peripherals service", Toast.LENGTH_SHORT).show();
+                if(BuildConfig.isDebug) {
+                    Log.e(TAG, "System couldn't find the service");
+                    Toast.makeText(mainActivity, "System couldn't find peripherals service", Toast.LENGTH_SHORT).show();
+                }
                 deviceIsSet = false;
                 return ErrorCodes.CLASS_NOT_INSTANTIATED;
             }
+
+            if(BuildConfig.isDebug) {
+                showToastMessage("Fingerprint Sensor State : " + getFingerprintSensorState(), Toast.LENGTH_LONG);
+            }
+
+//            if(!getFingerprintSensorState()){
+//                showNoAccessToDevice();
+//                return ErrorCodes.MORPHOERR_INTERNAL;
+//            }
 
             // On Morphotablet, 3rd parameter (enableWakeLock) must always be true
             USBManager.getInstance().initialize(mainActivity, "com.morpho.morphosample.USB_ACTION", true);
@@ -129,26 +132,9 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
             if (ret != ErrorCodes.MORPHO_OK)
                 return ret;
 
+
             if (nbUsbDevice.getValueOf() != 1) {
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(mainActivity).create();
-                        alertDialog.setCancelable(false);
-                        alertDialog.setTitle(R.string.app_name);
-                        alertDialog.setMessage(mainActivity.getString(R.string.noAccessToDevice));
-                        alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Ok", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                mainActivity.finish();
-                            }
-                        });
-                        alertDialog.show();
-                    }
-                });
-
-                return nbUsbDevice.getValueOf();
-
+                return ErrorCodes.MORPHOERR_UNAVAILABLE;
             } else {
                 String sensorName = md.getUsbDeviceName(0); // We use first CBM found
                 ret = md.openUsbDevice(sensorName, 0);
@@ -334,22 +320,12 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
                 try {
                     int ret = 0;
                     int timeout = 30;
-                    final int acquisitionThreshold = 0;
-                    int advancedSecurityLevelsRequired = 0;
-                    int fingerNumber = 1;
+                    final int acquisitionThreshold = 80;
 
-                    TemplateType templateType = TemplateType.MORPHO_PK_ISO_FMR;
-                    TemplateFVPType templateFVPType = TemplateFVPType.MORPHO_NO_PK_FVP;
-                    int maxSizeTemplate = 512;
-
-                    EnrollmentType enrollType = EnrollmentType.ONE_ACQUISITIONS;
-                    LatentDetection latentDetection = LatentDetection.LATENT_DETECT_ENABLE;
-
-                    Coder coderChoice = Coder.MORPHO_DEFAULT_CODER;
                     int detectModeChoice = DetectionMode.MORPHO_ENROLL_DETECT_MODE.getValue()
                             | DetectionMode.MORPHO_FORCE_FINGER_ON_TOP_DETECT_MODE.getValue();//18;
 
-                    TemplateList templateList = new TemplateList();
+                    LatentDetection latentDetection = LatentDetection.LATENT_DETECT_ENABLE;
 
                     // Define the messages sent through the callback
                     int callbackCmd = CallbackMask.MORPHO_CALLBACK_COMMAND_CMD.getValue()
@@ -364,6 +340,7 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
                     ret = morphoDevice.getImage(timeout, acquisitionThreshold, CompressionAlgorithm.MORPHO_NO_COMPRESS,
                             0, detectModeChoice, latentDetection, nowImage, callbackCmd,
                             MorphoDeviceManager.this);
+
                     if(BuildConfig.isDebug) {
                         Log.d(TAG, "morphoDeviceCapture ret = " + ret);
                     }
@@ -384,6 +361,8 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
 
                     } else {
 
+                        deviceDataConsumer.onCaptureCmd("Fingerprint Captured. Please wait...");
+
                         if(nowImage.getImage()!=null){
                             int imageRowNumber = nowImage.getMorphoImageHeader().getNbRow();
                             int imageColumnNumber = nowImage.getMorphoImageHeader().getNbColumn();
@@ -391,7 +370,6 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
                             mImageWidth = imageColumnNumber;
                             mImageHeight = imageRowNumber;
                             mImageData = nowBuffer.array();
-
                         }
 
                         deviceDataConsumer.onFingerprintData(mImageData,mImageWidth,mImageHeight,mQualityScore,ErrorCodes.MORPHO_OK);
@@ -494,6 +472,12 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
         Toast toast = Toast.makeText(mainActivity, msg, length);
         toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 180);
         toast.show();
+    }
+
+
+
+    public MorphoDevice  getDeviceHandle(){
+        return this.morphoDevice;
     }
 
 }

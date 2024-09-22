@@ -104,7 +104,7 @@ android {
     compileSdkVersion 31
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 31
 
         versionCode openCVersionCode
@@ -135,6 +135,7 @@ android {
             packagingOptions {
                 doNotStrip '**/*.so'  // controlled by OpenCV CMake scripts
             }
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }

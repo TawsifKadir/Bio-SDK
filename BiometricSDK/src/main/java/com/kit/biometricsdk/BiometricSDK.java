@@ -17,10 +17,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.kit.fingerprintcapture.model.FingerprintData;
+import com.kit.photocapture.PhotoCaptureActivity;
 import com.kit.photocapture.Utility;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class BiometricSDK extends AppCompatActivity {
     private Button mCloseBtn;
@@ -50,7 +55,7 @@ public class BiometricSDK extends AppCompatActivity {
         mPhotoCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent nowIntent = new Intent(BiometricSDK.this,com.kit.photocapture.PhotoCaptureActivity.class);
+                Intent nowIntent = new Intent(BiometricSDK.this, PhotoCaptureActivity.class);
                 startActivityForResult(nowIntent,2);
             }
         });
@@ -59,6 +64,7 @@ public class BiometricSDK extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent nowIntent = new Intent(BiometricSDK.this,com.kit.fingerprintcapture.FingerprintCaptureActivity.class);
+                nowIntent.putExtra("CAPTURE_TYPE","VERIFICATION");
                 startActivityForResult(nowIntent,3);
             }
         });
@@ -107,6 +113,28 @@ public class BiometricSDK extends AppCompatActivity {
             }
         }else if(requestCode==3){
             Log.d(TAG, "Returned from fingerprint capture");
+
+            List<String> fpName = Arrays.asList("left_small","left_ring","left_middle","left_index","left_thumb","right_small","right_ring","right_middle","right_index","right_thumb");
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                Log.d(TAG, "[TRACE 1]");
+                fpName.stream().forEach(new Consumer<String>() {
+                    @Override
+                    public void accept(String nowName) {
+                        Log.d(TAG, "nowName : "+nowName);
+                        if(data!=null && data.getExtras().get(nowName)!=null){
+                            Log.d(TAG, "[TRACE 2]");
+                            FingerprintData fpData = (FingerprintData)data.getExtras().get(nowName);
+                            int i = (fpData.getFingerprintData() != null)
+                                    ? Log.d(TAG, "Data Length for " + nowName + " is " + fpData.getFingerprintData().length)
+                                    : Log.d(TAG, "Empty Data Length for " + nowName);
+                        }
+                    }
+                });
+            }else{
+                Log.d(TAG, "SDK not suported");
+            }
+
         }
     }
 

@@ -1,5 +1,5 @@
 {
-  "installationFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
+  "installationFolder": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }
