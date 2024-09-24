@@ -100,6 +100,7 @@ dependencies {
 
     implementation "com.dermalog.android:DermalogHardwareDevicesCommon:2.+"
     implementation 'com.dermalog.android.biometricpassportsdk:DermalogBiometricPassportSdk:1.+'
+    implementation 'com.dermalog.android:DermalogImageContainer:2.+'
     implementation 'com.dermalog.android:DermalogFingerCode3:4.+'
 
     //SVT5008 uses a Integrated Biometrics or Suprema fingerprint scanner

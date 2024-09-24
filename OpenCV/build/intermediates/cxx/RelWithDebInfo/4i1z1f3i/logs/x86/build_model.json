@@ -1,16 +1,16 @@
 {
   "info": {
-    "name": "arm64-v8a",
-    "bitness": 64,
+    "name": "x86",
+    "bitness": 32,
     "isDefault": true,
     "isDeprecated": false,
-    "architecture": "arm64",
-    "triple": "aarch64-linux-android",
-    "llvmTriple": "aarch64-none-linux-android"
+    "architecture": "x86",
+    "triple": "i686-linux-android",
+    "llvmTriple": "i686-none-linux-android"
   },
-  "cxxBuildFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a",
-  "soFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\Debug\\462g1z24\\obj\\arm64-v8a",
-  "soRepublishFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a",
+  "cxxBuildFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\RelWithDebInfo\\4i1z1f3i\\x86",
+  "soFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\RelWithDebInfo\\4i1z1f3i\\obj\\x86",
+  "soRepublishFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cmake\\release\\obj\\x86",
   "abiPlatformVersion": 24,
   "cmake": {
     "effectiveConfiguration": {
@@ -24,10 +24,13 @@
     ],
     "cFlagsList": [],
     "cppFlagsList": [],
-    "variantName": "debug",
-    "isDebuggableEnabled": true,
+    "variantName": "release",
+    "isDebuggableEnabled": false,
     "validAbiList": [
-      "arm64-v8a"
+      "armeabi-v7a",
+      "arm64-v8a",
+      "x86",
+      "x86_64"
     ],
     "buildTargetSet": [
       "opencv_jni_shared"
@@ -143,7 +146,6 @@
         "rootBuildGradleFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2",
         "sdkFolder": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "arm64-v8a,armeabi-v7a,armeabi",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },
@@ -155,34 +157,34 @@
     "prefabPackages": [],
     "prefabPackageConfigurations": [],
     "stlType": "c++_shared",
-    "optimizationTag": "Debug"
+    "optimizationTag": "RelWithDebInfo"
   },
   "buildSettings": {
     "environmentVariables": []
   },
-  "prefabFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\prefab\\arm64-v8a",
+  "prefabFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\RelWithDebInfo\\4i1z1f3i\\prefab\\x86",
   "isActiveAbi": true,
-  "fullConfigurationHash": "462g1z244n72b5d3s4r5kh1a1g3d5pc8p173e5yl6z2v2ha6638g4r6c",
-  "fullConfigurationHashKey": "# Values used to calculate the hash in this folder name.\n# Should not depend on the absolute path of the project itself.\n#   - AGP: 8.3.0.\n#   - $NDK is the path to NDK 25.1.8937393.\n#   - $PROJECT is the path to the parent folder of the root Gradle build file.\n#   - $ABI is the ABI to be built with. The specific value doesn\u0027t contribute to the value of the hash.\n#   - $HASH is the hash value computed from this text.\n#   - $CMAKE is the path to CMake 3.22.1.\n#   - $NINJA is the path to Ninja.\n-H$PROJECT/OpenCV/libcxx_helper\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_SYSTEM_VERSION\u003d24\n-DANDROID_PLATFORM\u003dandroid-24\n-DANDROID_ABI\u003d$ABI\n-DCMAKE_ANDROID_ARCH_ABI\u003d$ABI\n-DANDROID_NDK\u003d$NDK\n-DCMAKE_ANDROID_NDK\u003d$NDK\n-DCMAKE_TOOLCHAIN_FILE\u003d$NDK/build/cmake/android.toolchain.cmake\n-DCMAKE_MAKE_PROGRAM\u003d$NINJA\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003d$PROJECT/OpenCV/build/intermediates/cxx/Debug/$HASH/obj/$ABI\n-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003d$PROJECT/OpenCV/build/intermediates/cxx/Debug/$HASH/obj/$ABI\n-DCMAKE_BUILD_TYPE\u003dDebug\n-B$PROJECT/OpenCV/.cxx/Debug/$HASH/$ABI\n-GNinja\n-DANDROID_STL\u003dc++_shared",
+  "fullConfigurationHash": "4i1z1f3i3r73484qhyfr452t4y3g592a362w452wm4253d3i1f5a25p1e",
+  "fullConfigurationHashKey": "# Values used to calculate the hash in this folder name.\n# Should not depend on the absolute path of the project itself.\n#   - AGP: 8.3.0.\n#   - $NDK is the path to NDK 25.1.8937393.\n#   - $PROJECT is the path to the parent folder of the root Gradle build file.\n#   - $ABI is the ABI to be built with. The specific value doesn\u0027t contribute to the value of the hash.\n#   - $HASH is the hash value computed from this text.\n#   - $CMAKE is the path to CMake 3.22.1.\n#   - $NINJA is the path to Ninja.\n-H$PROJECT/OpenCV/libcxx_helper\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_SYSTEM_VERSION\u003d24\n-DANDROID_PLATFORM\u003dandroid-24\n-DANDROID_ABI\u003d$ABI\n-DCMAKE_ANDROID_ARCH_ABI\u003d$ABI\n-DANDROID_NDK\u003d$NDK\n-DCMAKE_ANDROID_NDK\u003d$NDK\n-DCMAKE_TOOLCHAIN_FILE\u003d$NDK/build/cmake/android.toolchain.cmake\n-DCMAKE_MAKE_PROGRAM\u003d$NINJA\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003d$PROJECT/OpenCV/build/intermediates/cxx/RelWithDebInfo/$HASH/obj/$ABI\n-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003d$PROJECT/OpenCV/build/intermediates/cxx/RelWithDebInfo/$HASH/obj/$ABI\n-DCMAKE_BUILD_TYPE\u003dRelWithDebInfo\n-B$PROJECT/OpenCV/.cxx/RelWithDebInfo/$HASH/$ABI\n-GNinja\n-DANDROID_STL\u003dc++_shared",
   "configurationArguments": [
     "-HC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\libcxx_helper",
     "-DCMAKE_SYSTEM_NAME\u003dAndroid",
     "-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON",
     "-DCMAKE_SYSTEM_VERSION\u003d24",
     "-DANDROID_PLATFORM\u003dandroid-24",
-    "-DANDROID_ABI\u003darm64-v8a",
-    "-DCMAKE_ANDROID_ARCH_ABI\u003darm64-v8a",
+    "-DANDROID_ABI\u003dx86",
+    "-DCMAKE_ANDROID_ARCH_ABI\u003dx86",
     "-DANDROID_NDK\u003dC:\\Users\\User\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393",
     "-DCMAKE_ANDROID_NDK\u003dC:\\Users\\User\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393",
     "-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\User\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\build\\cmake\\android.toolchain.cmake",
     "-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\User\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
-    "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\Debug\\462g1z24\\obj\\arm64-v8a",
-    "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\Debug\\462g1z24\\obj\\arm64-v8a",
-    "-DCMAKE_BUILD_TYPE\u003dDebug",
-    "-BC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a",
+    "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\RelWithDebInfo\\4i1z1f3i\\obj\\x86",
+    "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\RelWithDebInfo\\4i1z1f3i\\obj\\x86",
+    "-DCMAKE_BUILD_TYPE\u003dRelWithDebInfo",
+    "-BC:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\RelWithDebInfo\\4i1z1f3i\\x86",
     "-GNinja",
     "-DANDROID_STL\u003dc++_shared"
   ],
-  "stlLibraryFile": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\libc++_shared.so",
-  "intermediatesParentFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\Debug\\462g1z24"
+  "stlLibraryFile": "C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\i686-linux-android\\libc++_shared.so",
+  "intermediatesParentFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\cxx\\RelWithDebInfo\\4i1z1f3i"
 }
