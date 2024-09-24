@@ -29,6 +29,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dermalog.afis.fingercode3.Encoder;
+import com.dermalog.afis.fingercode3.FC3Exception;
+import com.dermalog.afis.fingercode3.Matcher;
+import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.dermalog.biometricpassportsdk.utils.BitmapUtil;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
@@ -158,28 +162,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         mfpMatchHandler = new FingerprintMatchingHandler(this);
 
-        /*
-        jsgfpLib = new JSGFPLib(FingerprintCaptureActivity.this,(UsbManager)getSystemService(Context.USB_SERVICE));
 
-        if (jsgfpLib != null) {
-            Log.d(TAG,"JSGFPLib loaded successfully??????");
-
-            long err = jsgfpLib.Init(SGFDxDeviceName.SG_DEV_AUTO);
-
-           showToast("%%%%% Returned value = "+err);
-            Log.d(TAG,"%%%%% Returned value = "+err);
-            Log.d(TAG,"^^^^^^^ GetLastError  = "+jsgfpLib.GetLastError());
-
-            jsgfpLib.SetTemplateFormat(SGFDxTemplateFormat.TEMPLATE_FORMAT_ISO19794 );
-
-        }
-        else{
-            Log.d(TAG,"Could not load JSGFPLib>>>>>");
-        }
-        */
-
-
-        //        jsgfpLib.GetIsoCompactMatchingScore()
         mReferenceTemplateList = new HashMap<>();
 
         mDoneBtn.setOnClickListener(new View.OnClickListener() {
@@ -267,10 +250,18 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 }else{
                     mFingerprintText.setVisibility(View.VISIBLE);
                     mClickFingerprint.setText(R.string.click_fingerprint);
+
                     if(!isDummyDevice) {
-                        mfpMatchHandler.setMorphoDevice( ((DermalogDeviceManager)mDeviceManager).getDeviceHandle() );
+                        try {
+                            Matcher nowMatcher = new Matcher();
+                            mfpMatchHandler.setMatcher(nowMatcher);
+                        } catch (FC3Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(this, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
+                            mfpMatchHandler.setMatcher(null);
+                        }
                     }else{
-                        mfpMatchHandler.setMorphoDevice(null);
+                        mfpMatchHandler.setMatcher(null);
                     }
                 }
             }
@@ -293,7 +284,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         mDeviceManager.deInitDevice();
 
         if(mfpMatchHandler!=null){
-            mfpMatchHandler.setMorphoDevice(null);
+            mfpMatchHandler.setMatcher(null);
         }
 
         if(mFPStartCaptureService!=null){
@@ -535,7 +526,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                             List<MatchResult> matchList = new ArrayList<>();
 
                             mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID().getID(),
-                                    template, mReferenceTemplateList.values().stream().collect(Collectors.toList()), matchList, TemplateType.MORPHO_PK_ISO_FMR,TemplateType.MORPHO_PK_ISO_FMR);
+                                    template, mReferenceTemplateList.values().stream().collect(Collectors.toList()), matchList, TemplateFormat.ISO19794_2_2005,TemplateFormat.ISO19794_2_2005);
 
                             if (matchList.size() > 0) {
 

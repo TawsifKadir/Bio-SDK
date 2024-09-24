@@ -86,17 +86,16 @@ import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 
-public class DermalogDeviceManager implements IDeviceManager,Observer{
+public class DermalogDeviceManager implements IDeviceManager{
 
     private static final int LEFT_SHIFT_AMOUNT = 20;
 
-    private String TAG = "MorphoDeviceManager02";
+    private String TAG = "DermalogDeviceManager";
     private DeviceDataCallback deviceDataConsumer;
     private Activity mainActivity;
 
     private ProcessImageTask imageTask;
 
-    private MorphoDevice morphoDevice;
 
     private boolean capturing = false;
     private boolean deviceIsSet = false;
@@ -117,41 +116,11 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
 
     private Encoder fc3Encoder;
 
-    private ServiceConnection serviceConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mPeripheralsInterface = PeripheralsPowerInterface.Stub.asInterface(service);
-
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "aidl connect succes");
-            }
-
-            if (!getFingerprintSensorState()){
-                android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(mainActivity).create();
-                alertDialog.setCancelable(false);
-                alertDialog.setTitle(R.string.app_name);
-                alertDialog.setMessage(mainActivity.getString(R.string.noAccessToDevice));
-                alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Ok", (DialogInterface.OnClickListener) null);
-                alertDialog.show();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mPeripheralsInterface = null;
-
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "aidl disconnected");
-            }
-        }
-    };
-
 
     public DermalogDeviceManager(DeviceDataCallback deviceDataConsumer, Activity mainActivity) {
         this.deviceDataConsumer = deviceDataConsumer;
         this.mainActivity = mainActivity;
 
-        morphoDevice=null;
         mImageData=null;
         mImageWidth=0;
         mImageHeight=0;
@@ -164,8 +133,7 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
     public long initDevice() {
 
         int ret = 0;
-        MorphoDevice md = null;
-        Log.d(TAG, "initMorphoDevice");
+        Log.d(TAG, "initDermalogDevice");
 
         com.dermalog.afis.imagecontainer.Android.SetContext(mainActivity);
         if (!BuildConfig.LICENSE.isEmpty()) {
@@ -182,7 +150,6 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
             return com.dermalog.common.exception.ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
         }
 
-        morphoDevice=md;
         deviceIsSet = true;
         return ErrorCodes.MORPHO_OK;
     }
@@ -206,19 +173,6 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
         } catch (BiometricPassportException e) {
             Log.d(TAG, "startCapture() called but failed" + e.getMessage());
         }
-//        if (!capturing){
-//            capturing = true;
-//            ret = morphoDeviceCapture();
-//        }
-//        else if (capturing && deviceIsSet) {
-//            ret = closeDevice();
-//            capturing = false;
-//            deviceIsSet = false;
-//        }
-//        else{
-//            showToastMessage("Device is being initialized, please try again", Toast.LENGTH_SHORT);
-//            ret = ErrorCodes.MORPHOERR_OTP_NOT_INITIALIZED;
-//        }
 
         return ret;
     }
@@ -344,8 +298,6 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
                     openScanner();
                 } catch (Exception e) {
                     Toast.makeText(mainActivity, "Error opening scanner", Toast.LENGTH_LONG).show();
-//                    btnCaptureLeft.setEnabled(false);
-//                    btnCaptureRight.setEnabled(false);
                 }
             }
 
@@ -428,64 +380,9 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
                         }
                         break;
                 }
-//                switch (deviceCallbackEventArgument.getEventId()) {
-//                    case START:
-//                       break;
-//
-//                    case ERROR:
-//                    break;
-//
-//                    case FINGER_TOUCH:
-//                        break;
-//
-//                    case FINGER_IMAGE:
-////                    showHint("FINGER_IMAGE");
-//                        if (imageArgument != null) {
-//                            try {
-//                                bmp = BitmapUtil.fromImageArgument(imageArgument);
-////                            displayImage(bmp);
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                        if (bmp != null){
-//                            deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
-//                        }
-//                        break;
-//
-//                    case FINGER_DETECT:
-////                    showHint("FINGER_DETECT");
-////                    processImage(imageArgument, segments);
-//                        byte[] imageData = null;
-//                        if (imageArgument != null) {
-//                            try {
-//                                bmp = BitmapUtil.fromImageArgument(imageArgument);
-//                                imageData = imageArgument.bitmapInfoHeaderData().getRawData();
-////                            displayImage(bmp);
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//
-//                        if (bmp != null && imageData != null){
-//                            deviceDataConsumer.onFingerprintData(imageData, bmp.getWidth(), bmp.getHeight(), 0, com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS);
-//                        }
-//                        break;
-//
-//                    case STOP:
-//                        break;
-//
-//                }
-
 
             }
         });
-
-
-//        runOnUiThread(() -> {
-//            btnCaptureLeft.setEnabled(true);
-//            btnCaptureRight.setEnabled(true);
-//        });
 
     }
 
@@ -632,267 +529,10 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
         }
     }
 
-    @Override
-    public void update(Observable observable, Object data) {
-        try
-        {
-            // convert the object to a callback back message.
-            CallbackMessage message = (CallbackMessage) data;
-            int type = message.getMessageType();
-
-            String strMessage = "";
-            switch (type)
-            {
-
-                case 1: {
-                    // message is a command.
-                    Integer command = (Integer) message.getMessage();
-
-                    // Analyze the command.
-                    switch (command) {
-                        case 0:
-                            strMessage = "No finger detected";
-                            break;
-                        case 1:
-                            strMessage = "Move finger up";
-                            break;
-                        case 2:
-                            strMessage = "Move finger down";
-                            break;
-                        case 3:
-                            strMessage = "Move finger left";
-                            break;
-                        case 4:
-                            strMessage = "Move finger right";
-                            break;
-                        case 5:
-                            strMessage = "Press harder";
-                            break;
-                        case 6:
-                            strMessage = "Remove finger";
-                            break;
-                        case 7:
-                            strMessage = "Remove finger";
-                            break;
-                        case 8:
-                            strMessage = "Finger detected";
-                            break;
-                    }
-                    deviceDataConsumer.onCaptureCmd(strMessage);
-                    break;
-                }
-                case 2: {
-                    // message is a low resolution image, display it.
-                    byte[] image = (byte[]) message.getMessage();
-
-                    MorphoImage morphoImage = MorphoImage.getMorphoImageFromLive(image);
-                    int imageRowNumber = morphoImage.getMorphoImageHeader().getNbRow();
-                    int imageColumnNumber = morphoImage.getMorphoImageHeader().getNbColumn();
-                    final Bitmap imageBmp = Bitmap.createBitmap(imageColumnNumber, imageRowNumber, Bitmap.Config.ALPHA_8);
-                    ByteBuffer nowBuffer = ByteBuffer.wrap(morphoImage.getImage(), 0, morphoImage.getImage().length);
-
-                    mImageWidth = imageColumnNumber;
-                    mImageHeight = imageRowNumber;
-                    mImageData = nowBuffer.array();
-                    imageBmp.copyPixelsFromBuffer(nowBuffer);
-                    deviceDataConsumer.onFingerprintPreview(imageBmp, imageBmp.getWidth(), imageBmp.getHeight());
-                }
-                break;
-                case 3:
-                    mQualityScore = (Integer)message.getMessage();
-                    break;
-
-            }
-
-        }
-        catch (Throwable e)
-        {
-            Log.e("ProcessObserver", "update : " + e.getMessage());
-
-        }
-    }
-
-    /**************************** CAPTURE *********************************/
-    public long morphoDeviceCapture() {
-
-        if (morphoDevice == null){
-            long ret = initDevice();
-            if(ret!=ErrorCodes.MORPHO_OK) {
-                return ret;
-            }
-        }
-        /********* CAPTURE THREAD *************/
-        Thread commandThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    int ret = 0;
-                    int timeout = 30;
-                    final int acquisitionThreshold = 0;
-                    int advancedSecurityLevelsRequired = 0;
-                    int fingerNumber = 1;
-
-                    TemplateType templateType = TemplateType.MORPHO_PK_ISO_FMR;
-                    TemplateFVPType templateFVPType = TemplateFVPType.MORPHO_NO_PK_FVP;
-                    int maxSizeTemplate = 512;
-
-                    EnrollmentType enrollType = EnrollmentType.ONE_ACQUISITIONS;
-                    LatentDetection latentDetection = LatentDetection.LATENT_DETECT_ENABLE;
-
-                    Coder coderChoice = Coder.MORPHO_DEFAULT_CODER;
-                    int detectModeChoice = DetectionMode.MORPHO_ENROLL_DETECT_MODE.getValue()
-                            | DetectionMode.MORPHO_FORCE_FINGER_ON_TOP_DETECT_MODE.getValue();//18;
-
-                    TemplateList templateList = new TemplateList();
-
-                    // Define the messages sent through the callback
-                    int callbackCmd = CallbackMask.MORPHO_CALLBACK_COMMAND_CMD.getValue()
-                            | CallbackMask.MORPHO_CALLBACK_IMAGE_CMD.getValue()
-                            | CallbackMask.MORPHO_CALLBACK_CODEQUALITY.getValue()
-                            | CallbackMask.MORPHO_CALLBACK_DETECTQUALITY.getValue();
-
-                    MorphoImage nowImage = new MorphoImage();
-
-                    /********* CAPTURE *************/
-
-                    ret = morphoDevice.getImage(timeout, acquisitionThreshold, CompressionAlgorithm.MORPHO_NO_COMPRESS,
-                            0, detectModeChoice, latentDetection, nowImage, callbackCmd,
-                            DermalogDeviceManager.this);
-                    if(BuildConfig.isDebug) {
-                        Log.d(TAG, "morphoDeviceCapture ret = " + ret);
-                    }
-
-                    if (ret != ErrorCodes.MORPHO_OK) {
-                        String err = "";
-                        if (ret == ErrorCodes.MORPHOERR_TIMEOUT) {
-                            err = "Capture failed : timeout";
-                        } else if (ret == ErrorCodes.MORPHOERR_CMDE_ABORTED) {
-                            err = "Capture aborted";
-                        } else if (ret == ErrorCodes.MORPHOERR_UNAVAILABLE) {
-                            err = "Device is not available";
-                        } else {
-                            err = "Error code is " + ret;
-                        }
-
-                        deviceDataConsumer.onCaptureError(err);
-
-                    } else {
-
-                        if(nowImage.getImage()!=null){
-                            int imageRowNumber = nowImage.getMorphoImageHeader().getNbRow();
-                            int imageColumnNumber = nowImage.getMorphoImageHeader().getNbColumn();
-                            ByteBuffer nowBuffer = ByteBuffer.wrap(nowImage.getImage(), 0, nowImage.getImage().length);
-                            mImageWidth = imageColumnNumber;
-                            mImageHeight = imageRowNumber;
-                            mImageData = nowBuffer.array();
-
-                        }
-
-                        deviceDataConsumer.onFingerprintData(mImageData,mImageWidth,mImageHeight,mQualityScore,ErrorCodes.MORPHO_OK);
-                    }
-                }catch(Exception exc){
-                    Log.e(TAG, "morphoDeviceCapture Error ");
-                }finally {
-                    DermalogDeviceManager.this.capturing = false;
-                }
-
-            }
-        });
-        commandThread.start();
-
-        return ErrorCodes.MORPHO_OK;
-    }
-
-    // Close the USB device
-    public long closeMorphoDevice(){
-
-        if(morphoDevice != null) {
-
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "closeMorphoDevice");
-            }
-
-            try {
-                morphoDevice.cancelLiveAcquisition();
-                morphoDevice.closeDevice();
-
-            } catch (Exception e) {
-                Log.e(TAG, "closeMorphoDevice : " + e.getMessage());
-                return ErrorCodes.MORPHOERR_CLOSE_COM;
-            }finally {
-                morphoDevice = null;
-            }
-        }
-        return ErrorCodes.MORPHO_OK;
-    }
-    private Intent getAidlIntent() {
-        Intent aidlIntent = new Intent();
-        aidlIntent.setAction("idemia.intent.action.CONN_PERIPHERALS_SERVICE_AIDL");
-        aidlIntent.setPackage("com.android.settings");
-        return aidlIntent;
-    }
-    public boolean getFingerprintSensorState(){
-        boolean ret = false;
-        int usbRole = -1;
-
-        try {
-            if (mPeripheralsInterface != null) {
-                ret = mPeripheralsInterface.getFingerPrintSwitch();
-                if (!ret){
-                    return false;
-                }
-
-                usbRole = mPeripheralsInterface.getUSBRole();
-                if (usbRole == 2){ // DEVICE mode: PC connection only
-                    return false;
-                }else if (usbRole == 1){ // HOST mode: Peripherals only
-                    return true;
-                }
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-
-        // Here, fingerprint sensor should be powered on, and USB role set to AUTO
-        // Check if tablet is plugged to the computer
-        if (!isDevicePluggedToPc()){
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isDevicePluggedToPc(){
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = mainActivity.registerReceiver(null, ifilter);
-
-        // Are we charging / charged?
-        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-
-        if (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL) {
-            // How are we charging?
-            int chargePlug = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-            if (chargePlug == BatteryManager.BATTERY_PLUGGED_USB) {
-                Log.d(TAG, "USB plugged");
-                return true;
-            }
-            if (chargePlug == BatteryManager.BATTERY_PLUGGED_AC) {
-                Log.d(TAG, "Powered by 3.5mm connector");
-                return false;
-            }
-        }
-
-        return false;
-    }
-
     private void showToastMessage(String msg, int length){
         Toast toast = Toast.makeText(mainActivity, msg, length);
         toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 180);
         toast.show();
-    }
-
-    public MorphoDevice getDeviceHandle(){
-        return morphoDevice;
     }
 
 }

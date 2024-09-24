@@ -4,7 +4,7 @@
             "outputFile": "org.opencv.test.OpenCV-mergeDebugAndroidTestResources-1:/values/values.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
+                    "source": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

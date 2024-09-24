@@ -9,26 +9,25 @@ import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.dermalog.afis.fingercode3.Matcher;
+import com.dermalog.afis.fingercode3.Template;
+
+
+import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.template.TemplateExtractor;
 
 import com.kit.fingerprintcapture.template.ISOTemplate;
-
-import com.morpho.morphosmart.sdk.CustomInteger;
-import com.morpho.morphosmart.sdk.ErrorCodes;
-import com.morpho.morphosmart.sdk.MorphoDevice;
-import com.morpho.morphosmart.sdk.ResultMatching;
-import com.morpho.morphosmart.sdk.Template;
-import com.morpho.morphosmart.sdk.TemplateList;
 import com.morpho.morphosmart.sdk.TemplateType;
 
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -39,7 +38,8 @@ public class FingerprintMatchingHandler {
     private Activity mActivity;
     private boolean isInitialized;
 
-    private MorphoDevice morphoDevice;
+
+    private Matcher matcher;
 
 
     public FingerprintMatchingHandler(Activity mActivity) {
@@ -107,10 +107,11 @@ public class FingerprintMatchingHandler {
     }
 
 
-    public void verifyFingerPrint(Integer fingerprintId, ISOTemplate searchTemplate, List<ISOTemplate> referenceTemplate, List<MatchResult> result,TemplateType subjectTmplType,TemplateType candidateTmplType){
+    public void verifyFingerPrint(Integer fingerprintId, ISOTemplate searchTemplate, List<ISOTemplate> referenceTemplateList, List<MatchResult> result,TemplateFormat subjectTmplType,TemplateFormat candidateTmplType){
 
         boolean isError = false;
         Throwable errorObject = null;
+        List<Double> matchScoreList = new ArrayList<>();
 
         if(BuildConfig.isDebug) {
             Log.d(TAG, "Entered verifiy Fingerprint");
@@ -118,78 +119,50 @@ public class FingerprintMatchingHandler {
 
         try {
 
-            if(this.morphoDevice==null) return;
+            if(this.matcher==null) return;
             if(searchTemplate==null) return;
-            if(referenceTemplate==null) return;
+            if(referenceTemplateList==null) return;
 
-            TemplateList probeTemplateList = new TemplateList();
-            TemplateList candidateTemplateList = new TemplateList();
 
             Template probeTemplate = new Template();
             probeTemplate.setData(searchTemplate.getIsoTemplate());
-            probeTemplate.setTemplateType(subjectTmplType);
-            probeTemplateList.putTemplate(probeTemplate);
+            probeTemplate.setFormat(subjectTmplType);
 
 
-            referenceTemplate.forEach(new Consumer<ISOTemplate>() {
+            referenceTemplateList.forEach(new Consumer<ISOTemplate>() {
                 @Override
                 public void accept(ISOTemplate referenceTemplate) {
-                    Template candidate = new Template();
-                    candidate.setTemplateType(candidateTmplType);
-                    candidate.setData(referenceTemplate.getIsoTemplate());
-
-                    candidateTemplateList.putTemplate(candidate);
-
+                    try {
+                        Template candidate = new Template();
+                        candidate.setFormat(candidateTmplType);
+                        candidate.setData(referenceTemplate.getIsoTemplate());
+                        double nowScore = matcher.Match(probeTemplate,candidate);
+                        if(nowScore>=30) {
+                            matchScoreList.add(nowScore);
+                        }
+                    }catch(Throwable t){
+                        Log.e(TAG, "Verify Fingerprint Error : "+t.getMessage());
+                        showToast("Verify Fingerprint Error : "+t.getMessage());
+                    }
                 }
             });
 
-            ResultMatching resultMatching = new ResultMatching();
-            int ret = 0;
-            CustomInteger matchingScore = new CustomInteger();
+            if(!matchScoreList.isEmpty()){
+                MatchResult mr = new MatchResult();
+                mr.setId(fingerprintId);
 
-            ret = morphoDevice.verifyMatch(MORPHO_FAR_6,probeTemplateList,candidateTemplateList,matchingScore);
-
-            if (ret != ErrorCodes.MORPHO_OK) {
-
-                String err = "";
-                // Check different return values
-                if (ret == ErrorCodes.MORPHOERR_TIMEOUT) {
-                    err = "Verify process failed : timeout";
-                } else if (ret == ErrorCodes.MORPHOERR_CMDE_ABORTED) {
-                    err = "Verify process aborted";
-                } else if (ret == ErrorCodes.MORPHOERR_UNAVAILABLE) {
-                    err = "Device is not available";
-                } else if (ret == ErrorCodes.MORPHOERR_INVALID_FINGER || ret == ErrorCodes.
-                        MORPHOERR_NO_HIT) {
-                    err = "Authentication or Identification failed";
-                } else {
-                    err = "Error code is " + ret;
-                }
-
-                if(BuildConfig.isDebug) {
-                    Log.e(TAG, "NO MATCH FOUND. Error = " + err);
-
-                    if (ret != ErrorCodes.MORPHOERR_INVALID_FINGER && ret != ErrorCodes.MORPHOERR_NO_HIT) {
-                        showToast("NO MATCH FOUND. Error = " + err);
+                Optional score = matchScoreList.stream().max(new Comparator<Double>() {
+                    @Override
+                    public int compare(Double o1, Double o2) {
+                        if(o1>o2) return o1.intValue();
+                        return o2.intValue();
                     }
+                });
+                mr.setMatchScore((int)score.get());
+                result.add(mr);
 
-                }
-
-            } else {
-                if (resultMatching != null) {
-
-                    if(BuildConfig.isDebug) {
-                        Log.d(TAG, "MATCH FOUND. MATCHING SCORE = " + resultMatching.getMatchingScore());
-                    }
-
-                    if(result!=null) {
-                        MatchResult mr = new MatchResult();
-                        mr.setId(fingerprintId);
-                        mr.setMatchScore(matchingScore.getValueOf());
-                        result.add(mr);
-                    }
-                }
             }
+
 
     }catch(Throwable t){
             isError=true;
@@ -220,7 +193,7 @@ public class FingerprintMatchingHandler {
             @Override
             public void accept(Integer biometricId, List<ISOTemplate> candidates) {
                 List<MatchResult> matchResultList = new ArrayList<>();
-                verifyFingerPrint(biometricId,subject,candidates, matchResultList,TemplateType.MORPHO_PK_ISO_FMR,TemplateType.MORPHO_PK_ISO_FMR_2011);
+                verifyFingerPrint(biometricId,subject,candidates, matchResultList,TemplateFormat.ISO19794_2_2005, TemplateFormat.ISO19794_2_2005);
                 if(matchResultList.size()>0){
                     result.add(matchResultList.get(0));
                 }
@@ -263,10 +236,7 @@ public class FingerprintMatchingHandler {
         });
     }
 
-    public void setMorphoDevice(MorphoDevice morphoDevice){
-        this.morphoDevice = morphoDevice;
-        if(this.morphoDevice==null){
-            this.morphoDevice=new MorphoDevice();
-        }
+    public void setMatcher(Matcher matcher){
+        this.matcher = matcher;
     }
 }
