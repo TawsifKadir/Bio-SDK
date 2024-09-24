@@ -531,7 +531,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        LoadingGifUtility.stopLoading(mFingerprintImage);
+//                                        LoadingGifUtility.stopLoading(mFingerprintImage);
                                         CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this, "Duplicate fingerprint captured. Please recapture different finger.");
                                     }
                                 });
@@ -576,8 +576,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             @Override
             public void run() {
                 try {
-                    LoadingGifUtility.startLoading(FingerprintCaptureActivity.this,mFingerprintImage,R.drawable.loading);
-//                    mFingerprintImage.setImageBitmap(img);
+//                    LoadingGifUtility.startLoading(FingerprintCaptureActivity.this,mFingerprintImage,R.drawable.loading);
+                    mFingerprintImage.setImageBitmap(img);
                 }catch (Exception exc){
                     Log.e(TAG,"Preview show error");
                 }

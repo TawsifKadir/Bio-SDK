@@ -263,7 +263,7 @@ public class DermalogDeviceManager implements IDeviceManager{
                     break;
 
                 case CAPTURE_MODE:
-                    scannerHandle.setFeature(FeatureId.CAPTURE_MODE, CaptureMode.FINGER_AUTO_DETECT_EMBEDDED.getValue());
+                    scannerHandle.setFeature(FeatureId.CAPTURE_MODE, CaptureMode.FINGER_AUTO_DETECT.getValue());
                     break;
             }
 
@@ -273,6 +273,7 @@ public class DermalogDeviceManager implements IDeviceManager{
             @Override
             public void onCall(Device device, DeviceCallbackEventArgument deviceCallbackEventArgument) {
 
+                Bitmap bmp = null;
                 ImageArgument imageArgument = null;
                 //Get detect image
                 for (EventArgument ea : deviceCallbackEventArgument.getArguments()) {
@@ -282,16 +283,25 @@ public class DermalogDeviceManager implements IDeviceManager{
                 }
 
                 switch (deviceCallbackEventArgument.getEventId()){
+                    case START:
+                        bmp = ImageProc.createEmptyBitmap(400,250);
+                        deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                        break;
                     case FINGER_DETECT:
                         capturing = false;
-                        Log.d(TAG, "FINGER DETECT");
+                        Log.d(TAG, "finger case: FINGER DETECT");
                         processImage(imageArgument,0);
                         break;
-                    default:
-                        Log.d(TAG, "NO FINGER DETECT");
+                    case FINGER_REMOVE:
+                        Log.d(TAG, "finger case: FINGER REMOVE");
+                        bmp = ImageProc.createEmptyBitmap(400,250);
+                        deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                        break;
+                    case FINGER_IMAGE:
+                        Log.d(TAG, "finger case: FINGER IMAGE");
                         if (imageArgument != null){
                             try {
-                                Bitmap bmp = BitmapUtil.fromImageArgument(imageArgument);
+                                bmp = BitmapUtil.fromImageArgument(imageArgument);
                                 if (bmp != null){
                                     Log.d(TAG, "onFingerprintPreview going with bitmap " + bmp);
                                     deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
@@ -300,7 +310,7 @@ public class DermalogDeviceManager implements IDeviceManager{
                                 throw new RuntimeException(e);
                             }
                         }else {
-                            Bitmap bmp = ImageProc.createPlaceholderBitmap(400,250,"Placeholder");
+                            bmp = ImageProc.createEmptyBitmap(400,250);
                             deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
                         }
                         break;

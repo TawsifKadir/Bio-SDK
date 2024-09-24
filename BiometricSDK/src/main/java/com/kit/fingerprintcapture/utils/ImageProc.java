@@ -98,11 +98,11 @@ public class ImageProc {
     }
 
     // Create a default bitmap with a solid color or text
-    public static Bitmap createPlaceholderBitmap(int width, int height, String placeholderText) {
+    public static Bitmap createEmptyBitmap(int width, int height) {
         Bitmap placeholderBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(placeholderBitmap);
-        canvas.drawColor(Color.LTGRAY); // Background color
+        canvas.drawColor(Color.WHITE); // Background color
 
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
@@ -110,7 +110,7 @@ public class ImageProc {
         paint.setTextAlign(Paint.Align.CENTER);
 
         // Draw the placeholder text in the center of the bitmap
-        canvas.drawText(placeholderText, width / 2, height / 2, paint);
+        canvas.drawText("", width / 2, height / 2, paint);
 
         return placeholderBitmap;
     }

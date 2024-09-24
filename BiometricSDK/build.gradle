@@ -106,7 +106,6 @@ dependencies {
     //SVT5008 uses a Integrated Biometrics or Suprema fingerprint scanner
     implementation "com.dermalog.android:DermalogHardwareSVT5008:1.+"
     implementation "com.dermalog.android.biometricpassportsdk:DermalogBPSupremaBioMiniPlugin:1.+"
-    implementation "com.dermalog.android.biometricpassportsdk:DermalogBPTF10:1.+"
 
     ////Photo Capture
     implementation ("com.github.yalantis:ucrop:2.2.8")
