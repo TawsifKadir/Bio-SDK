@@ -98,6 +98,24 @@ public class ImageProc {
         return bmpGrayscale;
     }
 
+    // Create a default bitmap with a solid color or text
+    public static Bitmap createPlaceholderBitmap(int width, int height, String placeholderText) {
+        Bitmap placeholderBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(placeholderBitmap);
+        canvas.drawColor(Color.LTGRAY); // Background color
+
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(40);
+        paint.setTextAlign(Paint.Align.CENTER);
+
+        // Draw the placeholder text in the center of the bitmap
+        canvas.drawText(placeholderText, width / 2, height / 2, paint);
+
+        return placeholderBitmap;
+    }
+
     public static Bitmap toBinary(Bitmap bmpOriginal)
     {
         int width, height;

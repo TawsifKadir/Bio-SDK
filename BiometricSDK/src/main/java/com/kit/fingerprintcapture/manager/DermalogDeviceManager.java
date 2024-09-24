@@ -56,9 +56,12 @@ import com.dermalog.hardware.DeviceManager;
 import com.dermalog.hardware.PowerManager;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
+import com.kit.fingerprintcapture.FingerprintCaptureActivity;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.idemia.peripherals.PeripheralsPowerInterface;
 import com.kit.fingerprintcapture.utils.FingerprintQualityCalculator;
+import com.kit.fingerprintcapture.utils.ImageProc;
+import com.kit.fingerprintcapture.utils.LoadingGifUtility;
 import com.kit.fingerprintcapture.utils.PowerSwitcherTask;
 import com.morpho.android.usb.USBManager;
 import com.morpho.morphosmart.sdk.CallbackMask;
@@ -383,7 +386,7 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
                     break;
 
                 case CAPTURE_MODE:
-                    scannerHandle.setFeature(FeatureId.CAPTURE_MODE, CaptureMode.FINGER_LIVE.getValue());
+                    scannerHandle.setFeature(FeatureId.CAPTURE_MODE, CaptureMode.FINGER_AUTO_DETECT_EMBEDDED.getValue());
                     break;
             }
 
@@ -401,26 +404,30 @@ public class DermalogDeviceManager implements IDeviceManager,Observer{
                     }
                 }
 
-                if (imageArgument != null){
-                    try {
-                        Bitmap bmp = BitmapUtil.fromImageArgument(imageArgument);
-//                    displayImage(bmp);
-                        if (bmp != null){
-                            double score = FingerprintQualityCalculator.calculateFingerprintQualityFromImage(bmp);
-                            if (score < 0.6 && capturing){
-                                Log.d(TAG, "openScanner() called displaying image with scores " + score);
-                                deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
-                            }else{
-                                Log.d(TAG, "openScanner() called displaying image with scores " + score);
-                                capturing = false;
-                                processImage(imageArgument,score);
+                switch (deviceCallbackEventArgument.getEventId()){
+                    case FINGER_DETECT:
+                        capturing = false;
+                        Log.d(TAG, "FINGER DETECT");
+                        processImage(imageArgument,0);
+                        break;
+                    default:
+                        Log.d(TAG, "NO FINGER DETECT");
+                        if (imageArgument != null){
+                            try {
+                                Bitmap bmp = BitmapUtil.fromImageArgument(imageArgument);
+                                if (bmp != null){
+                                    Log.d(TAG, "onFingerprintPreview going with bitmap " + bmp);
+                                    deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
                             }
+                        }else {
+                            Bitmap bmp = ImageProc.createPlaceholderBitmap(400,250,"Placeholder");
+                            deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                        break;
                 }
-
 //                switch (deviceCallbackEventArgument.getEventId()) {
 //                    case START:
 //                       break;

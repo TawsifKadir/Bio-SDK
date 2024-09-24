@@ -1,6 +1,6 @@
 plugins {
-//    alias(libs.plugins.androidApplication)
-    id 'com.android.library'
+    alias(libs.plugins.androidApplication)
+//    id 'com.android.library'
 
 }
 
@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
 //        applicationId "com.kit.biometricsdk"
-//        applicationId "com.karooth.bio"
+        applicationId "com.karooth.bio"
         minSdk 24
         targetSdk 34
 
@@ -139,6 +139,9 @@ dependencies {
     implementation ("com.github.mhshams:jnbis:2.1.2")
 
 ///Fingerprint Capture Ends
+
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     implementation 'io.reactivex.rxjava3:rxjava:3.1.7' // Use the latest version
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'

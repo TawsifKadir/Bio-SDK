@@ -29,6 +29,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dermalog.biometricpassportsdk.utils.BitmapUtil;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
 import com.kit.common.CustomToastHandler;
@@ -51,9 +52,11 @@ import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.ImageProc;
 
 
+import com.kit.fingerprintcapture.utils.LoadingGifUtility;
 import com.morpho.morphosmart.sdk.ErrorCodes;
 import com.morpho.morphosmart.sdk.TemplateType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -543,6 +546,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
+                                        LoadingGifUtility.stopLoading(mFingerprintImage);
                                         CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this, "Duplicate fingerprint captured. Please recapture different finger.");
                                     }
                                 });
@@ -568,8 +572,13 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     @Override
                     public void run() {
                         try {
+                            LoadingGifUtility.stopLoading(mFingerprintImage);
                             byte[] greyData = ImageProc.fromWSQ(mCurrentFingerprint.getFingerprintData().getFingerprintData(), width, height);
-                            mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
+//                            mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
+                            LoadingGifUtility.loadBitmap(mFingerprintImage,BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
+//                            mFingerprintImage.setImageBitmap(BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         } finally {
                             onCaptureEnd(mCurrentFingerprint);
                         }
@@ -584,11 +593,13 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     @Override
     public void onFingerprintPreview(Bitmap img, int width, int height) {
+        Log.d(TAG, "onFingerprintPreview() called with: img = [" + img + "], width = [" + width + "], height = [" + height + "]");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    mFingerprintImage.setImageBitmap(img);
+                    LoadingGifUtility.startLoading(FingerprintCaptureActivity.this,mFingerprintImage,R.drawable.loading);
+//                    mFingerprintImage.setImageBitmap(img);
                 }catch (Exception exc){
                     Log.e(TAG,"Preview show error");
                 }
