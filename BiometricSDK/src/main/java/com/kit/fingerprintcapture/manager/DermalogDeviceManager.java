@@ -1,38 +1,15 @@
 package com.kit.fingerprintcapture.manager;
 
 import android.app.Activity;
-import android.app.Service;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.hardware.usb.UsbDevice;
 import android.os.AsyncTask;
-import android.os.BatteryManager;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
-
 import com.dermalog.afis.fingercode3.Encoder;
 import com.dermalog.afis.fingercode3.FC3Exception;
-import com.dermalog.afis.fingercode3.Matcher;
-import com.dermalog.afis.fingercode3.Template;
-import com.dermalog.afis.imagecontainer.DICException;
-import com.dermalog.afis.imagecontainer.Decoder;
-import com.dermalog.afis.imagecontainer.EncoderWsq;
-import com.dermalog.afis.imagecontainer.RawImage;
-import com.dermalog.afis.nistqualitycheck.Functions;
-import com.dermalog.afis.nistqualitycheck.NistQualityCheckException;
 import com.dermalog.biometricpassportsdk.BiometricPassportException;
 import com.dermalog.biometricpassportsdk.BiometricPassportSdkAndroid;
 import com.dermalog.biometricpassportsdk.Device;
@@ -41,7 +18,6 @@ import com.dermalog.biometricpassportsdk.enums.CaptureMode;
 import com.dermalog.biometricpassportsdk.enums.DeviceId;
 import com.dermalog.biometricpassportsdk.enums.FeatureId;
 import com.dermalog.biometricpassportsdk.enums.StatusLedColor;
-import com.dermalog.biometricpassportsdk.structs.Position;
 import com.dermalog.biometricpassportsdk.usb.permission.DevicePermission;
 import com.dermalog.biometricpassportsdk.utils.BitmapUtil;
 import com.dermalog.biometricpassportsdk.wrapped.BitmapInfoHeaderData;
@@ -49,46 +25,19 @@ import com.dermalog.biometricpassportsdk.wrapped.DeviceCallbackEventArgument;
 import com.dermalog.biometricpassportsdk.wrapped.DeviceFeature;
 import com.dermalog.biometricpassportsdk.wrapped.DeviceInfo;
 import com.dermalog.biometricpassportsdk.wrapped.arguments.EventArgument;
-import com.dermalog.biometricpassportsdk.wrapped.arguments.FingerprintSegment;
-import com.dermalog.biometricpassportsdk.wrapped.arguments.FingerprintSegmentationArgument;
 import com.dermalog.biometricpassportsdk.wrapped.arguments.ImageArgument;
 import com.dermalog.hardware.DeviceManager;
 import com.dermalog.hardware.PowerManager;
+import com.dermalog.common.exception.ErrorCodes;
 import com.kit.BuildConfig;
-import com.kit.biometricsdk.R;
-import com.kit.fingerprintcapture.FingerprintCaptureActivity;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.idemia.peripherals.PeripheralsPowerInterface;
-import com.kit.fingerprintcapture.utils.FingerprintQualityCalculator;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.kit.fingerprintcapture.utils.LoadingGifUtility;
-import com.kit.fingerprintcapture.utils.PowerSwitcherTask;
-import com.morpho.android.usb.USBManager;
-import com.morpho.morphosmart.sdk.CallbackMask;
-import com.morpho.morphosmart.sdk.CallbackMessage;
-import com.morpho.morphosmart.sdk.Coder;
-import com.morpho.morphosmart.sdk.CompressionAlgorithm;
-import com.morpho.morphosmart.sdk.CustomInteger;
-import com.morpho.morphosmart.sdk.DetectionMode;
-import com.morpho.morphosmart.sdk.EnrollmentType;
-import com.morpho.morphosmart.sdk.ErrorCodes;
-import com.morpho.morphosmart.sdk.LatentDetection;
-import com.morpho.morphosmart.sdk.MorphoDevice;
-import com.morpho.morphosmart.sdk.MorphoImage;
-import com.morpho.morphosmart.sdk.TemplateFVPType;
-import com.morpho.morphosmart.sdk.TemplateList;
-import com.morpho.morphosmart.sdk.TemplateType;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Locale;
-import java.util.Observable;
-import java.util.Observer;
 
 public class DermalogDeviceManager implements IDeviceManager{
-
-    private static final int LEFT_SHIFT_AMOUNT = 20;
 
     private String TAG = "DermalogDeviceManager";
     private DeviceDataCallback deviceDataConsumer;
@@ -111,9 +60,6 @@ public class DermalogDeviceManager implements IDeviceManager{
     private BiometricPassportSdkAndroid biometricsSdk;
     private Device scannerHandle;
 
-    //ImageContainer
-    private Decoder icDecoder;
-
     private Encoder fc3Encoder;
 
 
@@ -132,7 +78,6 @@ public class DermalogDeviceManager implements IDeviceManager{
     @Override
     public long initDevice() {
 
-        int ret = 0;
         Log.d(TAG, "initDermalogDevice");
 
         com.dermalog.afis.imagecontainer.Android.SetContext(mainActivity);
@@ -147,11 +92,11 @@ public class DermalogDeviceManager implements IDeviceManager{
         }catch (Exception e){
             deviceIsSet = false;
             Log.d(TAG, "initDevice() called failed");
-            return com.dermalog.common.exception.ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
+            return ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
         }
 
         deviceIsSet = true;
-        return ErrorCodes.MORPHO_OK;
+        return ErrorCodes.FPC_SUCCESS;
     }
 
     @Override
@@ -159,14 +104,14 @@ public class DermalogDeviceManager implements IDeviceManager{
         Log.d(TAG, "openDevice() called");
         if(!deviceIsSet){
             long ret = initDevice();
-            if(ret!=ErrorCodes.MORPHO_OK) return ret;
+            if(ret!=ErrorCodes.FPC_SUCCESS) return ret;
         }
-        return ErrorCodes.MORPHO_OK;
+        return ErrorCodes.FPC_SUCCESS;
     }
 
     @Override
     public long startCapture() {
-        long ret = com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS;
+        long ret = ErrorCodes.FPC_SUCCESS;
 
         try{
             ret = startFingerCapture();
@@ -179,11 +124,11 @@ public class DermalogDeviceManager implements IDeviceManager{
 
     @Override
     public long closeDevice() {
-        long ret = ErrorCodes.MORPHO_OK;
+        long ret = ErrorCodes.FPC_SUCCESS;
         try {
             closeScanner();
         }catch(Exception exc){
-            ret = com.dermalog.common.exception.ErrorCodes.FPC_ERROR_EMPTY_HANDLE;
+            ret = ErrorCodes.FPC_ERROR_EMPTY_HANDLE;
             Log.e(TAG,"In CloseDevice error : "+exc.getMessage());
         }
         deviceIsSet = false;
@@ -192,7 +137,7 @@ public class DermalogDeviceManager implements IDeviceManager{
 
     @Override
     public long deInitDevice() {
-        long ret = ErrorCodes.MORPHO_OK;
+        long ret = ErrorCodes.FPC_SUCCESS;
         if(deviceIsSet){
             uninitializeSDK();
             deviceIsSet = false;
@@ -211,21 +156,15 @@ public class DermalogDeviceManager implements IDeviceManager{
         return true;
     }
 
-    void initializeSDKs() throws BiometricPassportException, DICException {
+    void initializeSDKs() throws BiometricPassportException {
         Log.d(TAG, "initializeSDKs() called");
         biometricsSdk = new BiometricPassportSdkAndroid(mainActivity);
-
-        icDecoder = new Decoder();
-//        icWsqEncoder = new EncoderWsq();
-
         try {
             fc3Encoder = new Encoder();
             fc3Encoder.setCodingType(1); //fast encoding
-//            fc3Matcher = new Matcher();
         } catch (FC3Exception e) {
             e.printStackTrace();
             Toast.makeText(mainActivity, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
-//            txtScore.setText("FC3\nN/A");
         }
     }
 
@@ -245,16 +184,6 @@ public class DermalogDeviceManager implements IDeviceManager{
             }
             fc3Encoder = null;
         }
-
-        if (icDecoder != null) {
-            try {
-                icDecoder.close();
-            } catch (DICException e) {
-                e.printStackTrace();
-            }
-            icDecoder = null;
-        }
-
     }
 
     void getPermissions() {
@@ -271,25 +200,20 @@ public class DermalogDeviceManager implements IDeviceManager{
             switch (permissionResult.getResult()) {
                 case NoDevice:
                     Log.d(TAG, "getPermissions() called noDevice");
-//                    showWarning("No scanner attached!");
                     break;
                 case NoPermission:
                     Log.d(TAG, "getPermissions() called noPermission");
-//                    showError("No USB permission!");
                     break;
                 case PartialPermission:
                     tryOpen = true;
                     Log.d(TAG, "getPermissions() called partialPermission");
-//                    showWarning("Not all USB permissions!");
                     break;
                 case Success:
                     Log.d(TAG, "getPermissions() called success");
                     tryOpen = true;
-//                    showHint("Press 'CAPTURE'");
                     break;
                 case UsbNotSupported:
                     Log.d(TAG, "getPermissions() called usbNotSupported");
-//                    showError("No USB support!");
                     break;
             }
 
@@ -396,18 +320,18 @@ public class DermalogDeviceManager implements IDeviceManager{
     private int startFingerCapture() throws BiometricPassportException {
         if (biometricsSdk == null) {
             showToastMessage("SDK is null",Toast.LENGTH_LONG);
-            return com.dermalog.common.exception.ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
+            return ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
         }
 
         if (scannerHandle == null) {
             showToastMessage("Scanner not opened",Toast.LENGTH_LONG);
-            return com.dermalog.common.exception.ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
+            return ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
         }
 
         capturing = true;
         setStatusLed(StatusLedColor.GREEN);
         scannerHandle.startCapture();
-        return com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS;
+        return ErrorCodes.FPC_SUCCESS;
     }
 
     void processImage(final ImageArgument imageArgument, double score) {
@@ -425,8 +349,9 @@ public class DermalogDeviceManager implements IDeviceManager{
         }
     }
 
-    void switchPowerOn() {
+    void switchPowerOn() throws BiometricPassportException {
         PowerManager powerManager = DeviceManager.getDevice(mainActivity).getPowerManager();
+        Throwable error = null;
 
         if (powerManager != null && powerManager.isPowerTypeSupported(PowerManager.PowerType.USB_FINGERPRINT_SCANNER)) {
             powerManager.open();
@@ -434,35 +359,25 @@ public class DermalogDeviceManager implements IDeviceManager{
             //Make sure to disable ADB via USB
             if(powerManager.isPowerTypeSupported(PowerManager.PowerType.USB_ADB_MODE)){
                 powerManager.power(PowerManager.PowerType.USB_ADB_MODE, false);
+                try{
+                    powerManager.power(PowerManager.PowerType.USB_FINGERPRINT_SCANNER,true);
+                }catch (Exception e){
+                    error = e;
+                    error.printStackTrace();
+                }finally {
+                    if (error == null){
+                        initializeSDKs();
+                        getPermissions();
+                    }
+                }
             }
-
-            LocalPowerSwitcherTask task = new LocalPowerSwitcherTask(mainActivity, PowerManager.PowerType.USB_FINGERPRINT_SCANNER);
-            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, true);
         }
     }
 
-    class LocalPowerSwitcherTask extends PowerSwitcherTask {
-        LocalPowerSwitcherTask(Context context, PowerManager.PowerType powerType) {
-            super(context, powerType);
-        }
-
-        @Override
-        protected void onPreExecute() {
-//            showProgressDialog("Switching on USB power");
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-//            hideProgressDialog();
-            try {
-                initializeSDKs();
-                getPermissions();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-//                showError("Error creating SDKs: " + e.getMessage());
-            }
-        }
+    private void showToastMessage(String msg, int length){
+        Toast toast = Toast.makeText(mainActivity, msg, length);
+        toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 180);
+        toast.show();
     }
 
     class ProcessImageTask extends AsyncTask<Void, String, Exception> {
@@ -480,27 +395,11 @@ public class DermalogDeviceManager implements IDeviceManager{
 
         }
 
-        private void processSingleImage() throws IOException, DICException {
-            Bitmap bmp = BitmapUtil.fromImageArgument(imageArgument);
-            RawImage rawImg = null;
+        private void processSingleImage(){
             BitmapInfoHeaderData fingerImage = imageArgument.bitmapInfoHeaderData();
-            try {
-                Log.d(TAG, "processSingleImage() called width " + fingerImage.getWidth());
-                Log.d(TAG, "processSingleImage() called height" + fingerImage.getHeight());
-                rawImg = icDecoder.Decode(fingerImage.getRawData());
-                Log.d(TAG, "processSingleImage() called image width " + rawImg.getPixelWidth());
-                Log.d(TAG, "processSingleImage() called image height " + rawImg.getPixelHeight());
-                deviceDataConsumer.onFingerprintData(fingerImage.getRawData(), fingerImage.getWidth(), fingerImage.getHeight(), (int) (score * 100), com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS);
-
-            } finally {
-                if (rawImg != null) {
-                    try {
-                        rawImg.close();
-                    } catch (DICException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
+            Log.d(TAG, "processSingleImage() called width " + fingerImage.getWidth());
+            Log.d(TAG, "processSingleImage() called height" + fingerImage.getHeight());
+            deviceDataConsumer.onFingerprintData(fingerImage.getRawData(), fingerImage.getWidth(), fingerImage.getHeight(), (int) (score * 100), com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS);
         }
 
         @Override
@@ -527,12 +426,6 @@ public class DermalogDeviceManager implements IDeviceManager{
                 e.printStackTrace();
             }
         }
-    }
-
-    private void showToastMessage(String msg, int length){
-        Toast toast = Toast.makeText(mainActivity, msg, length);
-        toast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 180);
-        toast.show();
     }
 
 }

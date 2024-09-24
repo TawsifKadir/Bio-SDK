@@ -1,5 +1,5 @@
 @echo off
-"F:\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
+"C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe" ^
   -C ^
-  "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a" ^
+  "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a" ^
   opencv_jni_shared
