@@ -80,7 +80,6 @@ public class DermalogDeviceManager implements IDeviceManager{
 
         Log.d(TAG, "initDermalogDevice");
 
-        com.dermalog.afis.imagecontainer.Android.SetContext(mainActivity);
         if (!BuildConfig.LICENSE.isEmpty()) {
             com.dermalog.afis.fingercode3.Android.SetLicense(BuildConfig.LICENSE.getBytes(), mainActivity.getApplicationContext());
         } else {
@@ -162,7 +161,9 @@ public class DermalogDeviceManager implements IDeviceManager{
         try {
             fc3Encoder = new Encoder();
             fc3Encoder.setCodingType(1); //fast encoding
+            Log.d(TAG, "initializeSDKs() called License found");
         } catch (FC3Exception e) {
+            Log.d(TAG, "initializeSDKs() called License not found");
             e.printStackTrace();
             Toast.makeText(mainActivity, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
         }

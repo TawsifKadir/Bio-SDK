@@ -96,13 +96,11 @@ android {
 
 dependencies {
 
-    implementation files('libs/FDxSDKProFDAndroid.jar','libs/MorphoSmart_SDK_6.42.0.0.jar')
+    implementation files('libs/FDxSDKProFDAndroid.jar')
 
     implementation "com.dermalog.android:DermalogHardwareDevicesCommon:2.+"
     implementation 'com.dermalog.android.biometricpassportsdk:DermalogBiometricPassportSdk:1.+'
-    implementation 'com.dermalog.android:DermalogImageContainer:2.+'
     implementation 'com.dermalog.android:DermalogFingerCode3:4.+'
-    implementation 'com.dermalog.android:DermalogNistQualityCheck:2.+'
 
     //SVT5008 uses a Integrated Biometrics or Suprema fingerprint scanner
     implementation "com.dermalog.android:DermalogHardwareSVT5008:1.+"

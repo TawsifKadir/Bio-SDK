@@ -1,9 +1,5 @@
 package com.kit.fingerprintcapture.handlers;
 
-
-import static com.morpho.morphosmart.sdk.FalseAcceptanceRate.MORPHO_FAR_6;
-import static com.morpho.morphosmart.sdk.FalseAcceptanceRate.MORPHO_FAR_8;
-
 import android.app.Activity;
 
 import android.util.Log;
@@ -12,15 +8,12 @@ import android.widget.Toast;
 import com.dermalog.afis.fingercode3.Matcher;
 import com.dermalog.afis.fingercode3.Template;
 
-
 import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.template.TemplateExtractor;
 
 import com.kit.fingerprintcapture.template.ISOTemplate;
-import com.morpho.morphosmart.sdk.TemplateType;
-
 
 import java.util.ArrayList;
 
@@ -40,7 +33,6 @@ public class FingerprintMatchingHandler {
 
 
     private Matcher matcher;
-
 
     public FingerprintMatchingHandler(Activity mActivity) {
         this.mActivity = mActivity;
@@ -125,24 +117,25 @@ public class FingerprintMatchingHandler {
 
 
             Template probeTemplate = new Template();
-            probeTemplate.setData(searchTemplate.getIsoTemplate());
-            probeTemplate.setFormat(subjectTmplType);
-
+            TemplateFormat testFormat = TemplateFormat.ISO19794_2_2005;
+            probeTemplate.SetData(searchTemplate.getIsoTemplate(),testFormat);
 
             referenceTemplateList.forEach(new Consumer<ISOTemplate>() {
                 @Override
                 public void accept(ISOTemplate referenceTemplate) {
                     try {
                         Template candidate = new Template();
-                        candidate.setFormat(candidateTmplType);
-                        candidate.setData(referenceTemplate.getIsoTemplate());
+//                        candidate.setFormat(candidateTmplType);
+//                        candidate.setData(referenceTemplate.getIsoTemplate());
+                        candidate.SetData(referenceTemplate.getIsoTemplate(),testFormat);
                         double nowScore = matcher.Match(probeTemplate,candidate);
                         if(nowScore>=30) {
                             matchScoreList.add(nowScore);
                         }
+                        Log.d(TAG, "accept() called with score: " + nowScore);
                     }catch(Throwable t){
-                        Log.e(TAG, "Verify Fingerprint Error : "+t.getMessage());
-                        showToast("Verify Fingerprint Error : "+t.getMessage());
+                        Log.e(TAG, "Verify Fingerprint Error while matching : "+t.getMessage());
+                        showToast("Verify Fingerprint Error while matching : "+t.getMessage());
                     }
                 }
             });
@@ -170,8 +163,8 @@ public class FingerprintMatchingHandler {
 
         }finally {
             if(isError){
-                Log.e(TAG, "Verify Fingerprint Error : "+errorObject.getMessage());
-                showToast("Verify Fingerprint Error : "+errorObject.getMessage());
+                Log.e(TAG, "Verify Fingerprint Error after matching: "+errorObject.getMessage());
+                showToast("Verify Fingerprint Error after matching: "+errorObject.getMessage());
                 errorObject.printStackTrace();
                 errorObject = null;
             }

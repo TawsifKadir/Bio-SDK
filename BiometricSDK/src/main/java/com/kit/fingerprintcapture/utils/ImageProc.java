@@ -14,7 +14,6 @@ import com.seamfix.calculatenfiq.NFIQUtil;
 import java.nio.ByteBuffer;
 
 import SecuGen.FDxSDKPro.SGWSQLib;
-import SecuGen.FDxSDKPro.SGNFIQLib;
 
 public class ImageProc {
     private static SGWSQLib wsqLib;

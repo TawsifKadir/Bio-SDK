@@ -1,25 +1,15 @@
 package com.kit.fingerprintcapture.manager;
 
 import android.app.Activity;
-import android.os.Build;
 import android.util.Log;
-
-import androidx.annotation.RequiresApi;
 
 import com.kit.biometricsdk.R;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
-import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.morpho.morphosmart.sdk.TemplateList;
-
-import java.io.BufferedInputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Map;
 
 
 public class DummyDeviceManager implements IDeviceManager{

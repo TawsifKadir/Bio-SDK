@@ -1,7 +1,5 @@
 package com.kit.fingerprintcapture.manager;
 
-import com.morpho.morphosmart.sdk.TemplateList;
-
 import java.util.Map;
 
 public interface IDeviceManager {

@@ -29,11 +29,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dermalog.afis.fingercode3.Encoder;
 import com.dermalog.afis.fingercode3.FC3Exception;
 import com.dermalog.afis.fingercode3.Matcher;
 import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.dermalog.biometricpassportsdk.utils.BitmapUtil;
+import com.dermalog.common.exception.ErrorCodes;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
 import com.kit.common.CustomToastHandler;
@@ -57,8 +57,7 @@ import com.kit.fingerprintcapture.utils.ImageProc;
 
 
 import com.kit.fingerprintcapture.utils.LoadingGifUtility;
-import com.morpho.morphosmart.sdk.ErrorCodes;
-import com.morpho.morphosmart.sdk.TemplateType;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,10 +70,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import SecuGen.FDxSDKPro.JSGFPLib;
-import SecuGen.FDxSDKPro.SGFDxSecurityLevel;
-
 
 public class FingerprintCaptureActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
 
@@ -101,7 +96,6 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     private boolean isDummyDevice = false;
     private boolean duplicateDetectionEnabled = true;
-    private JSGFPLib jsgfpLib;
     private boolean mCloseClicked = false;
     private FingerprintMatchingHandler mfpMatchHandler;
 
@@ -229,12 +223,12 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 Log.d(TAG, "initDevice() returned : " + result);
             }
 
-            if(result!= ErrorCodes.MORPHO_OK){
+            if(result!= ErrorCodes.FPC_SUCCESS){
                 showNoAccessToDevice();
                 return;
             }else{
                 result = mDeviceManager.openDevice();
-                if(result!=ErrorCodes.MORPHO_OK) {
+                if(result!=ErrorCodes.FPC_SUCCESS) {
                     AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
                     dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
                     dlgAlert.setTitle("Fingerprint Registration");
@@ -544,13 +538,6 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
                                 return;
                             }
-                        }else {
-                            mReferenceTemplateList.entrySet().stream().forEach(new Consumer<Map.Entry<Integer, ISOTemplate>>() {
-                                @Override
-                                public void accept(Map.Entry<Integer, ISOTemplate> integerISOTemplateEntry) {
-                                    testMatch(template,integerISOTemplateEntry.getValue());
-                                }
-                            });
                         }
                     }
 
@@ -791,25 +778,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     }
 
-    public void testMatch(ISOTemplate first, ISOTemplate second){
-        try{
-            boolean[] matched = new boolean[1];
-            matched[0] = false;
-            int[] score = new int[1];
-            score[0] = 0;
 
-            long err = jsgfpLib.MatchIsoTemplate(first.getIsoTemplate(), 0, second.getIsoTemplate(), 0, SGFDxSecurityLevel.SL_HIGHER, matched);
-            Log.d(TAG,"Returned value = "+err+" & GetLastError = "+jsgfpLib.GetLastError());
-            showToast("Returned value = "+err+" & GetLastError = "+jsgfpLib.GetLastError());
-            err = jsgfpLib.GetIsoMatchingScore(first.getIsoTemplate(), 0, second.getIsoTemplate(), 0, score);
-            Log.d(TAG,"Result and Score = "+score[0]+"%%"+matched[0]);
-            showToast("Result and Score = "+score[0]+"%%"+matched[0]);
-
-
-        }catch(Throwable t){
-            Log.e(TAG,"Error occurred = "+t.getMessage());
-        }
-    }
 
     public void showToast(String msg){
         runOnUiThread(new Runnable() {
