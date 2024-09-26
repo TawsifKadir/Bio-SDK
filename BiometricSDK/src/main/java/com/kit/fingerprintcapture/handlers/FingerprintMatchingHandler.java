@@ -117,17 +117,14 @@ public class FingerprintMatchingHandler {
 
 
             Template probeTemplate = new Template();
-            TemplateFormat testFormat = TemplateFormat.ISO19794_2_2005;
-            probeTemplate.SetData(searchTemplate.getIsoTemplate(),testFormat);
+            probeTemplate.SetData(searchTemplate.getIsoTemplate(),subjectTmplType);
 
             referenceTemplateList.forEach(new Consumer<ISOTemplate>() {
                 @Override
                 public void accept(ISOTemplate referenceTemplate) {
                     try {
                         Template candidate = new Template();
-//                        candidate.setFormat(candidateTmplType);
-//                        candidate.setData(referenceTemplate.getIsoTemplate());
-                        candidate.SetData(referenceTemplate.getIsoTemplate(),testFormat);
+                        candidate.SetData(referenceTemplate.getIsoTemplate(),candidateTmplType);
                         double nowScore = matcher.Match(probeTemplate,candidate);
                         if(nowScore>=30) {
                             matchScoreList.add(nowScore);
@@ -151,8 +148,11 @@ public class FingerprintMatchingHandler {
                         return o2.intValue();
                     }
                 });
-                mr.setMatchScore((int)score.get());
-                result.add(mr);
+                if(score.isPresent()) {
+                    Log.d(TAG, "Matching Score: " + score);
+                    mr.setMatchScore( ((Double) score.get()).intValue() );
+                    result.add(mr);
+                }
 
             }
 

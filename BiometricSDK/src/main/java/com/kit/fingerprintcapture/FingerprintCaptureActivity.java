@@ -248,6 +248,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     if(!isDummyDevice) {
                         try {
                             Matcher nowMatcher = new Matcher();
+                            nowMatcher.setRotationToleranceInDegree(180);
                             mfpMatchHandler.setMatcher(nowMatcher);
                         } catch (FC3Exception e) {
                             e.printStackTrace();
