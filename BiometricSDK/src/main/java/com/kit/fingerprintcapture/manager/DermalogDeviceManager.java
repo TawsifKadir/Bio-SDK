@@ -223,6 +223,7 @@ public class DermalogDeviceManager implements IDeviceManager{
                     openScanner();
                 } catch (Exception e) {
                     Toast.makeText(mainActivity, "Error opening scanner", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Could not open scanner " + e.getMessage());
                 }
             }
 
