@@ -532,7 +532,6 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-//                                        LoadingGifUtility.stopLoading(mFingerprintImage);
                                         CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this, "Duplicate fingerprint captured. Please recapture different finger.");
                                     }
                                 });
@@ -551,11 +550,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     @Override
                     public void run() {
                         try {
-                            LoadingGifUtility.stopLoading(mFingerprintImage);
-                            byte[] greyData = ImageProc.fromWSQ(mCurrentFingerprint.getFingerprintData().getFingerprintData(), width, height);
-//                            mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
                             LoadingGifUtility.loadBitmap(mFingerprintImage,BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
-//                            mFingerprintImage.setImageBitmap(BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         } finally {
@@ -577,7 +572,6 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             @Override
             public void run() {
                 try {
-//                    LoadingGifUtility.startLoading(FingerprintCaptureActivity.this,mFingerprintImage,R.drawable.loading);
                     mFingerprintImage.setImageBitmap(img);
                 }catch (Exception exc){
                     Log.e(TAG,"Preview show error");

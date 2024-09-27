@@ -1,4 +1,4 @@
-#Fri Sep 27 01:27:41 BDT 2024
+#Fri Sep 27 22:44:07 BDT 2024
 base.0=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeExtDexDebugAndroidTest\\classes.dex
 base.1=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\10\\classes.dex
 base.10=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\2\\classes.dex

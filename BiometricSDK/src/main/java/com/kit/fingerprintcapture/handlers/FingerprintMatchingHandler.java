@@ -125,7 +125,9 @@ public class FingerprintMatchingHandler {
                     try {
                         Template candidate = new Template();
                         candidate.SetData(referenceTemplate.getIsoTemplate(),candidateTmplType);
+                        Log.d(TAG, "Candidate template size is : " + referenceTemplate.getIsoTemplate().length);
                         double nowScore = matcher.Match(probeTemplate,candidate);
+                        Log.d(TAG, "Fingerprint Match Score is " + nowScore);
                         if(nowScore>=30) {
                             matchScoreList.add(nowScore);
                         }
