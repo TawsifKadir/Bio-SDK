@@ -20,7 +20,6 @@ import com.dermalog.biometricpassportsdk.enums.FeatureId;
 import com.dermalog.biometricpassportsdk.enums.StatusLedColor;
 import com.dermalog.biometricpassportsdk.usb.permission.DevicePermission;
 import com.dermalog.biometricpassportsdk.utils.BitmapUtil;
-import com.dermalog.biometricpassportsdk.wrapped.BitmapInfoHeaderData;
 import com.dermalog.biometricpassportsdk.wrapped.DeviceCallbackEventArgument;
 import com.dermalog.biometricpassportsdk.wrapped.DeviceFeature;
 import com.dermalog.biometricpassportsdk.wrapped.DeviceInfo;
@@ -420,10 +419,33 @@ public class DermalogDeviceManager implements IDeviceManager{
         }
 
         private void processSingleImage(){
-            BitmapInfoHeaderData fingerImage = imageArgument.bitmapInfoHeaderData();
-            Log.d(TAG, "processSingleImage() called width " + fingerImage.getWidth());
-            Log.d(TAG, "processSingleImage() called height" + fingerImage.getHeight());
-            deviceDataConsumer.onFingerprintData(fingerImage.getRawData(), fingerImage.getWidth(), fingerImage.getHeight(), (int) (score * 100), com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS);
+            Throwable e = null;
+
+            int imgWidth = -1;
+            int imgHeight = -1;
+            byte[] imgData = null;
+
+            try{
+
+                Bitmap bmp = BitmapUtil.fromImageArgument(imageArgument, Bitmap.Config.ARGB_8888);
+                imgData = ImageProc.toGrayscaleArray(bmp);
+                imgWidth = bmp.getWidth();
+                imgHeight = bmp.getHeight();;
+                ///ImageProc.toGrayscale(BitmapUtil.fromImageArgument(imageArgument));
+            }catch (Throwable t){
+                e = t;
+            }finally {
+//                if (e == null && bmp != null){
+//                    FileUtils.saveBitmapToFile(bmp,"fingerImageBitmap",mainActivity);
+//                    FileUtils.saveByteArrayToFile(imageArgument.bitmapInfoHeaderData().getRawData(), "fingerImageByteArray",mainActivity);
+//                }
+            }
+
+//            BitmapInfoHeaderData fingerImage = imageArgument.bitmapInfoHeaderData();
+//            Log.d(TAG, "processSingleImage() called width " + fingerImage.getWidth());
+//            Log.d(TAG, "processSingleImage() called height" + fingerImage.getHeight());
+//
+            deviceDataConsumer.onFingerprintData(imgData, imgWidth, imgHeight, (int) (score * 100), com.dermalog.common.exception.ErrorCodes.FPC_SUCCESS);
         }
 
         @Override

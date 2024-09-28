@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.seamfix.calculatenfiq.NFIQUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 import SecuGen.FDxSDKPro.SGWSQLib;
@@ -50,6 +51,7 @@ public class ImageProc {
         wsqLib.SGWSQEncode(wsqData,SGWSQLib.BITRATE_15_TO_1,mImageBuffer,width,height,8,500);
         return wsqData;
     }
+
     public static byte[] fromWSQ(byte[] wsqBuffer, int width ,int height){
 
         if(wsqBuffer==null){
@@ -166,6 +168,34 @@ public class ImageProc {
                     return 0;
 
             }
+    }
+
+
+    public static byte[] toGrayscaleArray(Bitmap bmpOriginal)
+    {
+        int width, height;
+        height = bmpOriginal.getHeight();
+        width = bmpOriginal.getWidth();
+        byte[] bmpData = new byte[width*height];
+        int pos = 0;
+
+        for (int y=0; y< height; ++y) {
+            for (int x=0; x< width; ++x){
+
+                int argb = bmpOriginal.getPixel(x, y);
+
+                int alpha = (argb >> 24) & 0xFF;  // Extract alpha
+                int red   = (argb >> 16) & 0xFF;  // Extract red
+                int green = (argb >> 8) & 0xFF;   // Extract green
+                int blue  = argb & 0xFF;          // Extract blue
+
+                int gray = (int) (0.299 * red + 0.587 * green + 0.114 * blue);
+
+                bmpData[pos++] = (byte)gray;
+
+            }
+        }
+        return bmpData;
     }
 
 }

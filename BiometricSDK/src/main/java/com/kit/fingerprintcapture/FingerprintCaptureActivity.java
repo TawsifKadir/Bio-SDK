@@ -32,7 +32,6 @@ import android.widget.Toast;
 import com.dermalog.afis.fingercode3.FC3Exception;
 import com.dermalog.afis.fingercode3.Matcher;
 import com.dermalog.afis.fingercode3.TemplateFormat;
-import com.dermalog.biometricpassportsdk.utils.BitmapUtil;
 import com.dermalog.common.exception.ErrorCodes;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
@@ -53,13 +52,9 @@ import com.kit.fingerprintcapture.model.FingerprintStatus;
 import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
 import com.kit.fingerprintcapture.template.MatchResult;
+import com.kit.fingerprintcapture.utils.FileUtils;
 import com.kit.fingerprintcapture.utils.ImageProc;
 
-
-import com.kit.fingerprintcapture.utils.LoadingGifUtility;
-
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +63,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class FingerprintCaptureActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
@@ -496,7 +490,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 }
 
                 byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
-
+                FileUtils.saveByteArrayToFile(wsqData,"fingerImage",FingerprintCaptureActivity.this);
 //                if(duplicateDetectionEnabled && !isDummyDevice) {
                   if(true) {
 
@@ -550,9 +544,10 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     @Override
                     public void run() {
                         try {
-                            LoadingGifUtility.loadBitmap(mFingerprintImage,BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                            Bitmap bmp = ImageProc.toGrayscale(imgData,width,height);
+                            mFingerprintImage.setImageBitmap(bmp);
+                            FileUtils.saveBitmapToFile(bmp,"fingerImageBitmap",FingerprintCaptureActivity.this);
+//                            mFingerprintImage.setImageBitmap(BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
                         } finally {
                             onCaptureEnd(mCurrentFingerprint);
                         }

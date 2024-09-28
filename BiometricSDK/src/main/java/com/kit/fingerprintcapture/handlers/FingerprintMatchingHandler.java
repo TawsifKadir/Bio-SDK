@@ -48,7 +48,6 @@ public class FingerprintMatchingHandler {
 
         ISOTemplate fmdTmpl = new ISOTemplate(null,0);
 
-
         int ret = TemplateExtractor.getMyInstance().createFmdFromRaw(nowImage,500,height,width,TemplateExtractor.FJFX_FMD_ISO_19794_2_2005,fmd[0],fmdSize);
 
         if(BuildConfig.isDebug) {
