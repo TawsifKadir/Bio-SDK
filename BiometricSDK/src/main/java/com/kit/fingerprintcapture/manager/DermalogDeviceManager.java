@@ -363,28 +363,40 @@ public class DermalogDeviceManager implements IDeviceManager{
 
     void switchPowerOn() throws BiometricPassportException {
         PowerManager powerManager = DeviceManager.getDevice(mainActivity).getPowerManager();
-        Throwable error = null;
 
-        if (powerManager != null && powerManager.isPowerTypeSupported(PowerManager.PowerType.USB_FINGERPRINT_SCANNER)) {
-            powerManager.open();
+        if (powerManager == null) {
+            // Error code 1001 for PowerManager being unavailable
+            throw new BiometricPassportException(ErrorCodes.FPC_ERROR_NO_HANDLE, "PowerManager is unavailable.");
+        }
 
-            //Make sure to disable ADB via USB
-            if(powerManager.isPowerTypeSupported(PowerManager.PowerType.USB_ADB_MODE)){
-                powerManager.power(PowerManager.PowerType.USB_ADB_MODE, false);
-                try{
-                    powerManager.power(PowerManager.PowerType.USB_FINGERPRINT_SCANNER,true);
-                }catch (Exception e){
-                    error = e;
-                    error.printStackTrace();
-                }finally {
-                    if (error == null){
-                        initializeSDKs();
-                        getPermissions();
-                    }
+        // Check if the power type for USB Fingerprint Scanner is supported
+        if (powerManager.isPowerTypeSupported(PowerManager.PowerType.USB_FINGERPRINT_SCANNER)) {
+            try {
+                powerManager.open();
+
+                // Ensure USB ADB mode is supported and disable it
+                if (powerManager.isPowerTypeSupported(PowerManager.PowerType.USB_ADB_MODE)) {
+                    powerManager.power(PowerManager.PowerType.USB_ADB_MODE, false);
                 }
+
+                // Power on the USB Fingerprint Scanner
+                powerManager.power(PowerManager.PowerType.USB_FINGERPRINT_SCANNER, true);
+
+                // If everything succeeded, initialize SDKs and get permissions
+                initializeSDKs();
+                getPermissions();
+
+            } catch (Exception e) {
+                // Error code 1002 for failure to power on the fingerprint scanner
+                e.printStackTrace();
+                throw new BiometricPassportException(ErrorCodes.FPC_ERROR_DEVICE_AUTHORIZATION_CODE, "Failed to power on USB Fingerprint Scanner: " + e.getMessage());
             }
+        } else {
+            // Error code 1003 for unsupported USB Fingerprint Scanner
+            throw new BiometricPassportException(ErrorCodes.FPC_ERROR_DEVICE_AUTHORIZATION_CODE, "USB Fingerprint Scanner is not supported on this device.");
         }
     }
+
 
     private void showToastMessage(String msg, int length){
         Toast toast = Toast.makeText(mainActivity, msg, length);
