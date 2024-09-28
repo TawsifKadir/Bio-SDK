@@ -390,8 +390,6 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 }
             }
         });
-
-
     }
     @Override
     public void onCaptureStart(Fingerprint fp) {
@@ -546,13 +544,15 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                         try {
                             Bitmap bmp = ImageProc.toGrayscale(imgData,width,height);
                             mFingerprintImage.setImageBitmap(bmp);
-                            FileUtils.saveBitmapToFile(bmp,"fingerImageBitmap",FingerprintCaptureActivity.this);
+                            //                            FileUtils.saveBitmapToFile(bmp,"fingerImageBitmap",FingerprintCaptureActivity.this);
 //                            mFingerprintImage.setImageBitmap(BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
                         } finally {
                             onCaptureEnd(mCurrentFingerprint);
                         }
                     }
                 });
+            }else{
+                mFingerprintImage.setImageBitmap(ImageProc.createEmptyBitmap(width,height));
             }
         }catch(Exception exc){
             ///Log.d(TAG,exc.getMessage());
