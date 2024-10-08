@@ -223,18 +223,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             }else{
                 result = mDeviceManager.openDevice();
                 if(result!=ErrorCodes.FPC_SUCCESS) {
-                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-                    dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
-                    dlgAlert.setTitle("Fingerprint Registration");
-                    dlgAlert.setPositiveButton("OK",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    finish();
-                                }
-                            }
-                    );
-                    dlgAlert.setCancelable(false);
-                    dlgAlert.create().show();
+                    showFingerprintDeviceNotInitialized(result);
                 }else{
                     mFingerprintText.setVisibility(View.VISIBLE);
                     mClickFingerprint.setText(R.string.click_fingerprint);
@@ -256,6 +245,12 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             }
         }catch(Throwable t){
             t.printStackTrace();
+        }finally {
+            if (!isDummyDevice){
+                if (mfpMatchHandler.getMatcher() == null){
+                    showFingerprintDeviceNotInitialized(-1);
+                }
+            }
         }
 
         enableControls();
@@ -796,5 +791,20 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 alertDialog.show();
             }
         });
+    }
+
+    private void showFingerprintDeviceNotInitialized(long result){
+        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+        dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
+        dlgAlert.setTitle("Fingerprint Registration");
+        dlgAlert.setPositiveButton("OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        finish();
+                    }
+                }
+        );
+        dlgAlert.setCancelable(false);
+        dlgAlert.create().show();
     }
 }

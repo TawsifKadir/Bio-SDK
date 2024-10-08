@@ -233,4 +233,8 @@ public class FingerprintMatchingHandler {
     public void setMatcher(Matcher matcher){
         this.matcher = matcher;
     }
+
+    public Matcher getMatcher(){
+        return this.matcher;
+    }
 }

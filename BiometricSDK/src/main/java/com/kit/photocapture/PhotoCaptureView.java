@@ -44,6 +44,7 @@ public class PhotoCaptureView extends JavaCameraView implements PictureCallback 
         Camera.Parameters params = mCamera.getParameters();
         params.setColorEffect(effect);
         mCamera.setParameters(params);
+
     }
 
     public List<Size> getResolutionList() {

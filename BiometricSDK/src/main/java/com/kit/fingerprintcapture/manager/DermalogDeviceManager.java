@@ -42,6 +42,7 @@ public class DermalogDeviceManager implements IDeviceManager{
     private ProcessImageTask imageTask;
 
     private boolean deviceIsSet;
+    private boolean capturing;
 
     //BiometricPassportSdk
     private BiometricPassportSdkAndroid biometricsSdk;
@@ -59,17 +60,14 @@ public class DermalogDeviceManager implements IDeviceManager{
 
         Log.d(TAG, "initDermalogDevice");
         try{
-            if (!BuildConfig.LICENSE.isEmpty()) {
-                com.dermalog.afis.fingercode3.Android.SetLicense(BuildConfig.LICENSE.getBytes(), mainActivity.getApplicationContext());
-            } else {
-                com.dermalog.afis.fingercode3.Android.SetContext(mainActivity.getApplicationContext());
-            }
+            com.dermalog.afis.fingercode3.Android.SetLicense(BuildConfig.LICENSE.getBytes(), mainActivity.getApplicationContext());
             switchPowerOn();
         }catch (Exception e){
             deviceIsSet = false;
-            Log.d(TAG, "initDevice() called failed");
+            Log.d(TAG, "initDevice() called failed" + e.getMessage());
             return ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
         }
+        capturing = false;
         deviceIsSet = true;
         return ErrorCodes.FPC_SUCCESS;
     }
@@ -275,6 +273,14 @@ public class DermalogDeviceManager implements IDeviceManager{
     }
 
     private void closeScanner() {
+        if (capturing){
+            try{
+                scannerHandle.stopCapture();
+                capturing = false;
+            }catch (BiometricPassportException e){
+                Log.d(TAG, "closeScanner() called " + e.getMessage());
+            }
+        }
         if (scannerHandle != null) {
             scannerHandle.dispose();
             scannerHandle = null;
@@ -292,6 +298,7 @@ public class DermalogDeviceManager implements IDeviceManager{
             return ErrorCodes.FPC_ERROR_NOT_INITIALIZED;
         }
 
+        capturing = true;
         setStatusLed(StatusLedColor.GREEN);
         scannerHandle.startCapture();
         return ErrorCodes.FPC_SUCCESS;
