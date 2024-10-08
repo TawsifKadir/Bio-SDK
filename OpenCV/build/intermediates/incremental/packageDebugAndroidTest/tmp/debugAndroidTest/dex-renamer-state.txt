@@ -1,15 +1,15 @@
-#Tue Sep 24 14:18:30 BDT 2024
-base.0=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeExtDexDebugAndroidTest\\classes.dex
-base.1=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\10\\classes.dex
-base.10=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\2\\classes.dex
-base.2=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\12\\classes.dex
-base.3=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\13\\classes.dex
-base.4=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\1\\classes.dex
-base.5=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\2\\classes.dex
-base.6=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\6\\classes.dex
-base.7=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\8\\classes.dex
-base.8=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\9\\classes.dex
-base.9=F\:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
+#Sun Sep 29 20:14:17 BDT 2024
+base.0=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeExtDexDebugAndroidTest\\classes.dex
+base.1=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\10\\classes.dex
+base.10=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\2\\classes.dex
+base.2=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\12\\classes.dex
+base.3=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\13\\classes.dex
+base.4=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\1\\classes.dex
+base.5=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\2\\classes.dex
+base.6=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\6\\classes.dex
+base.7=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\8\\classes.dex
+base.8=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeLibDexDebugAndroidTest\\9\\classes.dex
+base.9=C\:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\dex\\debugAndroidTest\\mergeProjectDexDebugAndroidTest\\0\\classes.dex
 path.0=classes.dex
 path.1=10/classes.dex
 path.10=2/classes.dex

@@ -3,7 +3,6 @@ package com.kit.fingerprintcapture.utils;
 import android.util.Log;
 
 import com.machinezoo.fingerprintio.TemplateFormat;
-import com.machinezoo.fingerprintio.utils.TemplateUtils;
 import com.machinezoo.sourceafis.FingerprintCompatibility;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 

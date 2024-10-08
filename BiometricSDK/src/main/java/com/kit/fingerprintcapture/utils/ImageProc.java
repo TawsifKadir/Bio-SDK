@@ -11,10 +11,10 @@ import android.util.Log;
 
 import com.seamfix.calculatenfiq.NFIQUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 import SecuGen.FDxSDKPro.SGWSQLib;
-import SecuGen.FDxSDKPro.SGNFIQLib;
 
 public class ImageProc {
     private static SGWSQLib wsqLib;
@@ -51,6 +51,7 @@ public class ImageProc {
         wsqLib.SGWSQEncode(wsqData,SGWSQLib.BITRATE_15_TO_1,mImageBuffer,width,height,8,500);
         return wsqData;
     }
+
     public static byte[] fromWSQ(byte[] wsqBuffer, int width ,int height){
 
         if(wsqBuffer==null){
@@ -99,11 +100,11 @@ public class ImageProc {
     }
 
     // Create a default bitmap with a solid color or text
-    public static Bitmap createPlaceholderBitmap(int width, int height, String placeholderText) {
+    public static Bitmap createEmptyBitmap(int width, int height) {
         Bitmap placeholderBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         Canvas canvas = new Canvas(placeholderBitmap);
-        canvas.drawColor(Color.LTGRAY); // Background color
+        canvas.drawColor(Color.WHITE); // Background color
 
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
@@ -111,7 +112,7 @@ public class ImageProc {
         paint.setTextAlign(Paint.Align.CENTER);
 
         // Draw the placeholder text in the center of the bitmap
-        canvas.drawText(placeholderText, width / 2, height / 2, paint);
+        canvas.drawText("", width / 2, height / 2, paint);
 
         return placeholderBitmap;
     }
@@ -167,6 +168,34 @@ public class ImageProc {
                     return 0;
 
             }
+    }
+
+
+    public static byte[] toGrayscaleArray(Bitmap bmpOriginal)
+    {
+        int width, height;
+        height = bmpOriginal.getHeight();
+        width = bmpOriginal.getWidth();
+        byte[] bmpData = new byte[width*height];
+        int pos = 0;
+
+        for (int y=0; y< height; ++y) {
+            for (int x=0; x< width; ++x){
+
+                int argb = bmpOriginal.getPixel(x, y);
+
+                int alpha = (argb >> 24) & 0xFF;  // Extract alpha
+                int red   = (argb >> 16) & 0xFF;  // Extract red
+                int green = (argb >> 8) & 0xFF;   // Extract green
+                int blue  = argb & 0xFF;          // Extract blue
+
+                int gray = (int) (0.299 * red + 0.587 * green + 0.114 * blue);
+
+                bmpData[pos++] = (byte)gray;
+
+            }
+        }
+        return bmpData;
     }
 
 }

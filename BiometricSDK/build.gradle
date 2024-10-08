@@ -96,19 +96,17 @@ android {
 
 dependencies {
 
-    implementation files('libs/FDxSDKProFDAndroid.jar','libs/MorphoSmart_SDK_6.42.0.0.jar')
+    implementation files('libs/FDxSDKProFDAndroid.jar')
+    implementation files('libs/DermalogFormatCoversionCBEFF-1.2.27.2422.jar')
 
     implementation "com.dermalog.android:DermalogHardwareDevicesCommon:2.+"
     implementation 'com.dermalog.android.biometricpassportsdk:DermalogBiometricPassportSdk:1.+'
     implementation 'com.dermalog.android:DermalogImageContainer:2.+'
     implementation 'com.dermalog.android:DermalogFingerCode3:4.+'
-    implementation 'com.dermalog.android:DermalogNistQualityCheck:2.+'
 
     //SVT5008 uses a Integrated Biometrics or Suprema fingerprint scanner
     implementation "com.dermalog.android:DermalogHardwareSVT5008:1.+"
     implementation "com.dermalog.android.biometricpassportsdk:DermalogBPSupremaBioMiniPlugin:1.+"
-    implementation "com.dermalog.android.biometricpassportsdk:DermalogBPTF10:1.+"
-
     ////Photo Capture
     implementation ("com.github.yalantis:ucrop:2.2.8")
 
@@ -123,7 +121,7 @@ dependencies {
 //    implementation("com.machinezoo.noexception:noexception:1.4.4")
 //    implementation("commons-io:commons-io:2.6")
 //    implementation("net.sourceforge.streamsupport:streamsupport:1.6.1")
-
+    implementation ("com.machinezoo.sourceafis:sourceafis:3.18.1")
     implementation("com.github.seamfix11:android-nfiq-calc:1.0.1")
 
 //    implementation ("com.machinezoo.stagean:stagean:1.3.0")

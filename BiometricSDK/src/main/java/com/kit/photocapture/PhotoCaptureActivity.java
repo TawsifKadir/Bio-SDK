@@ -443,11 +443,13 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
         try {
 
-            if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-                Core.flip(inputFrame.rgba().t(), mRgba, 1);
-            }else{
-                Core.flip(inputFrame.rgba().t(), mRgba, 0);
-            }
+            mRgba = inputFrame.rgba();
+
+//            if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
+//                Core.flip(inputFrame.rgba().t(), mRgba, 1);
+//            }else{
+//                Core.flip(inputFrame.rgba().t(), mRgba, 0);
+//            }
 
 
             if (mInputSize == null) {
@@ -469,11 +471,11 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
             }
 
-            if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-                Core.flip(mRgba.t(), mRgba, 0);
-            }else{
-                mRgba = mRgba.t();
-            }
+//            if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
+//                Core.flip(mRgba.t(), mRgba, 0);
+//            }else{
+//                mRgba = mRgba.t();
+//            }
 
 //            if(mFaces!=null && mFaces.rows()==1) {
 //

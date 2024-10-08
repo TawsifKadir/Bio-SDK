@@ -1,9 +1,5 @@
 package com.kit.fingerprintcapture.handlers;
 
-
-import static com.morpho.morphosmart.sdk.FalseAcceptanceRate.MORPHO_FAR_6;
-import static com.morpho.morphosmart.sdk.FalseAcceptanceRate.MORPHO_FAR_8;
-
 import android.app.Activity;
 
 import android.util.Log;
@@ -12,15 +8,12 @@ import android.widget.Toast;
 import com.dermalog.afis.fingercode3.Matcher;
 import com.dermalog.afis.fingercode3.Template;
 
-
 import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.template.TemplateExtractor;
 
 import com.kit.fingerprintcapture.template.ISOTemplate;
-import com.morpho.morphosmart.sdk.TemplateType;
-
 
 import java.util.ArrayList;
 
@@ -41,7 +34,6 @@ public class FingerprintMatchingHandler {
 
     private Matcher matcher;
 
-
     public FingerprintMatchingHandler(Activity mActivity) {
         this.mActivity = mActivity;
         this.isInitialized = false;
@@ -55,7 +47,6 @@ public class FingerprintMatchingHandler {
         fmdSize[0] = 1000 + 256 * 6;
 
         ISOTemplate fmdTmpl = new ISOTemplate(null,0);
-
 
         int ret = TemplateExtractor.getMyInstance().createFmdFromRaw(nowImage,500,height,width,TemplateExtractor.FJFX_FMD_ISO_19794_2_2005,fmd[0],fmdSize);
 
@@ -125,24 +116,24 @@ public class FingerprintMatchingHandler {
 
 
             Template probeTemplate = new Template();
-            probeTemplate.setData(searchTemplate.getIsoTemplate());
-            probeTemplate.setFormat(subjectTmplType);
-
+            probeTemplate.SetData(searchTemplate.getIsoTemplate(),subjectTmplType);
 
             referenceTemplateList.forEach(new Consumer<ISOTemplate>() {
                 @Override
                 public void accept(ISOTemplate referenceTemplate) {
                     try {
                         Template candidate = new Template();
-                        candidate.setFormat(candidateTmplType);
-                        candidate.setData(referenceTemplate.getIsoTemplate());
+                        candidate.SetData(referenceTemplate.getIsoTemplate(),candidateTmplType);
+                        Log.d(TAG, "Candidate template size is : " + referenceTemplate.getIsoTemplate().length);
                         double nowScore = matcher.Match(probeTemplate,candidate);
+                        Log.d(TAG, "Fingerprint Match Score is " + nowScore);
                         if(nowScore>=30) {
                             matchScoreList.add(nowScore);
                         }
+                        Log.d(TAG, "accept() called with score: " + nowScore);
                     }catch(Throwable t){
-                        Log.e(TAG, "Verify Fingerprint Error : "+t.getMessage());
-                        showToast("Verify Fingerprint Error : "+t.getMessage());
+                        Log.e(TAG, "Verify Fingerprint Error while matching : "+t.getMessage());
+                        showToast("Verify Fingerprint Error while matching : "+t.getMessage());
                     }
                 }
             });
@@ -158,8 +149,11 @@ public class FingerprintMatchingHandler {
                         return o2.intValue();
                     }
                 });
-                mr.setMatchScore((int)score.get());
-                result.add(mr);
+                if(score.isPresent()) {
+                    Log.d(TAG, "Matching Score: " + score);
+                    mr.setMatchScore( ((Double) score.get()).intValue() );
+                    result.add(mr);
+                }
 
             }
 
@@ -170,8 +164,8 @@ public class FingerprintMatchingHandler {
 
         }finally {
             if(isError){
-                Log.e(TAG, "Verify Fingerprint Error : "+errorObject.getMessage());
-                showToast("Verify Fingerprint Error : "+errorObject.getMessage());
+                Log.e(TAG, "Verify Fingerprint Error after matching: "+errorObject.getMessage());
+                showToast("Verify Fingerprint Error after matching: "+errorObject.getMessage());
                 errorObject.printStackTrace();
                 errorObject = null;
             }
@@ -238,5 +232,9 @@ public class FingerprintMatchingHandler {
 
     public void setMatcher(Matcher matcher){
         this.matcher = matcher;
+    }
+
+    public Matcher getMatcher(){
+        return this.matcher;
     }
 }
