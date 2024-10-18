@@ -1,5 +1,5 @@
 {
-  "installationFolder": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "installationFolder": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": [
           {
@@ -16,8 +16,8 @@
             "abiApi": 24,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a\\android_gradle_build.json"
+            "abiLibrary": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "F:\\AndroidProjects\\BiometricSDK\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a\\android_gradle_build.json"
           }
         ]
       }

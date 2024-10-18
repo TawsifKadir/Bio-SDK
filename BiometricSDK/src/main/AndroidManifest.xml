@@ -48,8 +48,8 @@
 
         <activity
             android:name=".BiometricSDK"
-            android:theme="@style/AppTheme"
             android:exported="true"
+            android:configChanges="keyboardHidden|orientation"
             >
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />

@@ -105,5 +105,9 @@ public class PhotoCaptureView extends JavaCameraView implements PictureCallback 
             mCamera.setPreviewCallback(null);
         }
     }
+
+    public float getScaleFactor(){
+        return mScale;
+    }
 }
 

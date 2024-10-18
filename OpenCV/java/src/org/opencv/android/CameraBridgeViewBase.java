@@ -401,6 +401,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         Mat modified;
 
         if (mListener != null) {
+
             modified = mListener.onCameraFrame(frame);
         } else {
             modified = frame.rgba();
@@ -411,11 +412,11 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         boolean bmpValid = true;
         if (modified != null) {
 
-            if(mCameraIndex==CAMERA_ID_FRONT) {
-                Mat flippedImg = new Mat();
-                Core.flip(modified, flippedImg, 1);
-                flippedImg.copyTo(modified);
-            }
+//            if(mCameraIndex==CAMERA_ID_FRONT) {
+//                Mat flippedImg = new Mat();
+//                Core.flip(modified, flippedImg, 1);
+//                flippedImg.copyTo(modified);
+//            }
 
             try {
                 Utils.matToBitmap(modified, mCacheBitmap);

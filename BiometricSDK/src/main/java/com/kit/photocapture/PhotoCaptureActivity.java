@@ -2,6 +2,8 @@ package com.kit.photocapture;
 
 
 
+
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +44,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.hardware.camera2.CaptureResult;
 import android.net.Uri;
@@ -249,6 +252,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                         Throwable errorObject = null;
                         if (mOpenCvCameraView != null) {
                             mOpenCvCameraView.disableView();
+
                             try {
                                 if (nowCameraIndex == CameraBridgeViewBase.CAMERA_ID_BACK) {
                                     mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT);
@@ -262,6 +266,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                                 errorObject = t;
                             } finally {
 
+                                mInputSize = null;
                                 mOpenCvCameraView.enableView();
 
                                 if (isError) {
@@ -343,7 +348,8 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     }
 
     public void visualize(Mat rgba, Mat faces) {
-
+        int xoff = 0;
+        int yoff=0;
         int thickness = 2;
         float[] faceData = new float[faces.cols() * faces.channels()];
 
@@ -360,12 +366,13 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
             if(faceData[14]<=FACE_CONFIDENCE_THRESHHOLD) continue;
 
+
             // Draw bounding box
             Imgproc.rectangle(rgba, new Rect(Math.round(mScale*faceData[0]), Math.round(mScale*faceData[1]),
                             Math.round(mScale*faceData[2]), Math.round(mScale*faceData[3])),
                     BOX_COLOR, thickness);
             // Draw landmarks
-            Imgproc.circle(rgba, new Point(Math.round(mScale*faceData[4]), Math.round(mScale*faceData[5])),
+            Imgproc.circle(rgba, new Point(Math.round(mScale*faceData[4]), Math.round(mScale*faceData[5]) ),
                     2, RIGHT_EYE_COLOR, thickness);
             Imgproc.circle(rgba, new Point(Math.round(mScale*faceData[6]), Math.round(mScale*faceData[7])),
                     2, LEFT_EYE_COLOR, thickness);
@@ -377,7 +384,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     2, MOUTH_LEFT_COLOR, thickness);
 
 
-
         }
     }
     public synchronized ComplianceResult checkCompliance(Mat nowRgba) {
@@ -385,12 +391,21 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         Mat nowMBgr = new Mat();
         Mat nowMBgrScaled = new Mat();
         Mat nowFaces = new Mat();
-        Size nowInputSize = new Size(Math.round(nowRgba.cols() / mScale), Math.round(nowRgba.rows() / mScale));
+        Size nowInputSize = null;//// new Size(Math.round(nowRgba.cols() / mScale), Math.round(nowRgba.rows() / mScale));
         boolean isError = false;
         Throwable errorObject = null;
 
         if(mFaceDetector!=null) {
             try {
+
+                if(nowCameraIndex==CameraBridgeViewBase.CAMERA_ID_FRONT) {
+                    Mat flippedImg = new Mat();
+                    Core.flip(nowRgba, flippedImg, 1);
+                    flippedImg.copyTo(nowRgba);
+                }
+
+                nowInputSize =  new Size(Math.round(nowRgba.cols() / mScale), Math.round(nowRgba.rows() / mScale));
+
                 mComplianceFaceDetector.setInputSize(nowInputSize);
 
                 Imgproc.cvtColor(nowRgba, nowMBgr, Imgproc.COLOR_RGBA2BGR);
@@ -422,13 +437,13 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 errorObject = t;
             }finally {
                 if(isError){
-                   //// Toast.makeText(PhotoCaptureActivity.this, "Error occured while checking compliance.", Toast.LENGTH_LONG).show();
+                    //// Toast.makeText(PhotoCaptureActivity.this, "Error occured while checking compliance.", Toast.LENGTH_LONG).show();
                     errorObject.printStackTrace();
                 }
                 nowMBgr.release();
                 nowMBgrScaled.release();
                 nowFaces.release();
-               /// mInputSize=null;
+                /// mInputSize=null;
                 errorObject=null;
 
             }
@@ -445,12 +460,11 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
             mRgba = inputFrame.rgba();
 
-//            if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-//                Core.flip(inputFrame.rgba().t(), mRgba, 1);
-//            }else{
-//                Core.flip(inputFrame.rgba().t(), mRgba, 0);
-//            }
-
+            if(nowCameraIndex==CameraBridgeViewBase.CAMERA_ID_FRONT) {
+                Mat flippedImg = new Mat();
+                Core.flip(mRgba, rgbaFlipped, 1);
+                rgbaFlipped.copyTo(mRgba);
+            }
 
             if (mInputSize == null) {
                 mInputSize = new Size(Math.round(mRgba.cols() / mScale), Math.round(mRgba.rows() / mScale));
@@ -471,20 +485,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
             }
 
-//            if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-//                Core.flip(mRgba.t(), mRgba, 0);
-//            }else{
-//                mRgba = mRgba.t();
-//            }
-
-//            if(mFaces!=null && mFaces.rows()==1) {
-//
-//                float[] faceData = new float[mFaces.cols() * mFaces.channels()];
-//                ///Drawing score
-//                //Adding text to the image
-//                Imgproc.putText(mRgba, "Score : " + Math.round(faceData[14]), new Point(mScale * faceData[0], (mScale * faceData[1]) - 20),
-//                        Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0, 0, 255), 3);
-//            }
         }catch(Throwable t){
             isError = true;
             errorObject = t;
@@ -492,7 +492,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
             errorObject = null;
         }
 
-//        if(nowCameraIndex==CameraBridgeViewBase.CAMERA_ID_FRONT) return rgbaFlipped;
 
         return mRgba;
     }
@@ -506,7 +505,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         if(data!=null) {
             if(PhotoCaptureActivity.isDebug)
                 Log.d(TAG, "Picture Data Size "+data.length);
-            CaptureDataProcessor captureDataProcessor = new CaptureDataProcessor();
+            CaptureDataProcessor captureDataProcessor = new CaptureDataProcessor(nowCameraIndex);
             captureDataProcessor.execute(data);
         }
     }
@@ -630,14 +629,15 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     }
 
     private class CaptureDataProcessor extends AsyncTask<byte[],Object,Object>{
-
+        private int cameraIdx = CameraBridgeViewBase.CAMERA_ID_ANY ;
+        CaptureDataProcessor(int cameraIdx){
+            this.cameraIdx = cameraIdx;
+        }
         @Override
         protected Object doInBackground(byte[]... bytes) {
 
             Mat nowImage = new Mat();
-            Mat flippedImage = new Mat();
-            Mat rotatedImage = new Mat();
-            Bitmap flippedBmp = null;
+            Bitmap nowBmp = null;
             boolean isError = false;
             Throwable errorObject = null;
             byte[] data = bytes[0];
@@ -651,17 +651,18 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 options.inMutable = true;
                 Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length, options);
 
+
+                ///Log.d(TAG,">>>> Saved image to : "+Utility.getImageUri(PhotoCaptureActivity.this,bmp));
+
                 Utils.bitmapToMat(bmp, nowImage, false);
 
-                if(nowCameraIndex!=CameraBridgeViewBase.CAMERA_ID_FRONT) {
-                    Core.rotate(nowImage, flippedImage, Core.ROTATE_90_CLOCKWISE);
-                }else{
-                    Core.rotate(nowImage, rotatedImage, Core.ROTATE_90_COUNTERCLOCKWISE);
-                    Core.flip(rotatedImage, flippedImage, 1);
+                if(cameraIdx==CameraBridgeViewBase.CAMERA_ID_FRONT) {
+                    Mat flippedImg = new Mat();
+                    Core.flip(nowImage, flippedImg, 1);
+                    flippedImg.copyTo(nowImage);
                 }
 
-
-                ComplianceResult nowResult = checkCompliance(flippedImage);
+                ComplianceResult nowResult = checkCompliance(nowImage);
 
 
                 if(nowResult==null){
@@ -671,11 +672,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 if (nowResult != ComplianceResult.COMPLIED) {
                     mComplianceResult = nowResult;
 
-                   /* Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-                    flippedBmp = Bitmap.createBitmap(flippedImage.cols(), flippedImage.rows(), conf);
-                    Utils.matToBitmap(flippedImage, flippedBmp);
-                    startImageCropActivity(flippedBmp);
-*/
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -686,9 +682,9 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     ((PhotoCaptureView)mOpenCvCameraView).startPreview();
                 } else {
                     Bitmap.Config conf = Bitmap.Config.ARGB_8888; // see other conf types
-                    flippedBmp = Bitmap.createBitmap(flippedImage.cols(), flippedImage.rows(), conf);
-                    Utils.matToBitmap(flippedImage, flippedBmp);
-                    startImageCropActivity(flippedBmp);
+                    nowBmp = Bitmap.createBitmap(nowImage.cols(), nowImage.rows(), conf);
+                    Utils.matToBitmap(nowImage, nowBmp);
+                    startImageCropActivity(nowBmp);
                 }
             }catch (Throwable t){
                 isError = true;
@@ -706,8 +702,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     ((PhotoCaptureView)mOpenCvCameraView).startPreview();
                 }
                 nowImage.release();
-                flippedImage.release();
-                rotatedImage.release();
+                nowBmp = null;
                 errorObject=null;
             }
             return null;
