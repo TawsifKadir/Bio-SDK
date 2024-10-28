@@ -1,12 +1,12 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-//    id 'com.android.library'
+//    alias(libs.plugins.androidApplication)
+    id 'com.android.library'
 
 }
 
 def versionMajor = 0
 def versionMinor = 41
-def versionPatch = 11
+def versionPatch = 13
 
 android {
     namespace 'com.kit.biometricsdk'

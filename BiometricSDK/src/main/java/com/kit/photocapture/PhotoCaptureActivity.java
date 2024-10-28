@@ -166,6 +166,9 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
         super.onCreate(savedInstanceState);
 
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         Intent intent = getIntent();
         if (intent == null) {
             Toast.makeText(getApplicationContext(), "Null intent received", Toast.LENGTH_LONG).show();
@@ -455,6 +458,8 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         boolean isError = false;
         Throwable errorObject = null;
         Mat rgbaFlipped = new Mat();
+
+        Log.d(TAG, "onCameraFrame() called with: inputFrame");
 
         try {
 
