@@ -49,14 +49,21 @@
             android:theme="@style/AppTheme"
             android:exported="true"
             >
-<!--                <intent-filter>-->
-<!--                    <action android:name="android.intent.action.MAIN" />-->
-<!--                    <category android:name="android.intent.category.LAUNCHER" />-->
-<!--                </intent-filter>-->
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
         </activity>
 
         <activity
-            android:name="com.kit.photocapture.PhotoCaptureActivity"
+            android:name="com.kit.photocapture.activity.PhotoCaptureActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            />
+
+        <activity
+            android:name="com.kit.photocapture.activity.PhotoCaptureActivity2"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:screenOrientation="portrait"
             android:exported="true"
