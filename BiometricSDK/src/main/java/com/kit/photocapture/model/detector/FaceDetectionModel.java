@@ -13,9 +13,9 @@ import com.kit.photocapture.model.type.ModelType;
 public class FaceDetectionModel {
 
     // Default configuration constants
-    public static final float DEFAULT_SCORE_THRESHOLD = 0.6f;
+    public static final float DEFAULT_SCORE_THRESHOLD = 0.80f;
     public static final float DEFAULT_NMS_THRESHOLD = 0.4f;
-    public static final int DEFAULT_TOP_K = 100;
+    public static final int DEFAULT_TOP_K = 150;
     public static final Size DEFAULT_INPUT_SIZE = new Size(320, 320);
 
     private final FaceDetectorYN faceDetector;
@@ -30,8 +30,18 @@ public class FaceDetectionModel {
                 DEFAULT_SCORE_THRESHOLD, DEFAULT_NMS_THRESHOLD, DEFAULT_TOP_K);
     }
 
+    public FaceDetectionModel(Context context, int width, int height, double aspectRatio) {
+        this(context, new MatOfByte(), new Size(width, height/aspectRatio),
+                DEFAULT_SCORE_THRESHOLD, DEFAULT_NMS_THRESHOLD, DEFAULT_TOP_K);
+    }
+
     public FaceDetectionModel(Context context, MatOfByte config, int width, int height) {
         this(context, config, new Size(width, height),
+                DEFAULT_SCORE_THRESHOLD, DEFAULT_NMS_THRESHOLD, DEFAULT_TOP_K);
+    }
+
+    public FaceDetectionModel(Context context, MatOfByte config, int width, int height, double aspectRatio) {
+        this(context, config, new Size(width, height/aspectRatio),
                 DEFAULT_SCORE_THRESHOLD, DEFAULT_NMS_THRESHOLD, DEFAULT_TOP_K);
     }
 

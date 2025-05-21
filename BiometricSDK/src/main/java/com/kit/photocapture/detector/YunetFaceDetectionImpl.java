@@ -19,16 +19,27 @@ public class YunetFaceDetectionImpl implements FaceDetector{
         this.model = new FaceDetectionModel(context);
         this.mFaceDetector = null;
     }
-
     public YunetFaceDetectionImpl(Context context, int width, int height){
         this.context = context;
         this.model = new FaceDetectionModel(context, width, height);
         this.mFaceDetector = null;
     }
 
+    public YunetFaceDetectionImpl(Context context, int width, int height, double aspectRatio){
+        this.context = context;
+        this.model = new FaceDetectionModel(context, width, height, aspectRatio);
+        this.mFaceDetector = null;
+    }
+
     public YunetFaceDetectionImpl(Context context, MatOfByte config, int width, int height){
         this.context = context;
         this.model = new FaceDetectionModel(context, config, width, height);
+        this.mFaceDetector = null;
+    }
+
+    public YunetFaceDetectionImpl(Context context, MatOfByte config, int width, int height, double aspectRatio){
+        this.context = context;
+        this.model = new FaceDetectionModel(context, config, width, height, aspectRatio);
         this.mFaceDetector = null;
     }
     @Override

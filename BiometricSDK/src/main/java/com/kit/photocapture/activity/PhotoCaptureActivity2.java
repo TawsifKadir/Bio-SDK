@@ -23,6 +23,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +39,10 @@ import com.kit.photocapture.view.BoxOverlayView;
 
 public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
+
+    private boolean facePreviouslyDetected = false;
+    private boolean faceImageSaved = false;
+    private boolean noFaceImageSaved = false;
     private static final String TAG = "PhotoCaptureActivity";
 
     private Mat mRgb;
@@ -190,24 +196,23 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
-        Mat gray = new Mat();
+
+        Size size = mRgba.size();
+
+        double aspectRatio = size.width/ size.height;
 
         // Fix front camera orientation (vertical flip)
         if (mIsFrontCamera) {
             Core.flip(mRgba, mRgba, 1); // Horizontal flip (mirror)
         }
 
-//        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            Core.rotate(mRgba, mRgba, Core.ROTATE_90_COUNTERCLOCKWISE);
-//        }
+        Imgproc.cvtColor(mRgba, mRgb, Imgproc.COLOR_RGBA2RGB);
 
-        Imgproc.cvtColor(mRgba, gray, Imgproc.COLOR_RGBA2GRAY);
-        Imgproc.equalizeHist(gray, gray); // Improve contrast
+        Imgproc.resize(mRgb, mResized, FaceDetectionModel.DEFAULT_INPUT_SIZE, aspectRatio);  // mInputSize = new Size(320, 320)
 
-        // Then convert to RGB for model
-        Imgproc.cvtColor(gray, mRgb, Imgproc.COLOR_GRAY2RGB);
-
-        Imgproc.resize(mRgb, mResized, FaceDetectionModel.DEFAULT_INPUT_SIZE);  // mInputSize = new Size(320, 320)
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Core.rotate(mResized, mResized, Core.ROTATE_90_CLOCKWISE);
+        }
 
         // Detect faces
         Mat faces = new Mat();
@@ -215,6 +220,26 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         Log.d(TAG, "Resized Image = [" + mResized + "]");
 
         mFaceDetector.detect(mResized, faces);
+
+        Log.d(TAG, "Number of faces: " + faces.rows());
+
+        boolean faceDetected = faces.rows() == 1;
+
+// Save only once when face is detected for the first time
+        if (faceDetected && !facePreviouslyDetected && !faceImageSaved) {
+            saveFrame(mResized, "face_detected.jpg");
+            faceImageSaved = true;
+            noFaceImageSaved = false; // reset for next no-face condition
+        }
+
+// Save only once when face is lost
+        if (!faceDetected ) {
+            saveFrame(mResized, "no_face_detected.jpg");
+            noFaceImageSaved = true;
+            faceImageSaved = false; // reset for next face condition
+        }
+
+        facePreviouslyDetected = faceDetected;
 
         Log.d(TAG, "Faces matrix = [" + faces + "]");
 
@@ -228,26 +253,25 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         android.graphics.Rect boxRect = mBoxOverlay.getBoxRect();
         Log.d(TAG, "Box Coordinates x = " + boxRect.left + " y = " + boxRect.top + " w " + (boxRect.right - boxRect.left) + " h " + (boxRect.top - boxRect.bottom));
 
-        mBoxOverlay.setCompliant(faces.rows() == 1);
+//        mBoxOverlay.setCompliant(faces.rows() == 1);
 
-//        ComplianceResult state = faces.rows() == 0 ? ComplianceResult.NO_FACE :
-//                faces.rows() == 1 ? ComplianceResult.COMPLIED :
-//                        ComplianceResult.MULTIPLE_FACE;
-//
-//        Log.d(TAG, "Face detected = [" + state + "]");
-//
-//        switch (state) {
-//            case NO_FACE:
-//                handleNoFace();
-//                break;
-//            case COMPLIED:
-//                handleSingleFace(faces);
-//                break;
-//            case MULTIPLE_FACE:
-//                handleMultipleFaces();
-//                break;
-//        }
-        gray.release();
+        ComplianceResult state = faces.rows() == 0 ? ComplianceResult.NO_FACE :
+                faces.rows() == 1 ? ComplianceResult.COMPLIED :
+                        ComplianceResult.MULTIPLE_FACE;
+
+        Log.d(TAG, "Face detected = [" + state + "]");
+
+        switch (state) {
+            case NO_FACE:
+                handleNoFace();
+                break;
+            case COMPLIED:
+                handleSingleFace(faces);
+                break;
+            case MULTIPLE_FACE:
+                handleMultipleFaces();
+                break;
+        }
         faces.release();
         return mRgba;
     }
@@ -269,14 +293,14 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
 
         Rect faceRect = new Rect((int)x[0], (int)y[0], (int)w[0], (int)h[0]);
 
-        if (!isWithinComplianceBox(faceRect)) {
-            runOnUiThread(() -> {
-                mStatusText.setText("Center your face in the frame");
-                mBoxOverlay.setCompliant(false);
-                mCapture.setEnabled(false);
-            });
-            return;
-        }
+//        if (!isWithinComplianceBox(faceRect)) {
+//            runOnUiThread(() -> {
+//                mStatusText.setText("Center your face in the frame");
+//                mBoxOverlay.setCompliant(false);
+//                mCapture.setEnabled(false);
+//            });
+//            return;
+//        }
 
         ICAOComplianceUtils.checkICAOCompliance(
                 faces,
@@ -345,4 +369,24 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
             }
         }
     }
+
+
+    private void saveFrame(Mat frame, String fileName) {
+        try {
+            Bitmap bmp = Bitmap.createBitmap(frame.cols(), frame.rows(), Bitmap.Config.ARGB_8888);
+            org.opencv.android.Utils.matToBitmap(frame, bmp);
+
+            File path = getExternalFilesDir(null);
+            File file = new File(path, fileName);
+            FileOutputStream out = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.flush();
+            out.close();
+
+            Log.d(TAG, "Frame saved: " + file.getAbsolutePath());
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving frame", e);
+        }
+    }
+
 }

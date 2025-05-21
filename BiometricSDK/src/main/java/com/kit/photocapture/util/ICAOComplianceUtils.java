@@ -31,7 +31,7 @@ public class ICAOComplianceUtils {
 
         Rect faceRect = new Rect((int)x[0], (int)y[0], (int)w[0], (int)h[0]);
 
-        float confidence = (float)face.get(0,14)[14];
+        float confidence = (float)face.get(0,14)[0];
         Point[] landmarks = extractLandmarks(face, frameSize);
 
         // 2. Check confidence score
