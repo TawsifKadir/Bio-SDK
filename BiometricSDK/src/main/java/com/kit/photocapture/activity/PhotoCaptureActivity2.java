@@ -18,6 +18,7 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -273,6 +274,24 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
                 handleMultipleFaces();
                 break;
         }
+
+        if (faces.rows() > 0) {
+            double[] x1 = faces.get(0,0);
+            double[] y1 = faces.get(0,1);
+            double[] w1 = faces.get(0,2);
+            double[] h1 = faces.get(0,3);
+
+            Log.d(TAG, "Drawing Bbox");
+
+            Imgproc.rectangle(
+                    mRgba,
+                    new Point(x1[0], y1[0]),
+                    new Point(x1[0] + w1[0], y1[0] + h1[0]),
+                    new Scalar(0, 255, 0), // Green box
+                    2
+            );
+        }
+
         faces.release();
         return mRgba;
     }
