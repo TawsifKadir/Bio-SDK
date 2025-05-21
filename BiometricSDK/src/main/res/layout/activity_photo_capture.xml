@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <org.opencv.android.JavaCameraView
+        android:id="@+id/camera_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="wrap_content"
+        android:text="Hello World"
+        android:layout_marginTop="120dp"
+        android:textColor="@color/green"
+        android:textSize="20sp"
+        android:layout_gravity="top|center"
+        android:layout_height="wrap_content"/>
+
+    <com.kit.photocapture.view.BoxOverlayView
+        android:id="@+id/box_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
+
+    <ImageButton
+        android:id="@+id/capture_button"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_camera"
+        android:enabled="false" />
+
+    <ImageButton
+        android:id="@+id/switch_button"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="32dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_rotate"
+        android:enabled="false" />
+
+</FrameLayout>

@@ -17,7 +17,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.kit.photocapture.Utility;
+import com.kit.photocapture.activity.PhotoCaptureActivity2;
+import com.kit.photocapture.util.Utility;
+import com.kit.photocapture.activity.PhotoCaptureActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,12 +49,9 @@ public class BiometricSDK extends AppCompatActivity {
 
         mPhotoView = findViewById(R.id.photoView);
 
-        mPhotoCaptureBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent nowIntent = new Intent(BiometricSDK.this,com.kit.photocapture.PhotoCaptureActivity.class);
-                startActivityForResult(nowIntent,2);
-            }
+        mPhotoCaptureBtn.setOnClickListener(v -> {
+            Intent nowIntent = new Intent(BiometricSDK.this, PhotoCaptureActivity2.class);
+            startActivityForResult(nowIntent,2);
         });
 
         mFpCaptureBtn.setOnClickListener(new View.OnClickListener() {

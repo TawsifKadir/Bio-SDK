@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.kit.photocapture.PhotoCaptureActivity"
+    tools:context="com.kit.photocapture.activity.PhotoCaptureActivity"
     android:orientation="vertical">
 
-    <com.kit.photocapture.PhotoCaptureView
+    <com.kit.photocapture.view.PhotoCaptureView
         android:id="@+id/faisal_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
