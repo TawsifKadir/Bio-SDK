@@ -87,6 +87,7 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         setContentView(R.layout.activity_photo_capture);
 
         initializeViews();
+
     }
 
     private void initializeViews() {

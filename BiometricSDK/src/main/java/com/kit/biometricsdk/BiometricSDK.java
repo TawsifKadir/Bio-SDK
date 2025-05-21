@@ -2,6 +2,7 @@ package com.kit.biometricsdk;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,12 +18,17 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.mediapipe.formats.proto.LandmarkProto;
+import com.google.mediapipe.solutions.facemesh.FaceMesh;
+import com.google.mediapipe.solutions.facemesh.FaceMeshOptions;
 import com.kit.photocapture.activity.PhotoCaptureActivity2;
 import com.kit.photocapture.util.Utility;
 import com.kit.photocapture.activity.PhotoCaptureActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+
 
 public class BiometricSDK extends AppCompatActivity {
     private Button mCloseBtn;
@@ -62,12 +68,51 @@ public class BiometricSDK extends AppCompatActivity {
             }
         });
 
-        mCloseBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
+        mCloseBtn.setOnClickListener(v -> {
+            try {
+                Bitmap testBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sample_face);
+
+                FaceMeshOptions options = FaceMeshOptions.builder()
+                        .setStaticImageMode(true)
+                        .setMaxNumFaces(1)
+                        .setRefineLandmarks(true)
+                        .build();
+
+                FaceMesh faceMesh = new FaceMesh(this, options);
+
+                faceMesh.setErrorListener((message, e) -> {
+                    Log.e(TAG, "FaceMesh error: " + message, e);
+                });
+
+                faceMesh.setResultListener(result -> {
+                    if (result == null || result.multiFaceLandmarks().isEmpty()) {
+                        Log.d(TAG, "❌ No landmarks detected.");
+                    } else {
+                        LandmarkProto.NormalizedLandmarkList landmarkList = result.multiFaceLandmarks().get(0);
+                        int count = landmarkList.getLandmarkCount();
+                        Log.d(TAG, "✅ Landmark count: " + count);
+
+                        // Sample landmark indices to inspect
+                        int[] sampleIndices = {0, 1, 33, 263};
+
+                        for (int idx : sampleIndices) {
+                            if (idx < count) {
+                                LandmarkProto.NormalizedLandmark lm = landmarkList.getLandmark(idx);
+                                Log.d(TAG, String.format("Landmark[%d] -> x: %.4f, y: %.4f, z: %.4f, visibility: %.4f, presence: %.4f",
+                                        idx, lm.getX(), lm.getY(), lm.getZ(), lm.getVisibility(), lm.getPresence()));
+                            }
+                        }
+                    }
+                });
+
+
+                faceMesh.send(testBitmap);  // ✅ THIS is the correct call, not `.send(image)`
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error initializing FaceMesh: ", e);
             }
         });
+
     }
 
     @Override
