@@ -365,14 +365,15 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
                         Log.d("anik03", "Face count in box = " + faces.rows());
 
 // 7. Show green/red box based on face presence
-                        boolean compliant = false;
-
-//
                         if (faces.rows() == 1) {
-                            compliant = isFaceCompliant(faces, roi);
+                            boolean compliant = isFaceCompliant(faces, roi);
+                            mBoxOverlay.setBoxState(compliant
+                                    ? BoxOverlayView.BoxState.GREEN
+                                    : BoxOverlayView.BoxState.YELLOW);
+                        } else {
+                            mBoxOverlay.setBoxState(BoxOverlayView.BoxState.RED);
                         }
 
-                        mBoxOverlay.setCompliant(compliant);
 
 //                        runOnUiThread(() -> {
 //
