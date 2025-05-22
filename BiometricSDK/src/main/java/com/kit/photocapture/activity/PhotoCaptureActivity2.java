@@ -370,6 +370,53 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
                             mBoxOverlay.setBoxState(compliant
                                     ? BoxOverlayView.BoxState.GREEN
                                     : BoxOverlayView.BoxState.YELLOW);
+
+
+
+
+
+
+                            if (compliant) {
+                                double[] row = new double[15];
+                                for (int i = 0; i < 15; i++) {
+                                    double[] value = faces.get(0, i);
+                                    row[i] = (value != null && value.length > 0) ? value[0] : 0.0;
+                                }
+
+                                // Get keypoints
+                                double eyeLeftX = row[4];
+                                double eyeLeftY = row[5];
+                                double eyeRightX = row[6];
+                                double eyeRightY = row[7];
+                                double noseX = row[8];
+                                double noseY = row[9];
+                                double mouthLeftX = row[10];
+                                double mouthLeftY = row[11];
+                                double mouthRightX = row[12];
+                                double mouthRightY = row[13];
+// Calculate landmark positions relative to full rotated frame
+                                Point eyeLeft = new Point(eyeLeftX + roi.x, eyeLeftY + roi.y);
+                                Point eyeRight = new Point(eyeRightX + roi.x, eyeRightY + roi.y);
+                                Point nose = new Point(noseX + roi.x, noseY + roi.y);
+                                Point mouthLeft = new Point(mouthLeftX + roi.x, mouthLeftY + roi.y);
+                                Point mouthRight = new Point(mouthRightX + roi.x, mouthRightY + roi.y);
+
+// Correct points for rotation and mirroring before drawing on mRgba
+                                Point eyeLeftCorrected = rotatePointBack(eyeLeft, detectionInput.size(), mRgba.size(), Core.ROTATE_90_CLOCKWISE);
+                                Point eyeRightCorrected = rotatePointBack(eyeRight, detectionInput.size(), mRgba.size(), Core.ROTATE_90_CLOCKWISE);
+                                Point noseCorrected = rotatePointBack(nose, detectionInput.size(), mRgba.size(), Core.ROTATE_90_CLOCKWISE);
+                                Point mouthLeftCorrected = rotatePointBack(mouthLeft, detectionInput.size(), mRgba.size(), Core.ROTATE_90_CLOCKWISE);
+                                Point mouthRightCorrected = rotatePointBack(mouthRight, detectionInput.size(), mRgba.size(), Core.ROTATE_90_CLOCKWISE);
+
+// Draw landmarks on original RGBA frame
+                                drawLandmark(mRgba, eyeLeftCorrected, new Scalar(255, 0, 0));      // Blue
+                                drawLandmark(mRgba, eyeRightCorrected, new Scalar(255, 0, 0));     // Blue
+                                drawLandmark(mRgba, noseCorrected, new Scalar(0, 255, 255));       // Yellow
+                                drawLandmark(mRgba, mouthLeftCorrected, new Scalar(0, 0, 255));    // Red
+                                drawLandmark(mRgba, mouthRightCorrected, new Scalar(0, 0, 255));   // Red
+
+
+                            }
                         } else {
                             mBoxOverlay.setBoxState(BoxOverlayView.BoxState.RED);
                         }
@@ -402,6 +449,33 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         }
 
         return mRgba;
+    }
+    private void drawLandmark(Mat img, Point point, Scalar color) {
+        Imgproc.circle(img, point, 5, color, -1); // filled circle
+    }
+    private Point rotatePointBack(Point p, Size rotatedSize, Size originalSize, int rotationFlag) {
+        Point unrotated;
+
+        switch (rotationFlag) {
+            case Core.ROTATE_90_CLOCKWISE:
+                unrotated = new Point(p.y, rotatedSize.height - p.x);
+                break;
+            case Core.ROTATE_90_COUNTERCLOCKWISE:
+                unrotated = new Point(rotatedSize.width - p.y, p.x);
+                break;
+            case Core.ROTATE_180:
+                unrotated = new Point(rotatedSize.width - p.x, rotatedSize.height - p.y);
+                break;
+            default:
+                unrotated = p;
+        }
+
+        // If using front camera, apply mirror flip
+        if (mIsFrontCamera) {
+            unrotated.x = originalSize.width - unrotated.x;
+        }
+
+        return unrotated;
     }
 
 
