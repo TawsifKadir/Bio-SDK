@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -18,6 +19,9 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -194,13 +198,238 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         }
     }
 
+
+    private static final double HISTOGRAM_CORRELATION_THRESHOLD = 0.92; // 1.0 = identical
+    private static final int HIST_SIZE = 64; // Number of histogram bins
+    private static final float[] HIST_RANGE = {0f, 256f}; // Grayscale range
+    private Mat mPrevGray = null;
+    private boolean isSceneStable(Mat currentRgba) {
+        Mat currGray = new Mat();
+        Imgproc.cvtColor(currentRgba, currGray, Imgproc.COLOR_RGBA2GRAY);
+        Imgproc.GaussianBlur(currGray, currGray, new Size(3, 3), 0);
+
+        if (mPrevGray == null) {
+            mPrevGray = currGray.clone();
+            Log.d("anik", "🔄 First frame, skipping stability check.");
+            return false;
+        }
+
+        // Compute histogram for current frame
+        Mat currHist = new Mat();
+        MatOfInt histSize = new MatOfInt(HIST_SIZE);
+        MatOfFloat ranges = new MatOfFloat(HIST_RANGE);
+        Imgproc.calcHist(Arrays.asList(currGray), new MatOfInt(0), new Mat(), currHist, histSize, ranges);
+        Core.normalize(currHist, currHist, 0, 1, Core.NORM_MINMAX);
+
+        // Compute histogram for previous frame
+        Mat prevHist = new Mat();
+        Imgproc.calcHist(Arrays.asList(mPrevGray), new MatOfInt(0), new Mat(), prevHist, histSize, ranges);
+        Core.normalize(prevHist, prevHist, 0, 1, Core.NORM_MINMAX);
+
+        // Compare histograms using correlation
+        double correlation = Imgproc.compareHist(prevHist, currHist, Imgproc.HISTCMP_CORREL);
+        Log.d("anik", "📊 Histogram correlation = " + correlation);
+
+        mPrevGray = currGray.clone();
+        return correlation >= HISTOGRAM_CORRELATION_THRESHOLD;
+    }
+
+    private int frameCount = 0;
+    private int frameAfterToCheck = 2;
+    private boolean lastStabilityResult = false;
+
+
+
+
+    private int stableFrameCount = 0;
+    private static final int REQUIRED_CONSECUTIVE_STABLE_FRAMES = 5;
+    private boolean isBoxVisible = false;
+
+
+    private boolean isFaceCompliant(Mat faces, Rect roi) {
+        if (faces.rows() != 1 || faces.cols() < 15) {
+            Log.d("isFaceCompliant", "❌ Invalid face matrix: rows=" + faces.rows() + ", cols=" + faces.cols());
+            return false;
+        }
+
+        double[] row = new double[15];
+        for (int i = 0; i < 15; i++) {
+            double[] value = faces.get(0, i);
+            row[i] = (value != null && value.length > 0) ? value[0] : 0.0;
+        }
+
+        double x = row[0];
+        double y = row[1];
+        double w = row[2];
+        double h = row[3];
+        double score = row[14];
+
+        double faceArea = w * h;
+        double roiArea = roi.width * roi.height;
+        double ratio = faceArea / roiArea;
+
+        // Padding
+        double paddingX = roi.width * 0.05;
+        double paddingTop = roi.height * 0.17;
+        double paddingBottom = roi.height * 0.05;
+
+        double innerLeft = paddingX;
+        double innerTop = paddingTop;
+        double innerRight = roi.width - paddingX;
+        double innerBottom = roi.height - paddingBottom;
+
+        // Logs
+        Log.d("isFaceCompliant", String.format("x=%.2f y=%.2f w=%.2f h=%.2f score=%.3f areaRatio=%.3f", x, y, w, h, score, ratio));
+        Log.d("isFaceCompliant", String.format("Inner box: left=%.2f top=%.2f right=%.2f bottom=%.2f", innerLeft, innerTop, innerRight, innerBottom));
+
+        boolean isRatioOK = ratio >= 0.25;
+        boolean isLeftOK = x > innerLeft;
+        boolean isTopOK = y > innerTop;
+        boolean isRightOK = (x + w) < innerRight;
+        boolean isBottomOK = (y + h) < innerBottom;
+        boolean isScoreOK = score >= 0.91;
+
+        if (!isRatioOK) Log.d("isFaceCompliant", "❌ Rejected: face area ratio too low (" + ratio + " < 0.25)");
+        if (!isLeftOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to left edge (x=" + x + ", innerLeft=" + innerLeft + ")");
+        if (!isTopOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to top edge (y=" + y + ", innerTop=" + innerTop + ")");
+        if (!isRightOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to right edge (x+w=" + (x + w) + ", innerRight=" + innerRight + ")");
+        if (!isBottomOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to bottom edge (y+h=" + (y + h) + ", innerBottom=" + innerBottom + ")");
+        if (!isScoreOK) Log.d("isFaceCompliant", "❌ Rejected: face score too low (" + score + " < 0.90)");
+
+        boolean result = isRatioOK && isLeftOK && isTopOK && isRightOK && isBottomOK && isScoreOK;
+
+        Log.d("isFaceCompliant", result ? "✅ Compliant" : "❌ Not compliant");
+        return result;
+    }
+
+
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
 
-        Size size = mRgba.size();
+        // Flip front camera (mirror)
+        if (mIsFrontCamera) {
+            Core.flip(mRgba, mRgba, 1);
+        }
 
-        double aspectRatio = size.width/ size.height;
+        Mat detectionInput = mRgba.clone();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Core.rotate(detectionInput, detectionInput, Core.ROTATE_90_CLOCKWISE);
+        }
+
+
+        frameCount++;
+
+        // Run stability check every N frames
+        if (frameCount % frameAfterToCheck == 0) {
+            frameCount = 0;
+            lastStabilityResult = isSceneStable(mRgba);
+
+            if (lastStabilityResult) {
+                stableFrameCount++;
+                Log.d("anik02", "✅ Stable frame count: " + stableFrameCount);
+
+                if (stableFrameCount >= REQUIRED_CONSECUTIVE_STABLE_FRAMES ) {
+
+                    if(!isBoxVisible)
+                    {
+                        runOnUiThread(() -> {
+                            mBoxOverlay.setVisibility(View.VISIBLE);
+                            Log.d("anik02", "🎯 Box is now visible");
+                        });
+                        isBoxVisible = true;
+                    }
+
+                    if (isBoxVisible) {
+                        // 1. Get the box in OpenCV coordinates
+                        android.graphics.Rect screenBox = mBoxOverlay.getBoxRect();
+
+
+// ✅ FIXED: use rotated size for ROI mapping
+                        Rect roi = mapBoxRectToOpenCV(screenBox, detectionInput.size());
+                        roi = adjustRectToBounds(roi, detectionInput.cols(), detectionInput.rows());
+
+                        Mat faceRegionRgba = new Mat(detectionInput, roi);
+
+// 👉 4. Convert to RGB
+                        Mat faceRegionRgb = new Mat();
+                        Imgproc.cvtColor(faceRegionRgba, faceRegionRgb, Imgproc.COLOR_RGBA2RGB);
+
+// 5. Configure face detector for this region size
+                        mFaceDetector.setInputSize(new Size(roi.width, roi.height));
+
+// 6. Run detection
+                        Mat faces = new Mat();
+                        mFaceDetector.detect(faceRegionRgb, faces);
+
+                        Log.d("anik03", "Face count in box = " + faces.rows());
+
+// 7. Show green/red box based on face presence
+                        boolean compliant = false;
+
+//
+                        if (faces.rows() == 1) {
+                            compliant = isFaceCompliant(faces, roi);
+                        }
+
+                        mBoxOverlay.setCompliant(compliant);
+
+//                        runOnUiThread(() -> {
+//
+//                        });
+
+// 8. Release memory
+                        faces.release();
+                        faceRegionRgb.release();
+                        faceRegionRgba.release();
+                    }
+
+                }
+
+            } else {
+                Log.d("anik01", "❌ Frame unstable — resetting stability count");
+                stableFrameCount = 0;
+
+                if (isBoxVisible) {
+                    runOnUiThread(() -> {
+                        mBoxOverlay.setVisibility(View.INVISIBLE);
+                        Log.d("anik01", "🚫 Box is hidden due to instability");
+                    });
+                    isBoxVisible = false;
+                }
+            }
+        }
+
+        return mRgba;
+    }
+
+
+    private Rect adjustRectToBounds(Rect roi, int frameWidth, int frameHeight) {
+        int x = Math.max(0, roi.x);
+        int y = Math.max(0, roi.y);
+        int width = Math.min(roi.width, frameWidth - x);
+        int height = Math.min(roi.height, frameHeight - y);
+        return new Rect(x, y, width, height);
+    }
+
+    private Rect mapBoxRectToOpenCV(android.graphics.Rect screenBox, Size frameSize) {
+        float scaleX = (float) frameSize.width / mBoxOverlay.getWidth();
+        float scaleY = (float) frameSize.height / mBoxOverlay.getHeight();
+
+        int left = Math.round(screenBox.left * scaleX);
+        int top = Math.round(screenBox.top * scaleY);
+        int width = Math.round(screenBox.width() * scaleX);
+        int height = Math.round(screenBox.height() * scaleY);
+
+        return new Rect(left, top, width, height);
+    }
+
+
+/*
+
+    @Override
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        mRgba = inputFrame.rgba();
 
         // Fix front camera orientation (vertical flip)
         if (mIsFrontCamera) {
@@ -209,18 +438,27 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
 
         Imgproc.cvtColor(mRgba, mRgb, Imgproc.COLOR_RGBA2RGB);
 
-        Imgproc.resize(mRgb, mResized, FaceDetectionModel.DEFAULT_INPUT_SIZE, aspectRatio);  // mInputSize = new Size(320, 320)
+        Imgproc.resize(mRgb, mResized, FaceDetectionModel.DEFAULT_INPUT_SIZE);  // mInputSize = new Size(320, 320)
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             Core.rotate(mResized, mResized, Core.ROTATE_90_CLOCKWISE);
         }
+
+        android.graphics.Rect screenBox = mBoxOverlay.getBoxRect();
+        android.graphics.Rect modelBox = mapBoxRectToResizedInput(screenBox, mRgba.size(), mResized.size()); // map screen to resized
+
+        // Crop the region within the box from resized image
+        Mat faceRegion = new Mat(mResized, new Rect(modelBox.left, modelBox.top,
+                modelBox.width(), modelBox.height()));
+
+        mFaceDetector.setInputSize(new Size(faceRegion.width(), faceRegion.height()));
 
         // Detect faces
         Mat faces = new Mat();
 
         Log.d(TAG, "Resized Image = [" + mResized + "]");
 
-        mFaceDetector.detect(mResized, faces);
+        mFaceDetector.detect(faceRegion, faces);
 
         Log.d(TAG, "Number of faces: " + faces.rows());
 
@@ -243,16 +481,18 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         facePreviouslyDetected = faceDetected;
 
         Log.d(TAG, "Faces matrix = [" + faces + "]");
+        if (faces.rows() > 0){
+            double[] x = faces.get(0, 0); // This should return 15 values: [x, y, w, h, eye1_x, eye1_y, ... score]
+            double[] y = faces.get(0, 1);
+            double[] w = faces.get(0, 2);
+            double[] h = faces.get(0, 3);
 
-        double[] x = faces.get(0, 0); // This should return 15 values: [x, y, w, h, eye1_x, eye1_y, ... score]
-        double[] y = faces.get(0, 1);
-        double[] w = faces.get(0, 2);
-        double[] h = faces.get(0, 3);
+            Log.d(TAG, "onCameraFrame() called with: inputFrame = [" + inputFrame + "]");
+            Log.d(TAG, "Coordinates x = " + Arrays.toString(x) + " y = " + Arrays.toString(y) + " w " + Arrays.toString(w) + " h " + Arrays.toString(h));
+            android.graphics.Rect boxRect = mBoxOverlay.getBoxRect();
+            Log.d(TAG, "Box Coordinates x = " + boxRect.left + " y = " + boxRect.top + " w " + (boxRect.right - boxRect.left) + " h " + (boxRect.top - boxRect.bottom));
 
-        Log.d(TAG, "onCameraFrame() called with: inputFrame = [" + inputFrame + "]");
-        Log.d(TAG, "Coordinates x = " + Arrays.toString(x) + " y = " + Arrays.toString(y) + " w " + Arrays.toString(w) + " h " + Arrays.toString(h));
-        android.graphics.Rect boxRect = mBoxOverlay.getBoxRect();
-        Log.d(TAG, "Box Coordinates x = " + boxRect.left + " y = " + boxRect.top + " w " + (boxRect.right - boxRect.left) + " h " + (boxRect.top - boxRect.bottom));
+        }
 
 //        mBoxOverlay.setCompliant(faces.rows() == 1);
 
@@ -273,9 +513,28 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
                 handleMultipleFaces();
                 break;
         }
+
+        if (faces.rows() > 0) {
+            double[] x1 = faces.get(0,0);
+            double[] y1 = faces.get(0,1);
+            double[] w1 = faces.get(0,2);
+            double[] h1 = faces.get(0,3);
+
+            Log.d(TAG, "Drawing Bbox");
+
+            Imgproc.rectangle(
+                    mRgba,
+                    new Point(x1[0], y1[0]),
+                    new Point(x1[0] + w1[0], y1[0] + h1[0]),
+                    new Scalar(0, 255, 0), // Green box
+                    2
+            );
+        }
+
         faces.release();
         return mRgba;
     }
+*/
 
     private void handleNoFace() {
         runOnUiThread(() -> {
@@ -326,6 +585,18 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
             mBoxOverlay.setCompliant(false);
             mCapture.setEnabled(false);
         });
+    }
+
+    private android.graphics.Rect mapBoxRectToResizedInput(android.graphics.Rect boxOnScreen, Size originalSize, Size resizedSize) {
+        float xScale = (float) resizedSize.width / (float) originalSize.width;
+        float yScale = (float) resizedSize.height / (float) originalSize.height;
+
+        int left = Math.round(boxOnScreen.left * xScale);
+        int top = Math.round(boxOnScreen.top * yScale);
+        int right = Math.round(boxOnScreen.right * xScale);
+        int bottom = Math.round(boxOnScreen.bottom * yScale);
+
+        return new android.graphics.Rect(left, top, right, bottom);
     }
 
     private boolean isWithinComplianceBox(Rect faceRect) {

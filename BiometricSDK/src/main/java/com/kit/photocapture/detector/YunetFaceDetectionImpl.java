@@ -6,6 +6,7 @@ import com.kit.photocapture.model.detector.FaceDetectionModel;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
+import org.opencv.core.Size;
 import org.opencv.objdetect.FaceDetectorYN;
 
 public class YunetFaceDetectionImpl implements FaceDetector{
@@ -53,5 +54,10 @@ public class YunetFaceDetectionImpl implements FaceDetector{
     @Override
     public void detect(Mat input, Mat output) {
         mFaceDetector.detect(input, output);
+    }
+
+    @Override
+    public void setInputSize(Size size) {
+        mFaceDetector.setInputSize(size);
     }
 }
