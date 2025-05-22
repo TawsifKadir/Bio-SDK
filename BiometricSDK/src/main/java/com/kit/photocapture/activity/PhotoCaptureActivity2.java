@@ -245,6 +245,184 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
     private static final int REQUIRED_CONSECUTIVE_STABLE_FRAMES = 5;
     private boolean isBoxVisible = false;
 
+
+/*
+
+    @Override
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        mRgba = inputFrame.rgba();
+
+        // Flip front camera (mirror)
+        if (mIsFrontCamera) {
+            Core.flip(mRgba, mRgba, 1);
+        }
+
+        Mat detectionInput = mRgba.clone();
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Core.rotate(detectionInput, detectionInput, Core.ROTATE_90_CLOCKWISE);
+        }
+
+
+        frameCount++;
+
+        // Run stability check every N frames
+        if (frameCount % frameAfterToCheck == 0) {
+            frameCount = 0;
+            lastStabilityResult = isSceneStable(mRgba);
+
+            if (lastStabilityResult) {
+                stableFrameCount++;
+                Log.d("anik02", "✅ Stable frame count: " + stableFrameCount);
+
+                if (stableFrameCount >= REQUIRED_CONSECUTIVE_STABLE_FRAMES ) {
+
+                    if(!isBoxVisible)
+                    {
+                        runOnUiThread(() -> {
+                            mBoxOverlay.setVisibility(View.VISIBLE);
+                            Log.d("anik02", "🎯 Box is now visible");
+                        });
+                        isBoxVisible = true;
+                    }
+
+                    if (isBoxVisible) {
+                        boolean compliant = false;
+                        // 1. Get the box in OpenCV coordinates
+                        android.graphics.Rect screenBox = mBoxOverlay.getBoxRect();
+
+
+// ✅ FIXED: use rotated size for ROI mapping
+                        Rect roi = mapBoxRectToOpenCV(screenBox, detectionInput.size());
+                        roi = adjustRectToBounds(roi, detectionInput.cols(), detectionInput.rows());
+
+                        Mat faceRegionRgba = new Mat(detectionInput, roi);
+
+// 👉 4. Convert to RGB
+                        Mat faceRegionRgb = new Mat();
+                        Imgproc.cvtColor(faceRegionRgba, faceRegionRgb, Imgproc.COLOR_RGBA2RGB);
+
+// 5. Configure face detector for this region size
+                        mFaceDetector.setInputSize(new Size(roi.width, roi.height));
+
+// 6. Run detection
+                        Mat faces = new Mat();
+                        mFaceDetector.detect(faceRegionRgb, faces);
+
+                        Log.d("anik03", "Face count in box = " + faces.rows());
+
+
+
+                        if (faces.rows() == 1) {
+                            double[] x = faces.get(0, 0);
+                            double[] y = faces.get(0, 1);
+                            double[] w = faces.get(0, 2);
+                            double[] h = faces.get(0, 3);
+
+                            double score = 1.0; // default score
+
+
+                            if (faces.cols() > 14 && faces.get(0, 14) != null) {
+                                double[] confidence = faces.get(0, 14);
+                                if (confidence.length > 0) {
+                                    score = confidence[0];
+                                }
+                            }
+
+                            double faceArea = w[0] * h[0];
+                            double roiArea = roi.width * roi.height;
+
+                            if (faceArea / roiArea >= 0.25 &&
+                                    x[0] > 1 && y[0] > 1 &&
+                                    x[0] + w[0] < roi.width - 1 &&
+                                    y[0] + h[0] < roi.height - 1 &&
+                                    score >= 0.95) {
+                                compliant = true;
+
+
+                            } else {
+                                Log.d(TAG, "⛔️ Face not compliant (partial/low score/small).");
+                            }
+                        }
+
+                        boolean finalCompliant = compliant;
+                        runOnUiThread(() -> {
+                            mBoxOverlay.setCompliant(finalCompliant);
+                        });
+
+
+// 8. Release memory
+                        faces.release();
+                        faceRegionRgb.release();
+                        faceRegionRgba.release();
+                    }
+
+                }
+
+            } else {
+                Log.d("anik01", "❌ Frame unstable — resetting stability count");
+                stableFrameCount = 0;
+
+                if (isBoxVisible) {
+                    runOnUiThread(() -> {
+                        mBoxOverlay.setVisibility(View.INVISIBLE);
+                        Log.d("anik01", "🚫 Box is hidden due to instability");
+                    });
+                    isBoxVisible = false;
+                }
+            }
+        }
+
+        return mRgba;
+    }
+*/
+
+    private boolean isFaceCompliant(Mat faces, Rect roi) {
+        if (faces.rows() != 1 || faces.cols() < 15) {
+            Log.d("isFaceCompliant", "❌ Invalid face matrix: rows=" + faces.rows() + ", cols=" + faces.cols());
+            return false;
+        }
+
+        double[] row = new double[15];
+        for (int i = 0; i < 15; i++) {
+            double[] value = faces.get(0, i);
+            row[i] = (value != null && value.length > 0) ? value[0] : 0.0;
+        }
+
+        double x = row[0];
+        double y = row[1];
+        double w = row[2];
+        double h = row[3];
+        double score = row[14];
+
+        double faceArea = w * h;
+        double roiArea = roi.width * roi.height;
+        double ratio = faceArea / roiArea;
+
+        // ✅ Use 5% side padding, 15% top padding, and 5% bottom padding
+        double paddingX = roi.width * 0.05;
+        double paddingTop = roi.height * 0.17;
+        double paddingBottom = roi.height * 0.05;
+
+        double innerLeft = paddingX;
+        double innerTop = paddingTop;
+        double innerRight = roi.width - paddingX;
+        double innerBottom = roi.height - paddingBottom;
+
+        boolean result = ratio >= 0.25 &&
+                x > innerLeft &&
+                y > innerTop &&
+                (x + w) < innerRight &&
+                (y + h) < innerBottom &&
+                score >= 0.70;
+
+        Log.d("isFaceCompliant", String.format("x=%.2f y=%.2f w=%.2f h=%.2f score=%.3f areaRatio=%.3f", x, y, w, h, score, ratio));
+        Log.d("isFaceCompliant", String.format("Inner box: left=%.2f top=%.2f right=%.2f bottom=%.2f", innerLeft, innerTop, innerRight, innerBottom));
+        Log.d("isFaceCompliant", result ? "✅ Compliant" : "❌ Not compliant");
+
+        return result;
+    }
+
+
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
@@ -307,10 +485,18 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
                         Log.d("anik03", "Face count in box = " + faces.rows());
 
 // 7. Show green/red box based on face presence
-                        boolean compliant = faces.rows() == 1;
-                        runOnUiThread(() -> {
-                            mBoxOverlay.setCompliant(compliant);
-                        });
+                        boolean compliant = false;
+
+//
+                        if (faces.rows() == 1) {
+                            compliant = isFaceCompliant(faces, roi);
+                        }
+
+                        mBoxOverlay.setCompliant(compliant);
+
+//                        runOnUiThread(() -> {
+//
+//                        });
 
 // 8. Release memory
                         faces.release();
