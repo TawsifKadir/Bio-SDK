@@ -2,7 +2,6 @@ package com.kit.biometricsdk;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,11 +17,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.kit.photocapture.activity.PhotoCaptureActivity2;
-import com.kit.photocapture.test.FaceComparisionTest;
-import com.kit.photocapture.test.FaceRecognitionTest;
+import com.kit.photocapture.presentation.activity.PhotoCaptureActivity2;
 import com.kit.photocapture.util.Utility;
-import com.kit.photocapture.activity.PhotoCaptureActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
