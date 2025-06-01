@@ -13,11 +13,11 @@ public class ICAOComplianceUtils {
     // ICAO Compliance Constants
     private static final float MIN_FACE_SCORE = 0.7f;
     private static final float MIN_FACE_WIDTH_RATIO = 0.15f;
-    private static final float MAX_FACE_WIDTH_RATIO = 0.35f;
+    private static final float MAX_FACE_WIDTH_RATIO = 0.50f;
     private static final float MIN_EYE_DISTANCE_RATIO = 0.15f;
-    private static final float MAX_HEAD_TILT = 5.0f;
+    private static final float MAX_HEAD_TILT = 6.0f;
     private static final float MIN_EYE_MOUTH_RATIO = 1.4f;
-    private static final float MAX_EYE_MOUTH_RATIO = 1.8f;
+    private static final float MAX_EYE_MOUTH_RATIO = 2.1f;
 
     public static void checkICAOCompliance(Mat face, Size frameSize, ComplianceCallback callback) {
         if (face == null || face.rows() == 0) {
@@ -101,8 +101,13 @@ public class ICAOComplianceUtils {
         }
 
         double eyeMouthRatio = (mouthLineY - eyeLineY) / (noseY - eyeLineY);
-        if (eyeMouthRatio < MIN_EYE_MOUTH_RATIO || eyeMouthRatio > MAX_EYE_MOUTH_RATIO) {
-            return "Adjust your head position";
+
+        if (eyeMouthRatio < MIN_EYE_MOUTH_RATIO) {
+            return "Lift your head slightly"; // Chin is too high, face is too short vertically
+        }
+
+        if (eyeMouthRatio > MAX_EYE_MOUTH_RATIO) {
+            return "Lower your chin slightly"; // Chin is too low, face is too long vertically
         }
 
         return null;

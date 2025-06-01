@@ -7,11 +7,24 @@ import org.opencv.core.Rect;
 
 public class FaceComplianceUtils {
 
-    public static boolean isFaceCompliant(Mat faces, Rect roi) {
+
+    private static final double MIN_FACE_AREA_RATIO = 0.10;
+
+    private static final double MAX_FACE_AREA_RATIO = 0.40;
+
+    private static final double MIN_FACE_SCORE = 0.90;
+    private static final double PADDING_LEFT_RIGHT_RATIO = 0.05;
+    private static final double PADDING_TOP_RATIO = 0.17;
+    private static final double PADDING_BOTTOM_RATIO = 0.05;
+    public static ComplianceResult isFaceCompliant(Mat faces, Rect roi) {
+
         if (faces.rows() != 1 || faces.cols() < 15) {
-            Log.d("isFaceCompliant", "❌ Invalid face matrix: rows=" + faces.rows() + ", cols=" + faces.cols());
-            return false;
+            String message = "Invalid face matrix";
+            Log.d("isFaceCompliant", "❌ " + message);
+            return new ComplianceResult(false, message);
         }
+
+
 
         double[] row = new double[15];
         for (int i = 0; i < 15; i++) {
@@ -29,9 +42,9 @@ public class FaceComplianceUtils {
         double roiArea = roi.width * roi.height;
         double ratio = faceArea / roiArea;
 
-        double paddingX = roi.width * 0.05;
-        double paddingTop = roi.height * 0.17;
-        double paddingBottom = roi.height * 0.05;
+        double paddingX = roi.width *PADDING_LEFT_RIGHT_RATIO;
+        double paddingTop = roi.height * PADDING_TOP_RATIO;
+        double paddingBottom = roi.height * PADDING_BOTTOM_RATIO;
 
         double innerLeft = paddingX;
         double innerTop = paddingTop;
@@ -41,23 +54,32 @@ public class FaceComplianceUtils {
         Log.d("isFaceCompliant", String.format("x=%.2f y=%.2f w=%.2f h=%.2f score=%.3f areaRatio=%.3f", x, y, w, h, score, ratio));
         Log.d("isFaceCompliant", String.format("Inner box: left=%.2f top=%.2f right=%.2f bottom=%.2f", innerLeft, innerTop, innerRight, innerBottom));
 
-        boolean isRatioOK = ratio >= 0.25;
-        boolean isLeftOK = x > innerLeft;
-        boolean isTopOK = y > innerTop;
-        boolean isRightOK = (x + w) < innerRight;
-        boolean isBottomOK = (y + h) < innerBottom;
-        boolean isScoreOK = score >= 0.90;
+        Log.d("isFaceCompliant", String.format("x=%.2f y=%.2f w=%.2f h=%.2f score=%.3f areaRatio=%.3f", x, y, w, h, score, ratio));
 
-        if (!isRatioOK) Log.d("isFaceCompliant", "❌ Rejected: face area ratio too low (" + ratio + " < 0.25)");
-        if (!isLeftOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to left edge (x=" + x + ", innerLeft=" + innerLeft + ")");
-        if (!isTopOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to top edge (y=" + y + ", innerTop=" + innerTop + ")");
-        if (!isRightOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to right edge (x+w=" + (x + w) + ", innerRight=" + innerRight + ")");
-        if (!isBottomOK) Log.d("isFaceCompliant", "❌ Rejected: face too close to bottom edge (y+h=" + (y + h) + ", innerBottom=" + innerBottom + ")");
-        if (!isScoreOK) Log.d("isFaceCompliant", "❌ Rejected: face score too low (" + score + " < 0.91)");
+        if (ratio < MIN_FACE_AREA_RATIO) {
+            return new ComplianceResult(false, "Face is too small. Move closer.");
+        }
+        if (ratio > MAX_FACE_AREA_RATIO) {
+            return new ComplianceResult(false, "Face is too large. Move back slightly.");
+        }
 
-        boolean result = isRatioOK && isLeftOK && isTopOK && isRightOK && isBottomOK && isScoreOK;
+        if (x <= innerLeft) {
+            return new ComplianceResult(false, "Face too close to the left edge.");
+        }
+        if (y <= innerTop) {
+            return new ComplianceResult(false, "Face too close to the top edge.");
+        }
+        if ((x + w) >= innerRight) {
+            return new ComplianceResult(false, "Face too close to the right edge.");
+        }
+        if ((y + h) >= innerBottom) {
+            return new ComplianceResult(false, "Face too close to the bottom edge.");
+        }
+        if (score < MIN_FACE_SCORE) {
+            return new ComplianceResult(false, "Detection confidence too low.");
+        }
 
-        Log.d("isFaceCompliant", result ? "✅ Compliant" : "❌ Not compliant");
-        return result;
+        return new ComplianceResult(true, "Face is compliant.");
+
     }
 }

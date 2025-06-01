@@ -238,7 +238,8 @@ public class Core {
     public static final int
             ROTATE_90_CLOCKWISE = 0,
             ROTATE_180 = 1,
-            ROTATE_90_COUNTERCLOCKWISE = 2;
+            ROTATE_90_COUNTERCLOCKWISE = 2,
+            ROTATE_270_CLOCKWISE =3 ;
 
 
     // C++: enum SortFlags (cv.SortFlags)

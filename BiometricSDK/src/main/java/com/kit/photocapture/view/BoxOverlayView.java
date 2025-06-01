@@ -42,7 +42,9 @@ public class BoxOverlayView extends View {
     // Aspect ratio for vertical rectangle (width:height)
     private static final float BOX_ASPECT_RATIO = 2f / 3f; // Adjust as needed
     private static final float BOX_WIDTH_PERCENT = 0.7f; // Box width as % of screen width
-    private static final float MIN_TOP_MARGIN_DP = 240f; // Minimum top margin to account for status text (matches your TextView margin)
+    private static final float MIN_TOP_MARGIN_DP = 150f; // Minimum top margin to account for status text (matches your TextView margin)
+    private static final float BOTTOM_MARGIN_DP = 130f; // Space from bottom (e.g., for camera button or spacing)
+
 
     public BoxOverlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -87,7 +89,9 @@ public class BoxOverlayView extends View {
         int minTopMarginPx = (int) (MIN_TOP_MARGIN_DP * density);
 
         // Calculate available space for the box (accounting for status text at top and capture button at bottom)
-        int availableHeight = viewHeight - minTopMarginPx - (int)(64 * density) - (int)(32 * density); // Account for capture button height + margin
+        int bottomMarginPx = (int)(BOTTOM_MARGIN_DP * density);
+        int availableHeight = viewHeight - minTopMarginPx - bottomMarginPx;
+
 
         // If the calculated box height is too large for the available space, scale it down
         if (boxHeight > availableHeight) {

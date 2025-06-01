@@ -21,10 +21,18 @@ public class RotationUtils {
                 unrotated = p;
         }
 
-        if (isFrontCamera) {
-            unrotated.x = originalSize.width - unrotated.x;
-        }
 
+
+//        if (isFrontCamera) {
+//            // Mirror horizontally for front camera
+//            unrotated.x = originalSize.width - unrotated.x;
+//            unrotated.y = originalSize.height - unrotated.y;
+//        }else {
+//            // ✅ Back camera needs full 180° flip: both axes
+//
+//        }
+//
+        unrotated.x = originalSize.width - unrotated.x;
         unrotated.y = originalSize.height - unrotated.y;
 
         return unrotated;
