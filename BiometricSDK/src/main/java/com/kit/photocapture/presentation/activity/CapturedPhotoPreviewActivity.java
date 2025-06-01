@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -14,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.kit.biometricsdk.R;
 import com.kit.photocapture.view.BoxOverlayView;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 public class CapturedPhotoPreviewActivity extends AppCompatActivity {
 
@@ -58,7 +62,53 @@ public class CapturedPhotoPreviewActivity extends AppCompatActivity {
             finish();
         }
 
-        btnSave.setOnClickListener(v -> Toast.makeText(this, "Photo saved (simulate)", Toast.LENGTH_SHORT).show());
+        btnSave.setOnClickListener(v -> {
+            if (photoPath != null) {
+                Bitmap originalBitmap = BitmapFactory.decodeFile(photoPath);
+                if (originalBitmap != null) {
+                    // Get box rect and ImageView size
+                    Rect box = boxOverlay.getBoxRect();
+                    int imageViewWidth = capturedImageView.getWidth();
+                    int imageViewHeight = capturedImageView.getHeight();
+
+                    // Get bitmap displayed size and scale type corrections
+                    float scaleX = (float) originalBitmap.getWidth() / imageViewWidth;
+                    float scaleY = (float) originalBitmap.getHeight() / imageViewHeight;
+
+                    int left = Math.max(0, (int) (box.left * scaleX));
+                    int top = Math.max(0, (int) (box.top * scaleY));
+                    int width = Math.min(originalBitmap.getWidth() - left, (int) (box.width() * scaleX));
+                    int height = Math.min(originalBitmap.getHeight() - top, (int) (box.height() * scaleY));
+
+                    Bitmap croppedBitmap = Bitmap.createBitmap(originalBitmap, left, top, width, height);
+
+                    try {
+                        String fileName = "cropped_photo_" + System.currentTimeMillis() + ".jpg";
+                        File dir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "SavedPhotos");
+                        if (!dir.exists()) dir.mkdirs();
+
+                        File file = new File(dir, fileName);
+                        FileOutputStream out = new FileOutputStream(file);
+
+                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                        out.flush();
+                        out.close();
+
+                        Toast.makeText(this, "Photo saved to: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Failed to save photo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                } else {
+                    Toast.makeText(this, "Error: Bitmap is null", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Error: Photo path is null", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
         btnRetake.setOnClickListener(v -> finish());
         btnProceed.setOnClickListener(v -> Toast.makeText(this, "Proceed with this photo (simulate)", Toast.LENGTH_SHORT).show());
     }

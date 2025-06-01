@@ -80,11 +80,14 @@ public class FaceComparisionTest {
             faces1.get(0, 0, faceData1);
             Mat faceBox1 = new Mat(1, 4, org.opencv.core.CvType.CV_32FC1);
             faceBox1.put(0, 0, faceData1[0], faceData1[1], faceData1[2], faceData1[3]);
-            Mat alignedFace1 = faceRecognizer.alignFace(image1, faceBox1);
-            Mat features1 = faceRecognizer.extractFeature(alignedFace1);
+
+            Mat result1 = new Mat();
+            faceRecognizer.alignCrop(image1, faceBox1,result1);
+            faceRecognizer.extractFeature(result1,result1);
 
             // 5. Process second image
             Mat faces2 = new Mat();
+
             Size size2 = faces2.size();
 
             double aspectRatio2 = size2.width/ size2.height;
@@ -108,12 +111,14 @@ public class FaceComparisionTest {
             faces2.get(0, 0, faceData2);
             Mat faceBox2 = new Mat(1, 4, org.opencv.core.CvType.CV_32FC1);
             faceBox2.put(0, 0, faceData2[0], faceData2[1], faceData2[2], faceData2[3]);
-            Mat alignedFace2 = faceRecognizer.alignFace(image2, faceBox2);
-            Mat features2 = faceRecognizer.extractFeature(alignedFace2);
+
+            Mat result2 = new Mat();
+            faceRecognizer.alignCrop(image2, faceBox2,result2);
+            faceRecognizer.extractFeature(result2,result2);
 
             // 6. Compare features
-            double similarity = faceRecognizer.compareFeatures(features1, features2);
-            boolean isMatch = faceRecognizer.isMatch(features1, features2, MATCH_THRESHOLD);
+            double similarity = faceRecognizer.compareFeatures(result1, result2);
+            boolean isMatch = faceRecognizer.isMatch(result1, result2, MATCH_THRESHOLD);
 
             Log.d(TAG, String.format("%s Face similarity: %.4f, Match: %b (Threshold: %.2f)", person,
                     similarity, isMatch, MATCH_THRESHOLD));
