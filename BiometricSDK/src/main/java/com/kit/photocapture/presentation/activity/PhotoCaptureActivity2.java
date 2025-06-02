@@ -18,6 +18,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraActivity;
 import org.opencv.android.CameraBridgeViewBase;
@@ -256,21 +258,42 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
     private void onCapture() {
         if (mCleanCaptureFrame != null && !mCleanCaptureFrame.empty()) {
             try {
-                Bitmap bmp = Bitmap.createBitmap(
-                        mCleanCaptureFrame.cols(),
-                        mCleanCaptureFrame.rows(),
-                        Bitmap.Config.ARGB_8888
-                );
-                Utils.matToBitmap(mCleanCaptureFrame, bmp);
+                // Get the guide box rectangle (in screen pixels)
+                android.graphics.Rect screenBox = mBoxOverlay.getBoxRect();
 
+                // Map screenBox to OpenCV coordinates
+                Rect roi = mapBoxRectToOpenCV(screenBox, mCleanCaptureFrame.size());
+                roi = adjustRectToBounds(roi, mCleanCaptureFrame.cols(), mCleanCaptureFrame.rows());
+
+                // Extract face region
+                Mat croppedFace = new Mat(mCleanCaptureFrame, roi);
+
+                // Resize face region to match box pixel size (same as UI box size)
+                Mat resizedFace = new Mat();
+                Size targetSize = new Size(screenBox.width(), screenBox.height());
+                Imgproc.resize(croppedFace, resizedFace, targetSize);
+
+                // Convert Mat to Bitmap
+                Bitmap bmp = Bitmap.createBitmap(resizedFace.cols(), resizedFace.rows(), Bitmap.Config.ARGB_8888);
+                Utils.matToBitmap(resizedFace, bmp);
+
+                // Save the bitmap to cache
                 File file = new File(getCacheDir(), "captured_photo.jpg");
                 FileOutputStream out = new FileOutputStream(file);
                 bmp.compress(Bitmap.CompressFormat.JPEG, 90, out);
                 out.close();
 
+                // Launch preview activity
                 Intent intent = new Intent(this, CapturedPhotoPreviewActivity.class);
                 intent.putExtra(CapturedPhotoPreviewActivity.EXTRA_PHOTO_PATH, file.getAbsolutePath());
-                startActivity(intent);
+                startActivityForResult(intent, 201); // use a request code to capture the result
+
+
+              //  finish();
+
+                // Cleanup
+                croppedFace.release();
+                resizedFace.release();
 
             } catch (Exception e) {
                 Log.e(TAG, "Error capturing image", e);
@@ -278,6 +301,45 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
             }
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 201 && resultCode == RESULT_OK && data != null) {
+            // Forward result back to FaceMatchActivity
+            setResult(RESULT_OK, data);
+            finish();
+        }
+    }
+
+
+
+//    private void onCapture() {
+//        if (mCleanCaptureFrame != null && !mCleanCaptureFrame.empty()) {
+//            try {
+//                Bitmap bmp = Bitmap.createBitmap(
+//                        mCleanCaptureFrame.cols(),
+//                        mCleanCaptureFrame.rows(),
+//                        Bitmap.Config.ARGB_8888
+//                );
+//                Utils.matToBitmap(mCleanCaptureFrame, bmp);
+//
+//                File file = new File(getCacheDir(), "captured_photo.jpg");
+//                FileOutputStream out = new FileOutputStream(file);
+//                bmp.compress(Bitmap.CompressFormat.JPEG, 90, out);
+//                out.close();
+//
+//                Intent intent = new Intent(this, CapturedPhotoPreviewActivity.class);
+//                intent.putExtra(CapturedPhotoPreviewActivity.EXTRA_PHOTO_PATH, file.getAbsolutePath());
+//                startActivity(intent);
+//
+//            } catch (Exception e) {
+//                Log.e(TAG, "Error capturing image", e);
+//                Toast.makeText(this, "Error capturing image", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
 
     private void initializeViews() {
         mStatusText = findViewById(R.id.status_text);
