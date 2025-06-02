@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -14,15 +15,22 @@ import com.kit.photocapture.detector.YunetFaceDetectionImpl;
 import com.kit.photocapture.model.detector.FaceDetectionModel;
 import com.kit.photocapture.recognizer.FaceRecognizer;
 import com.kit.photocapture.recognizer.SFaceRecognitionModelImpl;
+import com.kit.photocapture.test.FaceComparisionTest;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class FaceMatchActivity extends Activity {
 
@@ -44,7 +52,7 @@ public class FaceMatchActivity extends Activity {
         matchButton = findViewById(R.id.btn_match);
 
         bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.akon);
-        bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.bolt);
+        bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.cr7);
 
         image1View.setImageBitmap(bitmap1);
         image2View.setImageBitmap(bitmap2);
@@ -59,119 +67,56 @@ public class FaceMatchActivity extends Activity {
         }
 
         try {
-            // Convert Bitmaps to Mat
-            Mat mat1 = new Mat();
-            Mat mat2 = new Mat();
-            Utils.bitmapToMat(bitmap1, mat1);
-            Utils.bitmapToMat(bitmap2, mat2);
-
-            mat1 = convertToRGB(mat1);
-            mat2 = convertToRGB(mat2);
-
-            // Resize both to 320x320
-            Size modelInputSize = FaceDetectionModel.DEFAULT_INPUT_SIZE;
-            Imgproc.resize(mat1, mat1, modelInputSize);
-            Imgproc.resize(mat2, mat2, modelInputSize);
-
-            // Face Detector setup
-            YunetFaceDetectionImpl detector = new YunetFaceDetectionImpl(this);
-            detector.loadDetector();
-            detector.setInputSize(modelInputSize);
-
-            Mat faces1 = new Mat();
-            Mat faces2 = new Mat();
+            // Save bitmaps to internal files so FaceComparisionTest can read them
+            File img1 = saveBitmapToTempFile(bitmap1, "face1.jpg");
+            File img2 = saveBitmapToTempFile(bitmap2, "face2.jpg");
 
 
-            // Do NOT resize the image.
-            // Instead, use its actual size as the model input
-            Size inputSize1 = new Size(mat1.cols(), mat1.rows());
-            Size inputSize2 = new Size(mat2.cols(), mat2.rows());
+            String img1Base64 = imageFileToBase64(img1);
+            Log.d("ImageBase64", "img1 (Base64): " + img1Base64);
 
-            // Set size individually before detection
-            detector.setInputSize(inputSize1);
-            detector.detect(mat1, faces1);
 
-            detector.setInputSize(inputSize2);
-            detector.detect(mat2, faces2);
-
-            if (faces1.rows() == 0 && faces2.rows() == 0) {
-                Toast.makeText(this, "No face detected in  both images", Toast.LENGTH_LONG).show();
-                return;
-            } else if (faces1.rows() == 0 ) {
-                Toast.makeText(this, "No face detected in faces1 images", Toast.LENGTH_LONG).show();
-                return;
-            }
-            else if (faces2.rows() == 0) {
-                Toast.makeText(this, "No face detected in faces2 images", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-//            Log.d(TAG, "compareFaces() called  "+ "  " + faces1.rows() + "  " +faces2.rows()  );
+            String img2Base64 = imageFileToBase64(img2);
+            Log.d("ImageBase64", "img2 (Base64): " + img2Base64);
 
 
 
-            // Extract box info
-            float[] faceData1 = new float[14];
-            float[] faceData2 = new float[14];
-            faces1.get(0, 0, faceData1);
-            faces2.get(0, 0, faceData2);
+            // Load them into OpenCV Mats
+            Mat mat1 = Imgcodecs.imread(img1.getAbsolutePath());
+            Mat mat2 = Imgcodecs.imread(img2.getAbsolutePath());
 
-            Mat faceBox1 = new Mat(1, 4, CvType.CV_32FC1);
-            faceBox1.put(0, 0, faceData1[0], faceData1[1], faceData1[2], faceData1[3]);
-
-            Mat faceBox2 = new Mat(1, 4, CvType.CV_32FC1);
-            faceBox2.put(0, 0, faceData2[0], faceData2[1], faceData2[2], faceData2[3]);
-
-            // Recognizer pipeline
-            FaceRecognizer recognizer = new SFaceRecognitionModelImpl(this);
-            recognizer.loadRecognizer();
-
-            Mat aligned1 = new Mat();
-            Mat aligned2 = new Mat();
-            recognizer.alignCrop(mat1, faceBox1, aligned1);
-            recognizer.alignCrop(mat2, faceBox2, aligned2);
-
-
-            Log.d("Debug", "Aligned1 size: " + aligned1.size());
-            Log.d("Debug", "Aligned2 size: " + aligned2.size());
-            Log.d("Debug", "Aligned1 pixel: " + aligned1.get(0, 0)[0]);
-            Log.d("Debug", "Aligned2 pixel: " + aligned2.get(0, 0)[0]);
-            Log.d("FaceBox", "Face1 Box: " + faceBox1.dump());
-            Log.d("FaceBox", "Face2 Box: " + faceBox2.dump());
-
-
-
-
-            Mat feature1 = new Mat();
-            Mat feature2 = new Mat();
-            recognizer.extractFeature(aligned1, feature1);
-            feature1 = feature1.clone();
-
-            recognizer.extractFeature(aligned2, feature2);
-            feature2 = feature2.clone();
-
-
-
-            logFeatureVector(feature1, "Feature1");
-            logFeatureVector(feature2, "Feature2");
-
-
-            Log.d(TAG, "compareFaces() called: " +  feature1.size());
-
-            double similarity = recognizer.compareFeatures(feature1, feature2);
-            boolean isMatch = recognizer.isMatch(feature1, feature2, MATCH_THRESHOLD);
-
-            String result = String.format("Similarity: %.2f%%\nMatch: %s",
-                    similarity * 100, isMatch ? "YES ✅" : "NO ❌");
-
-            Toast.makeText(this, result, Toast.LENGTH_LONG).show();
-            Log.i(TAG, result);
+            // Extend FaceComparisionTest to add a new compare method that accepts Mat directly
+            FaceComparisionTest.compareTwoFaceMats(this, mat1, mat2, "Live Capture");
 
         } catch (Exception e) {
-            Log.e(TAG, "Face match error", e);
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("compareFaces", "Failed to compare", e);
         }
     }
+
+    private String imageFileToBase64(File imageFile) {
+        try {
+            FileInputStream fis = new FileInputStream(imageFile);
+            byte[] bytes = new byte[(int) imageFile.length()];
+            fis.read(bytes);
+            fis.close();
+
+            return Base64.encodeToString(bytes, Base64.NO_WRAP);
+        } catch (Exception e) {
+            Log.e("Base64Error", "Failed to convert image to Base64", e);
+            return null;
+        }
+    }
+
+    private File saveBitmapToTempFile(Bitmap bitmap, String filename) throws IOException {
+        File file = new File(getCacheDir(), filename);
+        FileOutputStream out = new FileOutputStream(file);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+        out.flush();
+        out.close();
+        return file;
+    }
+
 
     private Mat convertToRGB(Mat input) {
         Mat rgb = new Mat();
