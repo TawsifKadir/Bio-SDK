@@ -79,10 +79,15 @@ public class BoxOverlayView extends View {
 
     private void calculateBoxRect(int viewWidth, int viewHeight) {
         // Calculate box width based on screen width percentage
-        int boxWidth = (int) (viewWidth * BOX_WIDTH_PERCENT);
+//        int boxWidth = (int) (viewWidth * BOX_WIDTH_PERCENT);
+//
+//        // Calculate height maintaining aspect ratio
+//        int boxHeight = (int) (boxWidth / BOX_ASPECT_RATIO);
 
-        // Calculate height maintaining aspect ratio
-        int boxHeight = (int) (boxWidth / BOX_ASPECT_RATIO);
+
+        int boxWidth = 560;
+        int boxHeight = 560;
+
 
         // Convert minimum top margin from dp to pixels
         float density = getResources().getDisplayMetrics().density;

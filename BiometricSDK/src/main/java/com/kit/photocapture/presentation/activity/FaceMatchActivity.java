@@ -1,13 +1,17 @@
 package com.kit.photocapture.presentation.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.kit.biometricsdk.R;
 import com.kit.photocapture.detector.YunetFaceDetectionImpl;
@@ -24,7 +28,15 @@ import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.util.Arrays;
+
 public class FaceMatchActivity extends Activity {
+
+
+    private static final int REQUEST_CODE_IMAGE1 = 101;
+    private static final int REQUEST_CODE_IMAGE2 = 102;
+
 
     private static final Logger log = LoggerFactory.getLogger(FaceMatchActivity.class);
     private ImageView image1View, image2View;
@@ -43,14 +55,89 @@ public class FaceMatchActivity extends Activity {
         image2View = findViewById(R.id.image2);
         matchButton = findViewById(R.id.btn_match);
 
-        bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.akon);
-        bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.bolt);
+//        bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.salman);
+//        // Load the most recent photo from SavedPhotos directory
+//        File savedPhotosDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "SavedPhotos");
+//        if (savedPhotosDir.exists() && savedPhotosDir.isDirectory()) {
+//            File[] files = savedPhotosDir.listFiles((dir, name) -> name.endsWith(".jpg"));
+//            if (files != null && files.length > 0) {
+//                // Sort files by last modified to get the latest one
+//                Arrays.sort(files, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
+//                File latestFile = files[0]; // most recently saved photo
+//
+//                bitmap1 = BitmapFactory.decodeFile(latestFile.getAbsolutePath());
+//            } else {
+//                Toast.makeText(this, "No saved photo found.", Toast.LENGTH_SHORT).show();
+//            }
+//        } else {
+//            Toast.makeText(this, "SavedPhotos directory not found.", Toast.LENGTH_SHORT).show();
+//        }
+
+
+        File specificFile = new File(
+                getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/SavedPhotos",
+                "full_photo_1748864348734.jpg"
+        );
+
+        if (specificFile.exists()) {
+            bitmap1 = BitmapFactory.decodeFile(specificFile.getAbsolutePath());
+        } else {
+            Toast.makeText(this, "Specific photo not found.", Toast.LENGTH_SHORT).show();
+        }
+
+
+        bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.rafiul2);
 
         image1View.setImageBitmap(bitmap1);
         image2View.setImageBitmap(bitmap2);
 
         matchButton.setOnClickListener(v -> compareFaces());
+
+        image1View.setOnClickListener(v -> {
+            Intent intent = new Intent(FaceMatchActivity.this, PhotoCaptureActivity2.class);
+            startActivityForResult(intent, REQUEST_CODE_IMAGE1);
+            Log.d(TAG, "PhotoCaptureActivity2 started for image1");
+        });
+
+        image2View.setOnClickListener(v -> {
+            Intent intent = new Intent(FaceMatchActivity.this, PhotoCaptureActivity2.class);
+            startActivityForResult(intent, REQUEST_CODE_IMAGE2);
+            Log.d(TAG, "PhotoCaptureActivity2 started for image2");
+        });
+
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult called: requestCode=" + requestCode + ", resultCode=" + resultCode);
+
+        if (resultCode == RESULT_OK && data != null) {
+            String returnedPath = data.getStringExtra(CapturedPhotoPreviewActivity.EXTRA_PHOTO_PATH);
+            Log.d(TAG, "Received image path: " + returnedPath);
+
+            if (returnedPath != null) {
+                Bitmap resultBitmap = BitmapFactory.decodeFile(returnedPath);
+
+                if (requestCode == REQUEST_CODE_IMAGE1) {
+                    bitmap1 = resultBitmap;
+                    image1View.setImageBitmap(bitmap1);
+                    Log.d(TAG, "Image1 updated");
+                } else if (requestCode == REQUEST_CODE_IMAGE2) {
+                    bitmap2 = resultBitmap;
+                    image2View.setImageBitmap(bitmap2);
+                    Log.d(TAG, "Image2 updated");
+                }
+            } else {
+                Log.e(TAG, "Returned path is null");
+            }
+        } else {
+            Log.e(TAG, "Data is null or result not OK");
+        }
+    }
+
+
 
     private void compareFaces() {
         if (!OpenCVLoader.initDebug()) {
@@ -81,17 +168,8 @@ public class FaceMatchActivity extends Activity {
             Mat faces1 = new Mat();
             Mat faces2 = new Mat();
 
-
-            // Do NOT resize the image.
-            // Instead, use its actual size as the model input
-            Size inputSize1 = new Size(mat1.cols(), mat1.rows());
-            Size inputSize2 = new Size(mat2.cols(), mat2.rows());
-
-            // Set size individually before detection
-            detector.setInputSize(inputSize1);
             detector.detect(mat1, faces1);
 
-            detector.setInputSize(inputSize2);
             detector.detect(mat2, faces2);
 
             if (faces1.rows() == 0 && faces2.rows() == 0) {
@@ -106,38 +184,22 @@ public class FaceMatchActivity extends Activity {
                 return;
             }
 
-//            Log.d(TAG, "compareFaces() called  "+ "  " + faces1.rows() + "  " +faces2.rows()  );
-
-
-
-            // Extract box info
-            float[] faceData1 = new float[14];
-            float[] faceData2 = new float[14];
-            faces1.get(0, 0, faceData1);
-            faces2.get(0, 0, faceData2);
-
-            Mat faceBox1 = new Mat(1, 4, CvType.CV_32FC1);
-            faceBox1.put(0, 0, faceData1[0], faceData1[1], faceData1[2], faceData1[3]);
-
-            Mat faceBox2 = new Mat(1, 4, CvType.CV_32FC1);
-            faceBox2.put(0, 0, faceData2[0], faceData2[1], faceData2[2], faceData2[3]);
-
             // Recognizer pipeline
             FaceRecognizer recognizer = new SFaceRecognitionModelImpl(this);
             recognizer.loadRecognizer();
 
             Mat aligned1 = new Mat();
             Mat aligned2 = new Mat();
-            recognizer.alignCrop(mat1, faceBox1, aligned1);
-            recognizer.alignCrop(mat2, faceBox2, aligned2);
+            recognizer.alignCrop(mat1, faces1.row(0), aligned1);
+            recognizer.alignCrop(mat2, faces2.row(0), aligned2);
 
 
             Log.d("Debug", "Aligned1 size: " + aligned1.size());
             Log.d("Debug", "Aligned2 size: " + aligned2.size());
             Log.d("Debug", "Aligned1 pixel: " + aligned1.get(0, 0)[0]);
             Log.d("Debug", "Aligned2 pixel: " + aligned2.get(0, 0)[0]);
-            Log.d("FaceBox", "Face1 Box: " + faceBox1.dump());
-            Log.d("FaceBox", "Face2 Box: " + faceBox2.dump());
+//            Log.d("FaceBox", "Face1 Box: " + faceBox1.dump());
+//            Log.d("FaceBox", "Face2 Box: " + faceBox2.dump());
 
 
 

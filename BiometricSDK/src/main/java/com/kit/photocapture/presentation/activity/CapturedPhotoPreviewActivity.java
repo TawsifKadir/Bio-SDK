@@ -1,11 +1,14 @@
 package com.kit.photocapture.presentation.activity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -66,31 +69,16 @@ public class CapturedPhotoPreviewActivity extends AppCompatActivity {
             if (photoPath != null) {
                 Bitmap originalBitmap = BitmapFactory.decodeFile(photoPath);
                 if (originalBitmap != null) {
-                    // Get box rect and ImageView size
-                    Rect box = boxOverlay.getBoxRect();
-                    int imageViewWidth = capturedImageView.getWidth();
-                    int imageViewHeight = capturedImageView.getHeight();
-
-                    // Get bitmap displayed size and scale type corrections
-                    float scaleX = (float) originalBitmap.getWidth() / imageViewWidth;
-                    float scaleY = (float) originalBitmap.getHeight() / imageViewHeight;
-
-                    int left = Math.max(0, (int) (box.left * scaleX));
-                    int top = Math.max(0, (int) (box.top * scaleY));
-                    int width = Math.min(originalBitmap.getWidth() - left, (int) (box.width() * scaleX));
-                    int height = Math.min(originalBitmap.getHeight() - top, (int) (box.height() * scaleY));
-
-                    Bitmap croppedBitmap = Bitmap.createBitmap(originalBitmap, left, top, width, height);
-
                     try {
-                        String fileName = "cropped_photo_" + System.currentTimeMillis() + ".jpg";
+                        String fileName = "full_photo_" + System.currentTimeMillis() + ".jpg";
                         File dir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "SavedPhotos");
                         if (!dir.exists()) dir.mkdirs();
 
                         File file = new File(dir, fileName);
                         FileOutputStream out = new FileOutputStream(file);
 
-                        croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                        // Save the full image without cropping
+                        originalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
                         out.flush();
                         out.close();
 
@@ -109,8 +97,23 @@ public class CapturedPhotoPreviewActivity extends AppCompatActivity {
 
 
 
-        btnRetake.setOnClickListener(v -> finish());
-        btnProceed.setOnClickListener(v -> Toast.makeText(this, "Proceed with this photo (simulate)", Toast.LENGTH_SHORT).show());
+        btnRetake.setOnClickListener((View v) -> {
+            Intent intent = new Intent(CapturedPhotoPreviewActivity.this, PhotoCaptureActivity2.class);
+            startActivityForResult(intent, 101); // use any request code (e.g., 101)
+            finish();
+
+
+        });
+        btnProceed.setOnClickListener(v -> {
+            Log.d("CapturedPhotoPreview", "Proceed clicked. Returning photoPath: " + photoPath);
+
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(EXTRA_PHOTO_PATH, photoPath);
+            setResult(RESULT_OK, resultIntent);
+            finish();
+        });
+
+
     }
 
     private Bitmap rotateBitmap(Bitmap source, float angle) {
