@@ -66,12 +66,13 @@ public class FaceRecognitionTest {
                 faceBox.put(0, 0, faceData[0], faceData[1], faceData[2], faceData[3]);
 
                 // 6. Align and extract features
-                Mat alignedFace = faceRecognizer.alignFace(image, faceBox);
-                Mat features = faceRecognizer.extractFeature(alignedFace);
+                Mat result = new Mat();
+                 faceRecognizer.alignCrop(image, faceBox,result);
+                faceRecognizer.extractFeature(result,result);
 
                 // 7. Compare with itself (should be a perfect match)
-                double similarity = faceRecognizer.compareFeatures(features, features);
-                boolean isMatch = faceRecognizer.isMatch(features, features, MATCH_THRESHOLD);
+                double similarity = faceRecognizer.compareFeatures(result, result);
+                boolean isMatch = faceRecognizer.isMatch(result, result, MATCH_THRESHOLD);
 
                 Log.d(TAG, String.format("Face %d - Similarity with self: %.4f, Match: %b",
                         i, similarity, isMatch));

@@ -542,7 +542,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         reasonSpinner.setOnItemSelectedListener(this);
         Button ok = (Button) mView.findViewById(R.id.okBtn);
-        Button close = (Button) mView.findViewById(R.id.closeBtn);
+        Button close = (Button) mView.findViewById(R.id.FRButton);
 
         mOtherReasonTextView = (EditText) mView.findViewById(R.id.otherReasonText);
         mOtherReasonTextView.setTextColor(Color.BLACK);

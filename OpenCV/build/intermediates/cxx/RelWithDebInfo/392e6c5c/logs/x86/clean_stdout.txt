@@ -1,0 +1,1 @@
+ninja: Entering directory `C:\Users\anik1\Documents\KIT\Bio_ACT_Working\OpenCV\.cxx\RelWithDebInfo\392e6c5c\x86'

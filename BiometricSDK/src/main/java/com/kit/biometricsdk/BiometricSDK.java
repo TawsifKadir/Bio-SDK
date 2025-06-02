@@ -26,7 +26,7 @@ import java.io.IOException;
 
 
 public class BiometricSDK extends AppCompatActivity {
-    private Button mCloseBtn;
+    private Button FRButton;
     private Button mPhotoCaptureBtn;
     private Button mFpCaptureBtn;
     private ImageView mPhotoView;
@@ -46,7 +46,7 @@ public class BiometricSDK extends AppCompatActivity {
 
         mFpCaptureBtn = findViewById(R.id.fpCaptureBtn);
         mPhotoCaptureBtn = findViewById(R.id.photoCaptureBtn);
-        mCloseBtn = findViewById(R.id.closeBtn);
+        FRButton = findViewById(R.id.FRButton);
 
         mPhotoView = findViewById(R.id.photoView);
 
@@ -63,13 +63,14 @@ public class BiometricSDK extends AppCompatActivity {
             }
         });
 
-        mCloseBtn.setOnClickListener(v -> {
-            try {
-
-
-            } catch (Exception e) {
-                Log.e(TAG, "Error initializing FaceMesh: ", e);
-            }
+        FRButton.setOnClickListener(v -> {
+//            try {
+//                Intent nowIntent = new Intent(BiometricSDK.this,com.kit.photocapture.test.FaceRecognitionTest.class);
+//                startActivityForResult(nowIntent,3);
+//
+//            } catch (Exception e) {
+//                Log.e(TAG, "Error initializing FaceMesh: ", e);
+//            }
         });
 
     }
