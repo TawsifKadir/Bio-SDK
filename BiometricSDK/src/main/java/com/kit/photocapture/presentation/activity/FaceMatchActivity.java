@@ -55,23 +55,6 @@ public class FaceMatchActivity extends Activity {
         image2View = findViewById(R.id.image2);
         matchButton = findViewById(R.id.btn_match);
 
-//        bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.salman);
-//        // Load the most recent photo from SavedPhotos directory
-//        File savedPhotosDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "SavedPhotos");
-//        if (savedPhotosDir.exists() && savedPhotosDir.isDirectory()) {
-//            File[] files = savedPhotosDir.listFiles((dir, name) -> name.endsWith(".jpg"));
-//            if (files != null && files.length > 0) {
-//                // Sort files by last modified to get the latest one
-//                Arrays.sort(files, (f1, f2) -> Long.compare(f2.lastModified(), f1.lastModified()));
-//                File latestFile = files[0]; // most recently saved photo
-//
-//                bitmap1 = BitmapFactory.decodeFile(latestFile.getAbsolutePath());
-//            } else {
-//                Toast.makeText(this, "No saved photo found.", Toast.LENGTH_SHORT).show();
-//            }
-//        } else {
-//            Toast.makeText(this, "SavedPhotos directory not found.", Toast.LENGTH_SHORT).show();
-//        }
 
 
         File specificFile = new File(
@@ -86,7 +69,17 @@ public class FaceMatchActivity extends Activity {
         }
 
 
-        bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.rafiul2);
+        File file2 = new File(
+                getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/SavedPhotos",
+                "full_photo_1748925453576.jpg"
+        );
+
+        if (file2.exists()) {
+            bitmap2 = BitmapFactory.decodeFile(file2.getAbsolutePath());
+        } else {
+            Toast.makeText(this, "Second specific photo not found.", Toast.LENGTH_SHORT).show();
+        }
+
 
         image1View.setImageBitmap(bitmap1);
         image2View.setImageBitmap(bitmap2);
