@@ -27,13 +27,13 @@
          />
 
     <Button
-        android:id="@+id/closeBtn"
+        android:id="@+id/FRButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginBottom="30dp"
-        android:text="Close"
+        android:text="Face Rec"
         android:layout_gravity="bottom|center"
         />
 

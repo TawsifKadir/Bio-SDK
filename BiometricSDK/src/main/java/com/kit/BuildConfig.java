@@ -2,7 +2,7 @@ package com.kit;
 
 public class BuildConfig {
     public static boolean isDebug = false;
-    public static final String APPLICATION_ID = "com.karooth.bio";
+//    public static final String APPLICATION_ID = "com.karooth.bio";
     public static final String BUILD_TYPE = "debug";
     public static final String FLAVOR = "svt5008";
     public static final int VERSION_CODE = 1;

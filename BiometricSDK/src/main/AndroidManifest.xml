@@ -24,7 +24,6 @@
         android:name="android.hardware.camera.front.autofocus"
         android:required="false" />
 
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USB_PERMISSION"/>
@@ -32,11 +31,10 @@
     <uses-permission android:name="android.permission.BROADCAST_STICKY"/>
     <uses-permission android:name="android.permission.INTERNET"/>
 
-   
+    <!-->android:theme="@style/Theme.BiometricSDK"-->
 
     <application
         android:allowBackup="true"
-        android:extractNativeLibs="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -48,30 +46,41 @@
 
         <activity
             android:name=".BiometricSDK"
-            android:exported="true"
-            android:configChanges="keyboardHidden|orientation"
-            >
-<!--                <intent-filter>-->
-<!--                    <action android:name="android.intent.action.MAIN" />-->
-<!--                    <category android:name="android.intent.category.LAUNCHER" />-->
-<!--                </intent-filter>-->
+            android:theme="@style/AppTheme"
+            android:exported="true">
+
         </activity>
 
-<!--        <activity-->
-<!--            android:name=".BiometricSDK"-->
-<!--            android:theme="@style/Theme.AppCompat.Light.NoActionBar"-->
-<!--            android:exported="true"-->
-<!--            />-->
+        <activity
+            android:name="com.kit.photocapture.presentation.activity.FaceMatchActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:exported="true"             >
+            <!--            <intent-filter>-->
+            <!--                <action android:name="android.intent.action.MAIN" />-->
+            <!--                <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--            </intent-filter>-->
+        </activity>
+
 
 
 
         <activity
-            android:name="com.kit.photocapture.PhotoCaptureActivity"
+            android:name="com.kit.photocapture.presentation.activity.PhotoCaptureActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
             android:exported="true"
             />
+
+        <activity
+            android:name="com.kit.photocapture.presentation.activity.PhotoCaptureActivity2"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait"
+            android:exported="true">
+            <!--            <intent-filter>-->
+            <!--                <action android:name="android.intent.action.MAIN" />-->
+            <!--                <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--            </intent-filter>-->
+        </activity>
 
         <activity
             android:name="com.kit.fingerprintcapture.FingerprintCaptureActivity"
@@ -80,13 +89,25 @@
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:windowSoftInputMode="stateHidden"
-            >
+            android:windowSoftInputMode="stateHidden">
+            <!--                    <intent-filter>-->
+            <!--                        <action android:name="android.intent.action.MAIN" />-->
+            <!--                        <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--                    </intent-filter>-->
         </activity>
 
         <activity
+            android:name="com.kit.photocapture.presentation.activity.CapturedPhotoPreviewActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait"
+            android:exported="true"
+            />
+
+
+
+        <activity
             android:name="com.yalantis.ucrop.UCropActivity"
-            android:screenOrientation="landscape"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             />
 
