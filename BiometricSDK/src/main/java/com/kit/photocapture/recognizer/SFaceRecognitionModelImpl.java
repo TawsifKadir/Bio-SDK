@@ -96,7 +96,7 @@ public class SFaceRecognitionModelImpl implements FaceRecognizer {
     }
 
     @Override
-    public double compareFeatures(Mat feature1, Mat feature2) {
+    public double compareFeatures(Mat feature1, Mat feature2) { //
         if (faceRecognizer == null) {
             throw new IllegalStateException("Recognizer not loaded. Call loadRecognizer() first.");
         }

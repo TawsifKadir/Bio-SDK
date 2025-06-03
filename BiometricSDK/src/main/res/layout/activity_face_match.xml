@@ -5,35 +5,87 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center_horizontal"
-    android:background="#ffffff">
+    android:gravity="center"
+    android:background="@color/white">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Face Recogonizer"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:layout_marginBottom="30dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Click on either photo to replace with a captured photo"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:layout_marginBottom="30dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="450dp"
+        android:layout_weight="0"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/image1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:padding="8dp"
-            android:background="#eeeeee" />
 
-        <ImageView
-            android:id="@+id/image2"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            android:padding="8dp"
-            android:background="#eeeeee" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Photo 1"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <ImageView
+                android:id="@+id/image1"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:padding="8dp"
+                android:background="#eeeeee" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Photo 2"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <ImageView
+                android:id="@+id/image2"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:padding="8dp"
+                android:background="#eeeeee" />
+        </LinearLayout>
     </LinearLayout>
 
     <Button
@@ -43,7 +95,26 @@
         android:text="Match Faces"
         android:textColor="#FFFFFF"
         android:backgroundTint="@color/black"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="center_horizontal"
         android:padding="12dp" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:visibility="invisible">
+    </ProgressBar>
+
+    <TextView
+        android:id="@+id/text_match_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Result will appear here"
+        android:textSize="25sp"
+        android:textStyle="italic"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:textColor="#333333" />
 
 </LinearLayout>

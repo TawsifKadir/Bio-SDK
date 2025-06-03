@@ -1,35 +1,31 @@
 package com.kit.photocapture.presentation.activity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.kit.biometricsdk.R;
-import com.kit.photocapture.detector.YunetFaceDetectionImpl;
-import com.kit.photocapture.model.detector.FaceDetectionModel;
-import com.kit.photocapture.recognizer.FaceRecognizer;
-import com.kit.photocapture.recognizer.SFaceRecognitionModelImpl;
+import com.kit.photocapture.util.faceRecongonization.FaceRecognizerHelper;
+import com.kit.photocapture.util.faceRecongonization.LoadImageFromFile;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Arrays;
 
 public class FaceMatchActivity extends Activity {
 
@@ -42,7 +38,9 @@ public class FaceMatchActivity extends Activity {
     private ImageView image1View, image2View;
     private Button matchButton;
 
+    private TextView resultViewer;
     private Bitmap bitmap1, bitmap2;
+    private ProgressBar progressBar;
     private static final float MATCH_THRESHOLD = 0.6f;
     private static final String TAG = "FaceMatchActivity";
 
@@ -51,56 +49,49 @@ public class FaceMatchActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_face_match);
 
+        if (!OpenCVLoader.initDebug()) {
+            Toast.makeText(this, "OpenCV failed to load", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        initViews();
+        loadBitmaps();
+
+        image1View.setOnClickListener(v -> launchCamera(REQUEST_CODE_IMAGE1));
+        image2View.setOnClickListener(v -> launchCamera(REQUEST_CODE_IMAGE2));
+        matchButton.setOnClickListener(v ->{
+            resultViewer.setText("Result will appear here");
+            compareFaces();
+        } );
+
         image1View = findViewById(R.id.image1);
         image2View = findViewById(R.id.image2);
         matchButton = findViewById(R.id.btn_match);
+        resultViewer = findViewById(R.id.text_match_result);
+
+    }
+    private void initViews() {
+        image1View = findViewById(R.id.image1);
+        image2View = findViewById(R.id.image2);
+        matchButton = findViewById(R.id.btn_match);
+        progressBar = findViewById(R.id.progress_bar);
+    }
+
+    private void launchCamera(int requestCode) {
+
+        resultViewer.setText("Result will appear here");
+        Intent intent = new Intent(this, PhotoCaptureActivity2.class);
+        startActivityForResult(intent, requestCode);
+    }
 
 
-
-        File specificFile = new File(
-                getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/SavedPhotos",
-                "full_photo_1748864348734.jpg"
-        );
-
-        if (specificFile.exists()) {
-            bitmap1 = BitmapFactory.decodeFile(specificFile.getAbsolutePath());
-        } else {
-            Toast.makeText(this, "Specific photo not found.", Toast.LENGTH_SHORT).show();
-        }
-
-
-        File file2 = new File(
-                getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/SavedPhotos",
-                "full_photo_1748925453576.jpg"
-        );
-
-        if (file2.exists()) {
-            bitmap2 = BitmapFactory.decodeFile(file2.getAbsolutePath());
-        } else {
-            Toast.makeText(this, "Second specific photo not found.", Toast.LENGTH_SHORT).show();
-        }
-
+    private void loadBitmaps() {
+        bitmap1 = LoadImageFromFile.loadBitmapFromFile(this, "full_photo_1748932015642.jpg"); // full_photo_1748864348734.jpg
+        bitmap2 = LoadImageFromFile.loadBitmapFromFile(this, "full_photo_1748925453576.jpg"); //"3faces.jpg"
 
         image1View.setImageBitmap(bitmap1);
         image2View.setImageBitmap(bitmap2);
-
-        matchButton.setOnClickListener(v -> compareFaces());
-
-        image1View.setOnClickListener(v -> {
-            Intent intent = new Intent(FaceMatchActivity.this, PhotoCaptureActivity2.class);
-            startActivityForResult(intent, REQUEST_CODE_IMAGE1);
-            Log.d(TAG, "PhotoCaptureActivity2 started for image1");
-        });
-
-        image2View.setOnClickListener(v -> {
-            Intent intent = new Intent(FaceMatchActivity.this, PhotoCaptureActivity2.class);
-            startActivityForResult(intent, REQUEST_CODE_IMAGE2);
-            Log.d(TAG, "PhotoCaptureActivity2 started for image2");
-        });
-
-
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -133,94 +124,39 @@ public class FaceMatchActivity extends Activity {
 
 
     private void compareFaces() {
-        if (!OpenCVLoader.initDebug()) {
-            Toast.makeText(this, "OpenCV failed to load", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         try {
-            // Convert Bitmaps to Mat
-            Mat mat1 = new Mat();
-            Mat mat2 = new Mat();
-            Utils.bitmapToMat(bitmap1, mat1);
-            Utils.bitmapToMat(bitmap2, mat2);
+            progressBar.setVisibility(View.VISIBLE);
 
-            mat1 = convertToRGB(mat1);
-            mat2 = convertToRGB(mat2);
+            FaceRecognizerHelper faceRecognizerHelper = new FaceRecognizerHelper(this);
 
-            // Resize both to 320x320
-            Size modelInputSize = FaceDetectionModel.DEFAULT_INPUT_SIZE;
-            Imgproc.resize(mat1, mat1, modelInputSize);
-            Imgproc.resize(mat2, mat2, modelInputSize);
+            Mat detectedModelSuitedFrame1 = faceRecognizerHelper.makeFrameSuitToTheModel(bitmap1);
+            Mat detectedModelSuitedFrame2 = faceRecognizerHelper.makeFrameSuitToTheModel(bitmap2);
 
-            // Face Detector setup
-            YunetFaceDetectionImpl detector = new YunetFaceDetectionImpl(this);
-            detector.loadDetector();
-            detector.setInputSize(modelInputSize);
+            Mat faceCorrdinatesForImage1 = faceRecognizerHelper.detectFace(detectedModelSuitedFrame1);
+            Mat faceCorrdinatesForImage2 = faceRecognizerHelper.detectFace( detectedModelSuitedFrame2);
 
-            Mat faces1 = new Mat();
-            Mat faces2 = new Mat();
 
-            detector.detect(mat1, faces1);
-
-            detector.detect(mat2, faces2);
-
-            if (faces1.rows() == 0 && faces2.rows() == 0) {
-                Toast.makeText(this, "No face detected in  both images", Toast.LENGTH_LONG).show();
-                return;
-            } else if (faces1.rows() == 0 ) {
-                Toast.makeText(this, "No face detected in faces1 images", Toast.LENGTH_LONG).show();
-                return;
-            }
-            else if (faces2.rows() == 0) {
-                Toast.makeText(this, "No face detected in faces2 images", Toast.LENGTH_LONG).show();
+            int faceCountInFrame1 = faceRecognizerHelper.numOfFaces(faceCorrdinatesForImage1);
+            int faceCountInFrame2 = faceRecognizerHelper.numOfFaces(faceCorrdinatesForImage2);
+            if (!isValidSingleFacePair(faceCountInFrame1, faceCountInFrame2)) {
                 return;
             }
 
-            // Recognizer pipeline
-            FaceRecognizer recognizer = new SFaceRecognitionModelImpl(this);
-            recognizer.loadRecognizer();
+            Mat feature1 = faceRecognizerHelper.getFaceFeatureMatrix(detectedModelSuitedFrame1,faceCorrdinatesForImage1);
+            Mat feature2 = faceRecognizerHelper.getFaceFeatureMatrix(detectedModelSuitedFrame2,faceCorrdinatesForImage2);
 
-            Mat aligned1 = new Mat();
-            Mat aligned2 = new Mat();
-            recognizer.alignCrop(mat1, faces1.row(0), aligned1);
-            recognizer.alignCrop(mat2, faces2.row(0), aligned2);
+            double similarity = faceRecognizerHelper.compareFeatures(feature1, feature2);
+            boolean isMatch = faceRecognizerHelper.isFaceMatched(feature1, feature2, MATCH_THRESHOLD);
 
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                @SuppressLint("DefaultLocale")
+                String result = String.format("Similarity: %.2f%%\nMatch: %s",
+                        similarity * 100, isMatch ? "YES ✅" : "NO ❌");
+                progressBar.setVisibility(View.INVISIBLE);
+                resultViewer.setText(result);
 
-            Log.d("Debug", "Aligned1 size: " + aligned1.size());
-            Log.d("Debug", "Aligned2 size: " + aligned2.size());
-            Log.d("Debug", "Aligned1 pixel: " + aligned1.get(0, 0)[0]);
-            Log.d("Debug", "Aligned2 pixel: " + aligned2.get(0, 0)[0]);
-//            Log.d("FaceBox", "Face1 Box: " + faceBox1.dump());
-//            Log.d("FaceBox", "Face2 Box: " + faceBox2.dump());
-
-
-
-
-            Mat feature1 = new Mat();
-            Mat feature2 = new Mat();
-            recognizer.extractFeature(aligned1, feature1);
-            feature1 = feature1.clone();
-
-            recognizer.extractFeature(aligned2, feature2);
-            feature2 = feature2.clone();
-
-
-
-            logFeatureVector(feature1, "Feature1");
-            logFeatureVector(feature2, "Feature2");
-
-
-            Log.d(TAG, "compareFaces() called: " +  feature1.size());
-
-            double similarity = recognizer.compareFeatures(feature1, feature2);
-            boolean isMatch = recognizer.isMatch(feature1, feature2, MATCH_THRESHOLD);
-
-            String result = String.format("Similarity: %.2f%%\nMatch: %s",
-                    similarity * 100, isMatch ? "YES ✅" : "NO ❌");
-
-            Toast.makeText(this, result, Toast.LENGTH_LONG).show();
-            Log.i(TAG, result);
+                Log.i(TAG, result);
+            }, 2000); // 2000 milliseconds = 2 seconds
 
         } catch (Exception e) {
             Log.e(TAG, "Face match error", e);
@@ -228,26 +164,29 @@ public class FaceMatchActivity extends Activity {
         }
     }
 
-    private Mat convertToRGB(Mat input) {
-        Mat rgb = new Mat();
-        Imgproc.cvtColor(input, rgb, Imgproc.COLOR_RGBA2RGB);
-        return rgb;
-    }
-    private void logFeatureVector(Mat feature, String tag) {
-        if (feature.rows() == 1 && feature.cols() > 0 && feature.type() == CvType.CV_32FC1) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(tag).append(" [");
-            for (int i = 0; i < feature.cols(); i++) {
-                float[] val = new float[1];
-                feature.get(0, i, val);
-                sb.append(String.format("%.6f", val[0]));
-                if (i < feature.cols() - 1) sb.append(", ");
-            }
-            sb.append("]");
-            Log.d("FeatureVector", sb.toString());
-        } else {
-            Log.w("FeatureVector", tag + " is not a valid 1xN float matrix");
+
+    private boolean isValidSingleFacePair(int faceCount1, int faceCount2) {
+        if (faceCount1 == 0 && faceCount2 == 0) {
+            Toast.makeText(this, "No face detected in both frames", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (faceCount1 > 1 && faceCount2 > 1) {
+            Toast.makeText(this, "Multiple faces detected in both frames", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (faceCount1 > 1) {
+            Toast.makeText(this, "Multiple faces detected in frame 1\nNumber of faces: " + faceCount1, Toast.LENGTH_LONG).show();
+            return false;
+        } else if (faceCount2 > 1) {
+            Toast.makeText(this, "Multiple faces detected in frame 2\nNumber of faces: " + faceCount2, Toast.LENGTH_LONG).show();
+            return false;
+        } else if (faceCount1 == 0) {
+            Toast.makeText(this, "No face detected in frame 1", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (faceCount2 == 0) {
+            Toast.makeText(this, "No face detected in frame 2", Toast.LENGTH_LONG).show();
+            return false;
         }
+
+        return true; // Exactly one face in each frame
     }
 
 
