@@ -13,11 +13,11 @@
         "abis": [
           {
             "abiName": "arm64-v8a",
-            "abiApi": 24,
+            "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\462g1z24\\arm64-v8a\\android_gradle_build.json"
+            "abiLibrary": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "C:\\Users\\User\\StudioProjects\\Bio-SDK-Dermalog_2\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\android_gradle_build.json"
           }
         ]
       }

@@ -1,2 +1,0 @@
-ninja: Entering directory `C:\Users\User\StudioProjects\Bio-SDK-Dermalog_2\OpenCV\.cxx\Debug\462g1z24\x86_64'
-ninja: no work to do.

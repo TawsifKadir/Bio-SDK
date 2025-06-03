@@ -88,7 +88,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     private ExecutorService mFPStartCaptureService;/// = Executors.newSingleThreadExecutor();
 
-    private boolean isDummyDevice = false;
+    private boolean isDummyDevice = true;
     private boolean duplicateDetectionEnabled = true;
     private boolean mCloseClicked = false;
     private FingerprintMatchingHandler mfpMatchHandler;
