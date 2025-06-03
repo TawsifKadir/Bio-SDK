@@ -62,19 +62,19 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     private Button mDoneBtn;
 
-    private FingerprintCaptureHandler mfpCaptureHandler;
-    private IDeviceManager mDeviceManager;
+    private FingerprintCaptureHandler mfpCaptureHandler;        ///Animation for capturing Fingerprint
+    private IDeviceManager mDeviceManager;                      ///Common interface for devices
 
     private Fingerprint mCurrentFingerprint;
 
     private Animation mCurrentAnimation;
 
     private ThreadPoolExecutor taskExecutor;
-    private boolean isDummyDevice = true;
+    private boolean isDummyDevice = false;
     private boolean duplicateDetectionEnabled = true;
 
     private boolean mCloseClicked = false;
-    private FingerprintMatchingHandler mfpMatchHandler;
+    private FingerprintMatchingHandler mfpMatchHandler;    ///Fingerprint Template Validation
 
     private EditText mOtherReasonTextView;
     private Boolean mHasFingerprintException;
@@ -158,15 +158,14 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
 
-        if(isDummyDevice)
-            mDeviceManager = new DummyDeviceManager(this,this);
-        else
-            mDeviceManager = new MorphoDeviceManager(this,this);
-
     }
     @Override
     public void onStart(){
         super.onStart();
+        if(isDummyDevice)
+            mDeviceManager = new DummyDeviceManager(this,this);
+        else
+            mDeviceManager = new MorphoDeviceManager(this,this);
     }
 
     @Override

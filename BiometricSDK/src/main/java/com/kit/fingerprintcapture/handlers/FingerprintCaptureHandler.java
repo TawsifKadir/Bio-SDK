@@ -12,16 +12,14 @@ import java.util.ArrayList;
 
 
 public class FingerprintCaptureHandler implements Runnable, View.OnClickListener{
-
-
     private Object syncObject;
     private ArrayList<Fingerprint> fingerPrintList;
     private FingerprintID currentFingerprintID;
 
     private FingerprintCaptureCallback captureCallback;
 
-    private boolean startCapture=false;
-    private boolean exitCapture=false;
+    private boolean startCapture;
+    private boolean exitCapture;
 
     public boolean autoCaptureOn;
     public FingerprintCaptureHandler(FingerprintCaptureCallback captureCallback , ArrayList<Fingerprint> fingerPrintList) {
@@ -161,8 +159,6 @@ public class FingerprintCaptureHandler implements Runnable, View.OnClickListener
             this.currentFingerprintID = fp.getFingerprintID();
             captureCallback.onCaptureStart(getFingerprintByID(this.currentFingerprintID));
     }
-
-
     public void setCurrentFingerprintID(FingerprintID currentFingerprintID) {
         this.currentFingerprintID = currentFingerprintID;
     }

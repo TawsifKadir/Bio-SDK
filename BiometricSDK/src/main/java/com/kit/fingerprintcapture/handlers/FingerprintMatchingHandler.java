@@ -29,7 +29,7 @@ public class FingerprintMatchingHandler {
     private Activity mActivity;
     private boolean isInitialized;
     private HashMap<FingerprintID,FingerprintTemplate> templateList;
-    private FingerprintMatcher mFPMatcher = null;
+    private FingerprintMatcher mFPMatcher;
 
     public FingerprintMatchingHandler(Activity mActivity) {
         this.mActivity = mActivity;

@@ -54,7 +54,7 @@ dependencies {
 
     implementation files('libs/FDxSDKProFDAndroid.jar','libs/MorphoSmart_SDK_6.42.0.0.jar')
 
-//    implementation files('libs/facedetection', 'libs/facemesh', 'libs/solution-core')
+    //
     ////Photo Capture
     implementation 'com.github.yalantis:ucrop:2.2.8'
 
