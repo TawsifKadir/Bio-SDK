@@ -485,51 +485,45 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
                 FileUtils.saveByteArrayToFile(wsqData,"fingerImage",FingerprintCaptureActivity.this);
 //                if(duplicateDetectionEnabled && !isDummyDevice) {
-                  if(true) {
+                ISOTemplate template = mfpMatchHandler.createISOTemplate(imgData, width, height);
 
-                   ISOTemplate template = mfpMatchHandler.createISOTemplate(imgData,width,height);
-
-                    if(BuildConfig.isDebug) {
-                        if(template==null) {
-                            Log.d(TAG, "Received null template");
-                        }else{
-                            Log.d(TAG, "Received a template with size = "+template.getIsoTemplateSize());
-                        }
+                if(BuildConfig.isDebug) {
+                    if(template==null) {
+                        Log.d(TAG, "Received null template");
+                    }else{
+                        Log.d(TAG, "Received a template with size = "+template.getIsoTemplateSize());
                     }
-
-                    if (mReferenceTemplateList.containsKey(mCurrentFingerprint.getFingerprintID().getID())) {
-                        mReferenceTemplateList.remove(mCurrentFingerprint.getFingerprintID().getID());
-                    }
-
-                    if (mReferenceTemplateList.size() > 0) {
-
-                        if(true) {
-
-                            List<MatchResult> matchList = new ArrayList<>();
-
-                            mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID().getID(),
-                                    template, mReferenceTemplateList.values().stream().collect(Collectors.toList()), matchList, TemplateFormat.ISO19794_2_2005,TemplateFormat.ISO19794_2_2005);
-
-                            if (matchList.size() > 0) {
-
-                                mFingerprintText.setText(R.string.duplicate_fingerprint);
-
-                                onCaptureError("Duplicate fingerprint");
-
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this, "Duplicate fingerprint captured. Please recapture different finger.");
-                                    }
-                                });
-
-                                return;
-                            }
-                        }
-                    }
-
-                    mReferenceTemplateList.put(mCurrentFingerprint.getFingerprintID().getID(),template);
                 }
+
+                if (mReferenceTemplateList.containsKey(mCurrentFingerprint.getFingerprintID().getID())) {
+                    mReferenceTemplateList.remove(mCurrentFingerprint.getFingerprintID().getID());
+                }
+
+                if (mReferenceTemplateList.size() > 0) {
+
+                    List<MatchResult> matchList = new ArrayList<>();
+
+                    mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID().getID(),
+                            template, mReferenceTemplateList.values().stream().collect(Collectors.toList()), matchList, TemplateFormat.ISO19794_2_2005,TemplateFormat.ISO19794_2_2005);
+
+                    if (matchList.size() > 0) {
+
+                        mFingerprintText.setText(R.string.duplicate_fingerprint);
+
+                        onCaptureError("Duplicate fingerprint");
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this, "Duplicate fingerprint captured. Please recapture different finger.");
+                            }
+                        });
+
+                        return;
+                    }
+                }
+
+                mReferenceTemplateList.put(mCurrentFingerprint.getFingerprintID().getID(),template);
 
                 mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), score, wsqData);
 
