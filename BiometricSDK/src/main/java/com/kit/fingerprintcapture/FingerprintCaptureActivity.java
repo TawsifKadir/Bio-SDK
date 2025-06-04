@@ -40,7 +40,7 @@ import com.kit.fingerprintcapture.adapters.FingerprintExceptionListAdapter;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
-import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
+import com.kit.fingerprintcapture.handlers.DermalogMatchingHandler;
 import com.kit.fingerprintcapture.manager.DummyDeviceManager;
 import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.DermalogDeviceManager;
@@ -91,7 +91,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     private boolean isDummyDevice = true;
     private boolean duplicateDetectionEnabled = true;
     private boolean mCloseClicked = false;
-    private FingerprintMatchingHandler mfpMatchHandler;
+    private DermalogMatchingHandler mfpMatchHandler;
 
     private EditText mOtherReasonTextView;
     private Boolean mHasFingerprintException;
@@ -148,7 +148,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
 
 
-        mfpMatchHandler = new FingerprintMatchingHandler(this);
+        mfpMatchHandler = new DermalogMatchingHandler(this);
 
 
         mReferenceTemplateList = new HashMap<>();

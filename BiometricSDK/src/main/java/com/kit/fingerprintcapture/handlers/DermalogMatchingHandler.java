@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 
 import java.util.Random;
 
-public class FingerprintMatchingHandler {
+public class DermalogMatchingHandler {
     String TAG = "FingerprintMatchingHandler";
     private Activity mActivity;
     private boolean isInitialized;
@@ -34,7 +34,7 @@ public class FingerprintMatchingHandler {
 
     private Matcher matcher;
 
-    public FingerprintMatchingHandler(Activity mActivity) {
+    public DermalogMatchingHandler(Activity mActivity) {
         this.mActivity = mActivity;
         this.isInitialized = false;
     }
