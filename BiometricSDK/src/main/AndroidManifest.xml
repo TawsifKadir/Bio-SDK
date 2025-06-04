@@ -55,10 +55,10 @@
             android:name="com.kit.photocapture.presentation.activity.FaceMatchActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="true"             >
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+            <!--            <intent-filter>-->
+            <!--                <action android:name="android.intent.action.MAIN" />-->
+            <!--                <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--            </intent-filter>-->
         </activity>
 
 
@@ -76,10 +76,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:screenOrientation="portrait"
             android:exported="true">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+            <!--            <intent-filter>-->
+            <!--                <action android:name="android.intent.action.MAIN" />-->
+            <!--                <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--            </intent-filter>-->
         </activity>
 
         <activity
@@ -90,10 +90,10 @@
             android:screenOrientation="landscape"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="stateHidden">
-<!--                    <intent-filter>-->
-<!--                        <action android:name="android.intent.action.MAIN" />-->
-<!--                        <category android:name="android.intent.category.LAUNCHER" />-->
-<!--                    </intent-filter>-->
+            <!--                    <intent-filter>-->
+            <!--                        <action android:name="android.intent.action.MAIN" />-->
+            <!--                        <category android:name="android.intent.category.LAUNCHER" />-->
+            <!--                    </intent-filter>-->
         </activity>
 
         <activity

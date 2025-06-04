@@ -5,17 +5,14 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ContextWrapper;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.BatteryManager;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Toast;
 
 

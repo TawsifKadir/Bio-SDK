@@ -15,7 +15,7 @@ public class FingerprintData implements Parcelable {
 
     public FingerprintData(FingerprintID id, byte[] fingerprintData, long qualityScore) {
         this.id = id;
-        this.fingerprintData = fingerprintData;
+        copyFingerprintData(fingerprintData);
         this.qualityScore = qualityScore;
     }
 
@@ -38,11 +38,14 @@ public class FingerprintData implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.id.getID());
-        if(this.fingerprintData!=null)
+        if(this.fingerprintData!=null) {
             dest.writeInt(this.fingerprintData.length);
-        else
+            dest.writeByteArray(this.fingerprintData);
+        }
+        else {
             dest.writeInt(0);
-        dest.writeByteArray(this.fingerprintData);
+        }
+
         dest.writeLong(qualityScore);
     }
 
@@ -68,8 +71,11 @@ public class FingerprintData implements Parcelable {
     }
 
     public void setFingerprintData(byte[] fingerprintData) {
-        this.fingerprintData = fingerprintData;
+        copyFingerprintData(fingerprintData);
     }
+
+
+
 
     public long getQualityScore() {
         return qualityScore;
@@ -77,6 +83,13 @@ public class FingerprintData implements Parcelable {
 
     public void setQualityScore(long qualityScore) {
         this.qualityScore = qualityScore;
+    }
+
+    private void copyFingerprintData(byte[] fingerprintData){
+        if(fingerprintData!=null) {
+            this.fingerprintData = new byte[fingerprintData.length];
+            System.arraycopy(fingerprintData,0,this.fingerprintData,0,fingerprintData.length);
+        }
     }
 
 

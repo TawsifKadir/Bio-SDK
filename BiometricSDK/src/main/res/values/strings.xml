@@ -4,7 +4,8 @@
 
         <string name="again_capture">Do you want to capture %1$s again?</string>
         <string name="all_fingerprint_captured">All fingerprints are captured</string>
-
+        <string name="verification_alert_tile">Verification Alert</string>
+        <string name="verification_alert">No fingerprint is captured for verification. \n The verification will fail if no fingerprint is captured. \n Are you sure you want to exit?</string>
         <string name="capturing">Capturing...</string>
         <string name="remove_fingerprint">Please remove fingerprint</string>
         <string name="click_fingerprint">Click on finger to capture</string>
