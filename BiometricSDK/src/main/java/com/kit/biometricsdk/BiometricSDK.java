@@ -17,6 +17,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.kit.fingerprintcapture.model.FingerprintData;
+import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.photocapture.presentation.activity.PhotoCaptureActivity2;
 import com.kit.photocapture.util.Utility;
 
@@ -109,9 +111,23 @@ public class BiometricSDK extends AppCompatActivity {
             }else{
                 Log.d(TAG, "Error occurred ");
             }
-        }else if(requestCode==3){
+        }else if (requestCode == 3) {
             Log.d(TAG, "Returned from fingerprint capture");
+
+            if (resultCode == RESULT_OK && data != null) {
+                for (FingerprintID fid : FingerprintID.values()) {
+                    FingerprintData fingerprintData = data.getParcelableExtra(fid.getName());
+                    if (fingerprintData != null) {
+                        logFingerprintData(fid.getName(), fingerprintData);
+                    } else {
+                        Log.d(TAG, "No data found for: " + fid.getName());
+                    }
+                }
+            } else {
+                Log.d(TAG, "Fingerprint capture was canceled or no data returned.");
+            }
         }
+
     }
 
     public byte[] convertBitmapToByteArray(Bitmap bitmap) {
@@ -136,4 +152,40 @@ public class BiometricSDK extends AppCompatActivity {
             }
         }
     }
+    private void logFingerprintData(String label, FingerprintData data) {
+        Log.d(TAG, "------------ " + label + " ------------");
+
+        if (data.getFingerprintId() != null) {
+            Log.d(TAG, "ID: " + data.getFingerprintId().getName());
+        } else {
+            Log.d(TAG, "ID: null");
+        }
+
+        if (data.getFingerprintData() != null) {
+            Log.d(TAG, "Raw fingerprint byte  " + data.getFingerprintData());
+        } else {
+            Log.d(TAG, "Raw fingerprint data: null");
+        }
+
+        Log.d(TAG, "Quality Score: " + data.getQualityScore());
+
+        if (data.getIsoTemplate() != null) {
+            byte[] iso = data.getIsoTemplate().getIsoTemplate();
+            Log.d(TAG, "ISO Template Size: " + data.getIsoTemplate().getIsoTemplateSize());
+            Log.d(TAG, "ISO Template First 20 Bytes: " + bytesToHex(iso, 20));
+        } else {
+            Log.d(TAG, "ISO Template: null");
+        }
+    }
+
+    private String bytesToHex(byte[] bytes, int limit) {
+        if (bytes == null) return "null";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(bytes.length, limit); i++) {
+            sb.append(String.format("%02X ", bytes[i]));
+        }
+        return sb.toString();
+    }
+
+
 }

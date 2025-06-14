@@ -10,6 +10,7 @@ import com.dermalog.afis.fingercode3.Template;
 
 import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.kit.BuildConfig;
+import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.template.TemplateExtractor;
 
@@ -26,7 +27,7 @@ import java.util.function.Consumer;
 
 import java.util.Random;
 
-public class DermalogMatchingHandler {
+public class DermalogMatchingHandler implements IFingerMatcher{
     String TAG = "FingerprintMatchingHandler";
     private Activity mActivity;
     private boolean isInitialized;
@@ -39,63 +40,6 @@ public class DermalogMatchingHandler {
         this.isInitialized = false;
     }
 
-    public ISOTemplate createISOTemplate(byte[] nowImage,int width , int height) throws Exception{
-
-        byte[][] fmd = new byte[1][1000 + 256 * 6];
-
-        int[] fmdSize = new int[1];
-        fmdSize[0] = 1000 + 256 * 6;
-
-        ISOTemplate fmdTmpl = new ISOTemplate(null,0);
-
-        int ret = TemplateExtractor.getMyInstance().createFmdFromRaw(nowImage,500,height,width,TemplateExtractor.FJFX_FMD_ISO_19794_2_2005,fmd[0],fmdSize);
-
-        if(BuildConfig.isDebug) {
-            Log.d(TAG, "Template Extractor returned : " + ret);
-        }
-
-        if(ret==TemplateExtractor.FJFX_SUCCESS) {
-            if (fmdSize[0] > 0) {
-                byte[] retFmd = new byte[fmdSize[0]];
-                System.arraycopy(fmd[0], 0, retFmd, 0, fmdSize[0]);
-                fmdTmpl.setIsoTemplate(retFmd);
-                fmdTmpl.setIsoTemplateSize(fmdSize[0]);
-            }
-        }else{
-            throw new Exception("Error in creating ISO template. Error code = "+ret);
-        }
-
-        return fmdTmpl;
-    }
-
-    public ISOTemplate createANSITemplate(byte[] nowImage,int width , int height) throws Exception{
-        byte[][] fmd = new byte[1][1000 + 256 * 6];
-
-        int[] fmdSize = new int[1];
-        fmdSize[0] = 1000 + 256 * 6;
-
-        ISOTemplate fmdTmpl = new ISOTemplate(null,0);
-
-
-        int ret = TemplateExtractor.getMyInstance().createFmdFromRaw(nowImage,500,height,width,TemplateExtractor.FJFX_FMD_ANSI_378_2004,fmd[0],fmdSize);
-
-        if(BuildConfig.isDebug) {
-            Log.d(TAG, "Template Extractor returned : " + ret);
-        }
-
-        if(ret==TemplateExtractor.FJFX_SUCCESS) {
-            if (fmdSize[0] > 0) {
-                byte[] retFmd = new byte[fmdSize[0]];
-                System.arraycopy(fmd[0], 0, retFmd, 0, fmdSize[0]);
-                fmdTmpl.setIsoTemplate(retFmd);
-                fmdTmpl.setIsoTemplateSize(fmdSize[0]);
-            }
-        }else{
-            throw new Exception("Error in creating ISO template. Error code = "+ret);
-        }
-
-        return fmdTmpl;
-    }
 
 
     public void verifyFingerPrint(Integer fingerprintId, ISOTemplate searchTemplate, List<ISOTemplate> referenceTemplateList, List<MatchResult> result,TemplateFormat subjectTmplType,TemplateFormat candidateTmplType){
@@ -133,7 +77,7 @@ public class DermalogMatchingHandler {
                         Log.d(TAG, "accept() called with score: " + nowScore);
                     }catch(Throwable t){
                         Log.e(TAG, "Verify Fingerprint Error while matching : "+t.getMessage());
-                        showToast("Verify Fingerprint Error while matching : "+t.getMessage());
+
                     }
                 }
             });
@@ -165,7 +109,7 @@ public class DermalogMatchingHandler {
         }finally {
             if(isError){
                 Log.e(TAG, "Verify Fingerprint Error after matching: "+errorObject.getMessage());
-                showToast("Verify Fingerprint Error after matching: "+errorObject.getMessage());
+
                 errorObject.printStackTrace();
                 errorObject = null;
             }
@@ -178,63 +122,12 @@ public class DermalogMatchingHandler {
 
     }
 
-    public void identify(ISOTemplate subject, Map<Integer,List<ISOTemplate>> gallery, List<MatchResult> result){
-
-        if(subject==null) return;
-        if(gallery == null) return;
-
-        gallery.forEach(new BiConsumer<Integer, List<ISOTemplate>>() {
-            @Override
-            public void accept(Integer biometricId, List<ISOTemplate> candidates) {
-                List<MatchResult> matchResultList = new ArrayList<>();
-                verifyFingerPrint(biometricId,subject,candidates, matchResultList,TemplateFormat.ISO19794_2_2005, TemplateFormat.ISO19794_2_2005);
-                if(matchResultList.size()>0){
-                    result.add(matchResultList.get(0));
-                }
-            }
-        });
-
+    @Override
+    public long verifyFingerPrint(FingerprintID nowID, byte[] nowImage, int nowWidth, int nowHeight, boolean[] matched) {
+        throw new UnsupportedOperationException("Image matching not supported in Dermalog matcher.");
     }
 
-    public void identify(ISOTemplate subject, Map<Integer,List<ISOTemplate>> gallery, List<MatchResult> result, boolean returnMatch){
 
-        if(subject==null) return;
-        if(gallery == null || gallery.size()<=0) return;
-        if(!returnMatch) return;
 
-        Random random = new Random();
-        int randomIndex = random.nextInt(gallery.size());
 
-        gallery.forEach(new BiConsumer<Integer, List<ISOTemplate>>() {
-            int nowIndex = 0;
-            @Override
-            public void accept(Integer biometricId, List<ISOTemplate> candidates) {
-                if(randomIndex==nowIndex){
-                    MatchResult mr = new MatchResult();
-                    mr.setId(biometricId);
-                    mr.setMatchScore(100);
-                    result.add(mr);
-                }
-                nowIndex++;
-            }
-        });
-
-    }
-
-    public void showToast(String msg){
-        this.mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(mActivity,msg,Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    public void setMatcher(Matcher matcher){
-        this.matcher = matcher;
-    }
-
-    public Matcher getMatcher(){
-        return this.matcher;
-    }
 }

@@ -43,7 +43,7 @@ import java.util.Observer;
 
 public class MorphoDeviceManager implements IDeviceManager,Observer{
 
-    private  String TAG = "MorphoDeviceManager02";
+    private  String TAG = "MorphoDeviceManager";
     private DeviceDataCallback deviceDataConsumer;
     private Activity mainActivity;
 

@@ -5,9 +5,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class FingerprintUI {
-private ImageButton fingerprintBtn;
-private ImageView fingerprintMarker;
-private TextView  fingerprintScore;
+    private ImageButton fingerprintBtn;
+    private ImageView fingerprintMarker;
+    private TextView  fingerprintScore;
 
     public FingerprintUI() {
 

@@ -1,18 +1,34 @@
 package com.kit.fingerprintcapture.handlers;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.usb.UsbManager;
 import android.util.Log;
 
+import com.dermalog.afis.fingercode3.TemplateFormat;
 import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.model.FingerprintID;
+import com.kit.fingerprintcapture.template.ISOTemplate;
+import com.kit.fingerprintcapture.template.MatchResult;
+import com.kit.fingerprintcapture.template.TemplateExtractor;
+import com.machinezoo.sourceafis.FingerprintImage;
 import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-public class MorphoMatchingHandler {
+import SecuGen.FDxSDKPro.JSGFPLib;
+import SecuGen.FDxSDKPro.SGFDxErrorCode;
+import SecuGen.FDxSDKPro.SGFDxSecurityLevel;
+import SecuGen.FDxSDKPro.SGFDxTemplateFormat;
+import SecuGen.FDxSDKPro.SGFingerInfo;
+import SecuGen.FDxSDKPro.SGImpressionType;
+public class MorphoMatchingHandler implements IFingerMatcher {
     String TAG = "FingerprintMatchingHandler";
     private Activity mActivity;
     private boolean isInitialized;
@@ -106,5 +122,16 @@ public class MorphoMatchingHandler {
         return result;
 
     }
+
+
+    @Override
+    public void verifyFingerPrint(Integer fingerprintId, ISOTemplate searchTemplate,
+                                  List<ISOTemplate> referenceTemplateList,
+                                  List<MatchResult> result,
+                                  TemplateFormat subjectTmplType,
+                                  TemplateFormat candidateTmplType) {
+        throw new UnsupportedOperationException("Image matching not supported in Morpho matcher.");
+    }
+
 
 }

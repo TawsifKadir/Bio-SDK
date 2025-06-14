@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import android.os.Parcelable;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,9 +42,11 @@ import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.DermalogMatchingHandler;
+import com.kit.fingerprintcapture.handlers.MorphoMatchingHandler;
 import com.kit.fingerprintcapture.manager.DummyDeviceManager;
 import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.DermalogDeviceManager;
+import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.Fingerprint;
 
 import com.kit.fingerprintcapture.model.FingerprintID;
@@ -53,9 +56,11 @@ import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.FileUtils;
+import com.kit.fingerprintcapture.utils.FingerprintUtils;
 import com.kit.fingerprintcapture.utils.ImageProc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,10 +93,10 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     private ExecutorService mFPStartCaptureService;/// = Executors.newSingleThreadExecutor();
 
-    private boolean isDummyDevice = true;
+    private boolean isDummyDevice = false;
     private boolean duplicateDetectionEnabled = true;
     private boolean mCloseClicked = false;
-    private DermalogMatchingHandler mfpMatchHandler;
+    private MorphoMatchingHandler mfpMatchHandler;
 
     private EditText mOtherReasonTextView;
     private Boolean mHasFingerprintException;
@@ -148,22 +153,24 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
 
 
-        mfpMatchHandler = new DermalogMatchingHandler(this);
+        mfpMatchHandler = new MorphoMatchingHandler(this);
 
 
         mReferenceTemplateList = new HashMap<>();
 
-        mDoneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                    if (!isFingerprintMissing()) {
-                        prepareReturnData();
-                        finish();
-                    } else {
-                        showNoFingerprintExceptionDialog();
-                    }
-                }
-        });
+        mDoneBtn.setOnClickListener(v -> {
+
+            prepareReturnData();
+            finish();
+//                if (!isFingerprintMissing()) {
+//                    Log.d(TAG, "onCreate() called with: if]");
+//                    prepareReturnData();
+//                    finish();
+//                } else {
+//                    Log.d(TAG, "onCreate() called with: else]");
+//                    showNoFingerprintExceptionDialog();
+//                }
+            });
         for(Fingerprint fp:fingerprintList){
             fp.getFingerprintUI().getFingerprintBtn().setOnClickListener(mfpCaptureHandler);
         }
@@ -173,15 +180,16 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
 
-        if(isDummyDevice)
-            mDeviceManager = new DummyDeviceManager(this,this);
-        else
-            mDeviceManager = new DermalogDeviceManager(this,this);
-
     }
     @Override
     public void onStart(){
         super.onStart();
+        if(isDummyDevice){
+            mDeviceManager = new DummyDeviceManager(this,this);
+        } else {
+            mDeviceManager = new MorphoDeviceManager(this,this);
+            Log.d(TAG, "morpho    ");
+        }
     }
 
     @Override
@@ -229,28 +237,28 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     mClickFingerprint.setText(R.string.click_fingerprint);
 
                     if(!isDummyDevice) {
-                        try {
-                            Matcher nowMatcher = new Matcher();
-                            nowMatcher.setRotationToleranceInDegree(180);
-                            mfpMatchHandler.setMatcher(nowMatcher);
-                        } catch (FC3Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(this, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
-                            mfpMatchHandler.setMatcher(null);
-                        }
+//                        try {
+//                            Matcher nowMatcher = new Matcher();
+//                            nowMatcher.setRotationToleranceInDegree(180);
+//                            mfpMatchHandler.setMatcher(nowMatcher);
+//                        } catch (FC3Exception e) {
+//                            e.printStackTrace();
+//                            Toast.makeText(this, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
+//                            mfpMatchHandler.setMatcher(null);
+//                        }
                     }else{
-                        mfpMatchHandler.setMatcher(null);
+                       // mfpMatchHandler.setMatcher(null);
                     }
                 }
             }
         }catch(Throwable t){
             t.printStackTrace();
         }finally {
-            if (!isDummyDevice){
-                if (mfpMatchHandler.getMatcher() == null){
-                    showFingerprintDeviceNotInitialized(-1);
-                }
-            }
+//            if (!isDummyDevice){
+//                if (mfpMatchHandler.getMatcher() == null){
+//                    showFingerprintDeviceNotInitialized(-1);
+//                }
+//            }
         }
 
         enableControls();
@@ -268,7 +276,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         mDeviceManager.deInitDevice();
 
         if(mfpMatchHandler!=null){
-            mfpMatchHandler.setMatcher(null);
+            mfpMatchHandler = new MorphoMatchingHandler(this);
         }
 
         if(mFPStartCaptureService!=null){
@@ -316,6 +324,9 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
     }
+
+
+
     public void resetMarker(Fingerprint fp){
         ImageView nowMarker = fp.getFingerprintUI().getFingerprintMarker();
         nowMarker.setImageDrawable(null);
@@ -371,72 +382,60 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     @Override
     public void onCaptureStop(Fingerprint fp) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (FingerprintCaptureActivity.this) {
-                    if (fp.getStatus() != FingerprintStatus.CAPTURED) {
-                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                        fp.setStatus(FingerprintStatus.NOT_CAPTURED);
-                        resetMarker(fp);
-                    }
-
-                    mfpCaptureHandler.stopCapture();
+        runOnUiThread(() -> {
+            synchronized (FingerprintCaptureActivity.this) {
+                if (fp.getStatus() != FingerprintStatus.CAPTURED) {
+                    fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                    fp.setStatus(FingerprintStatus.NOT_CAPTURED);
+                    resetMarker(fp);
                 }
+
+                mfpCaptureHandler.stopCapture();
             }
         });
     }
     @Override
     public void onCaptureStart(Fingerprint fp) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        runOnUiThread(() -> {
 
-                if(BuildConfig.isDebug) {
-                    Log.d("FaisalActivity", ">>>>> Entered in on onCaptureStart >>>> ");
-                }
-                synchronized (FingerprintCaptureActivity.this) {
-                    diableControls();
+            if(BuildConfig.isDebug) {
+                Log.d("FaisalActivity", ">>>>> Entered in on onCaptureStart >>>> ");
+            }
+            synchronized (FingerprintCaptureActivity.this) {
+                diableControls();
 
-                    mCurrentFingerprint = fp;
-                    mCurrentFingerprint.setStatus(FingerprintStatus.CAPTURE_IN_PROGRESS);
+                mCurrentFingerprint = fp;
+                mCurrentFingerprint.setStatus(FingerprintStatus.CAPTURE_IN_PROGRESS);
 
-                    setCaptureStartMarker(fp);
-                    setStartCaptureFpView(fp);
-                    startAnimation();
-                    Callable<Void> nowCallable = new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            mDeviceManager.startCapture();
-                            return Void.TYPE.newInstance();
-                        }
-                    };
+                setCaptureStartMarker(fp);
+                setStartCaptureFpView(fp);
+                startAnimation();
+                Callable<Void> nowCallable = () -> {
+                    mDeviceManager.startCapture();
+                    return Void.TYPE.newInstance();
+                };
 
-                    mFPStartCaptureService = Executors.newSingleThreadExecutor();
-                    mFPStartCaptureService.submit(nowCallable);
-
-                }
+                mFPStartCaptureService = Executors.newSingleThreadExecutor();
+                mFPStartCaptureService.submit(nowCallable);
 
             }
+
         });
 
     }
 
         @Override
         public void onCaptureFailed(Fingerprint fp) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (FingerprintCaptureActivity.this) {
-                        try {
-                            fp.setStatus(FingerprintStatus.NOT_CAPTURED);
-                            setCaptureFailedMarker(fp);
-                            setFailedCaptureFpView(fp);
-                            fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                            mfpCaptureHandler.captureFailed();
-                        } finally {
-                            enableControls();
-                        }
+            runOnUiThread(() -> {
+                synchronized (FingerprintCaptureActivity.this) {
+                    try {
+                        fp.setStatus(FingerprintStatus.NOT_CAPTURED);
+                        setCaptureFailedMarker(fp);
+                        setFailedCaptureFpView(fp);
+                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                        mfpCaptureHandler.captureFailed();
+                    } finally {
+                        enableControls();
                     }
                 }
             });
@@ -444,20 +443,17 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     @Override
     public void onCaptureEnd(Fingerprint fp) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (FingerprintCaptureActivity.this) {
-                    try {
-                        fp.setStatus(FingerprintStatus.CAPTURED);
-                        setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
-                        setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
-                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                    } finally {
-                        enableControls();
-                    }
-                    mfpCaptureHandler.captureFinished();
+        runOnUiThread(() -> {
+            synchronized (FingerprintCaptureActivity.this) {
+                try {
+                    fp.setStatus(FingerprintStatus.CAPTURED);
+                    setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
+                    setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
+                    fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                } finally {
+                    enableControls();
                 }
+                mfpCaptureHandler.captureFinished();
             }
         });
     }
@@ -474,92 +470,49 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             long ret = -1;
 
             if (imgData != null && width > 0 && height > 0) {
+                if(duplicateDetectionEnabled) {
+                    boolean[] matched = new boolean[1];
+                    ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID(), imgData, width, height, matched);
 
-                long imScore = ImageProc.computeScore(imgData,width,height);
-                score = ImageProc.mapNFIQScore((int)imScore);
-
-                if(BuildConfig.isDebug) {
-                    Log.d(TAG, "NFIQ Score is : " + imScore);
-                }
-
-                byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
-                FileUtils.saveByteArrayToFile(wsqData,"fingerImage",FingerprintCaptureActivity.this);
-//                if(duplicateDetectionEnabled && !isDummyDevice) {
-                ISOTemplate template = mfpMatchHandler.createISOTemplate(imgData, width, height);
-
-                if(BuildConfig.isDebug) {
-                    if(template==null) {
-                        Log.d(TAG, "Received null template");
-                    }else{
-                        Log.d(TAG, "Received a template with size = "+template.getIsoTemplateSize());
-                    }
-                }
-
-                if (mReferenceTemplateList.containsKey(mCurrentFingerprint.getFingerprintID().getID())) {
-                    mReferenceTemplateList.remove(mCurrentFingerprint.getFingerprintID().getID());
-                }
-
-                if (mReferenceTemplateList.size() > 0) {
-
-                    List<MatchResult> matchList = new ArrayList<>();
-
-                    mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID().getID(),
-                            template, mReferenceTemplateList.values().stream().collect(Collectors.toList()), matchList, TemplateFormat.ISO19794_2_2005,TemplateFormat.ISO19794_2_2005);
-
-                    if (matchList.size() > 0) {
-
+                    if ((ret == 0) && matched[0]) {
                         mFingerprintText.setText(R.string.duplicate_fingerprint);
-
                         onCaptureError("Duplicate fingerprint");
-
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                CustomToastHandler.showErrorToast(FingerprintCaptureActivity.this, "Duplicate fingerprint captured. Please recapture different finger.");
+                                Toast.makeText(FingerprintCaptureActivity.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show();
                             }
                         });
 
                         return;
                     }
                 }
-
-                mReferenceTemplateList.put(mCurrentFingerprint.getFingerprintID().getID(),template);
-
+                byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
                 mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), score, wsqData);
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            Bitmap bmp = ImageProc.toGrayscale(imgData,width,height);
-                            mFingerprintImage.setImageBitmap(bmp);
-                            //                            FileUtils.saveBitmapToFile(bmp,"fingerImageBitmap",FingerprintCaptureActivity.this);
-//                            mFingerprintImage.setImageBitmap(BitmapUtil.fromBitmapInfoHeaderData(imgData, Bitmap.Config.ARGB_8888));
+                            byte[] greyData = ImageProc.fromWSQ(mCurrentFingerprint.getFingerprintData().getFingerprintData(), width, height);
+                            mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
                         } finally {
                             onCaptureEnd(mCurrentFingerprint);
                         }
                     }
                 });
-            }else{
-                mFingerprintImage.setImageBitmap(ImageProc.createEmptyBitmap(width,height));
             }
         }catch(Exception exc){
-            ///Log.d(TAG,exc.getMessage());
-            exc.printStackTrace();
+            Log.d(TAG,exc.getMessage());
         }
     }
-
     @Override
     public void onFingerprintPreview(Bitmap img, int width, int height) {
         Log.d(TAG, "onFingerprintPreview() called with: img = [" + img + "], width = [" + width + "], height = [" + height + "]");
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mFingerprintImage.setImageBitmap(img);
-                }catch (Exception exc){
-                    Log.e(TAG,"Preview show error");
-                }
+        runOnUiThread(() -> {
+            try {
+                mFingerprintImage.setImageBitmap(img);
+            }catch (Exception exc){
+                Log.e(TAG,"Preview show error");
             }
         });
     }
@@ -573,17 +526,14 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     @Override
     public void onCaptureError(String Error) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    int width=248;
-                    int height=448;
-                    Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                    mFingerprintImage.setImageBitmap(bitmap);
-                }finally {
-                    onCaptureFailed(mCurrentFingerprint);
-                }
+        runOnUiThread(() -> {
+            try {
+                int width=248;
+                int height=448;
+                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                mFingerprintImage.setImageBitmap(bitmap);
+            }finally {
+                onCaptureFailed(mCurrentFingerprint);
             }
         });
     }
@@ -626,13 +576,10 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         mOtherReasonTextView = (EditText) mView.findViewById(R.id.otherReasonText);
         mOtherReasonTextView.setTextColor(Color.BLACK);
         mOtherReasonTextView.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
-        mOtherReasonTextView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
-                    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-                    inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
+        mOtherReasonTextView.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
             }
         });
 
@@ -645,58 +592,51 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         FingerprintExceptionListAdapter mAdapter = new FingerprintExceptionListAdapter(getApplicationContext(), mNoFingerprintReasonList);
         reasonSpinner.setAdapter(mAdapter);
 
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (!mCloseClicked)
-                    FingerprintCaptureActivity.this.finish();
-                else
-                    mCloseClicked = false;
-            }
+        builder.setOnDismissListener(dialog -> {
+            if (!mCloseClicked)
+                FingerprintCaptureActivity.this.finish();
+            else
+                mCloseClicked = false;
         });
 
         builder.setCancelable(false);
         builder.setView(mView);
         AlertDialog dialog = builder.create();
         dialog.show();
-        ok.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        ok.setOnClickListener(v -> {
 
-                if (mNoFingerprintReason == NoFingerprintReason.Other &&
-                        (mOtherReasonTextView.getText() == null || mOtherReasonTextView.getText().toString().trim().length() <= 0)) {    //Could not find logic so kept it true
-                    mOtherReasonTextView.setBackgroundResource(R.drawable.border_error);
-                    mOtherReasonTextView.setHint("Please write a reason");
-                    mOtherReasonTextView.setTextColor(Color.RED);
-                } else {
-                    prepareReturnData();
-                    dialog.dismiss();
-                    finish();
-                }
+            if (mNoFingerprintReason == NoFingerprintReason.Other &&
+                    (mOtherReasonTextView.getText() == null || mOtherReasonTextView.getText().toString().trim().length() <= 0)) {    //Could not find logic so kept it true
+                mOtherReasonTextView.setBackgroundResource(R.drawable.border_error);
+                mOtherReasonTextView.setHint("Please write a reason");
+                mOtherReasonTextView.setTextColor(Color.RED);
+            } else {
+                prepareReturnData();
+                dialog.dismiss();
+                finish();
             }
         });
 
-        close.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCloseClicked = true;
-                mHasFingerprintException = false;
-                mNoFingerprintReason = null;
-                mOtherReasonTextView = null;
-                mNoFingerprintReasonList = null;
-                dialog.dismiss();
-            }
+        close.setOnClickListener(v -> {
+            mCloseClicked = true;
+            mHasFingerprintException = false;
+            mNoFingerprintReason = null;
+            mOtherReasonTextView = null;
+            mNoFingerprintReasonList = null;
+            dialog.dismiss();
         });
     }
 
     public void prepareReturnData() {
+
+        Log.d(TAG, "prepareReturnData() called");
         Intent data = new Intent();
         try{
 
             data.putExtra("noFingerprint",mHasFingerprintException);
 
             if(BuildConfig.isDebug) {
-                Log.d(TAG, "noFIngerprint : " + mHasFingerprintException);
+                Log.d(TAG, "noFingerprint : " + mHasFingerprintException);
             }
 
             if (mHasFingerprintException) {
@@ -721,16 +661,25 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             }
 
             for (Fingerprint fp : mfpCaptureHandler.getFingerPrintList()) {
-                if(fp.getFingerprintData().getFingerprintData()!=null) {
+                if (fp.getFingerprintData().getFingerprintData() != null) {
 
-                    if(BuildConfig.isDebug) {
-                        Log.d("TAG", "Fingerprint data size : " + (fp.getFingerprintData().getFingerprintData().length));
-                        Log.d(TAG, "Setting data for : " + fp.getFingerprintID().getName());
-                    }
+                    int width = 256;
+                    int height = 360;
 
-                    data.putExtra(fp.getFingerprintID().getName(), fp.getFingerprintData());
+                    FingerprintUtils utils = new FingerprintUtils();
+                    ISOTemplate isoTemplate = utils.createISOTemplate(
+                            fp.getFingerprintData().getFingerprintData(),
+                            width, height
+                    );
+
+                    // ✅ Attach ISO Template to FingerprintData
+                    fp.getFingerprintData().setIsoTemplate(isoTemplate);
+
+                    // ✅ Send FingerprintData with attached ISOTemplate
+                    data.putExtra(fp.getFingerprintID().getName(), (Parcelable) fp.getFingerprintData());
                 }
             }
+
             setResult(Activity.RESULT_OK, data);
         }catch(Throwable t){
             setResult(Activity.RESULT_CANCELED,data);
@@ -792,13 +741,11 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
         dlgAlert.setTitle("Fingerprint Registration");
         dlgAlert.setPositiveButton("OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        finish();
-                    }
-                }
+                (dialog, whichButton) -> finish()
         );
         dlgAlert.setCancelable(false);
         dlgAlert.create().show();
     }
+
+
 }

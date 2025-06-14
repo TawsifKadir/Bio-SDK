@@ -14,50 +14,21 @@ import java.util.concurrent.Callable;
 
 public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickListener{
 
-
-    private Object syncObject;
-    private ArrayList<Fingerprint> fingerPrintList;
+    public static final String TAG = "FingerprintCaptureHandler";
+    private final Object syncObject;
+    private final ArrayList<Fingerprint> fingerPrintList;
     private FingerprintID currentFingerprintID;
+    private final FingerprintCaptureCallback captureCallback;
+    private boolean startCapture;
+    private boolean exitCapture;
 
-    private FingerprintCaptureCallback captureCallback;
-
-    private boolean startCapture=false;
-    private boolean exitCapture=false;
-
-    public boolean autoCaptureOn;
     public FingerprintCaptureHandler(FingerprintCaptureCallback captureCallback , ArrayList<Fingerprint> fingerPrintList) {
         syncObject = new Object();
         currentFingerprintID = FingerprintID.RIGHT_THUMB;
         startCapture = false;
-        exitCapture=false;
-        this.autoCaptureOn = false;
+        exitCapture = false;
         this.fingerPrintList = fingerPrintList;
         this.captureCallback = captureCallback;
-    }
-
-   /// @Override
-    public void run() {
-//        while(true){
-//            if(exitCapture){break;}
-//            while(!startCapture){
-//                synchronized (syncObject){
-//                    try {
-//                        syncObject.wait();
-//                    }catch(Exception exc){
-//
-//                    }
-//                }
-//            }
-//
-//            startCapture=false;
-//            if(this.autoCaptureOn){
-//                if(BuildConfig.isDebug) {
-//                    Log.d("FaisalActivity", ">>>>> Going to capture fingerprint >>>> " + currentFingerprintID);
-//                }
-//                Fingerprint fp = getFingerprintByID(currentFingerprintID);
-//                captureCallback.onCaptureStart(fp);
-//            }
-//        }
     }
 
     public void setFingerprintData(FingerprintID id , long score , byte[] fpData){
@@ -97,10 +68,7 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
         if(BuildConfig.isDebug) {
             Log.d("FaisalActivity", ">>>>> Entered captureFinished >>>> ");
         }
-        this.currentFingerprintID = getNextID();
-        if(BuildConfig.isDebug) {
-            Log.d("FaisalActivity", ">>>>> Next capture id is " + this.currentFingerprintID + " >>>>> ");
-        }
+
         startCapture = true;
         synchronized (syncObject){
             syncObject.notifyAll();
@@ -110,33 +78,15 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
         if(BuildConfig.isDebug) {
             Log.d("FaisalActivity", ">>>>> Entered captureFailed >>>> ");
         }
-        ////this.currentFingerprintID = getNextID();
+
         startCapture = true;
         synchronized (syncObject){
             syncObject.notifyAll();
         }
     }
-    public FingerprintID getNextID(){
-        int nowID = this.currentFingerprintID.getID();
-        int nextID = ((nowID+1))%11;
-
-        if(nextID==0){
-            nextID=1;
-        }
-
-        return FingerprintID.getFingerprintID(nextID);
-    }
-
-    public FingerprintID getPrevID(){
-        int nowID = this.currentFingerprintID.getID();
-        int prevID = ((nowID-1)+11)%11;
-
-        return FingerprintID.getFingerprintID(prevID);
-    }
-
     public Fingerprint getFingerprintByViewID(View v){
         for(Fingerprint fp:fingerPrintList){
-            if(fp.getFingerprintUI().getFingerprintBtn().getId()==v.getId()){
+            if(fp.getFingerprintUI().getFingerprintBtn().getId() == v.getId()){
                 return fp;
             }
         }
@@ -145,7 +95,7 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
 
     public Fingerprint getFingerprintByID(FingerprintID fpID){
         for(Fingerprint fp:fingerPrintList){
-            if(fp.getFingerprintID()==fpID){
+            if(fp.getFingerprintID() == fpID){
                 return fp;
             }
         }
@@ -158,14 +108,11 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
 
     @Override
     public void onClick(View v) {
-
-            captureCallback.onCaptureStop(getFingerprintByID(this.currentFingerprintID));
-            Fingerprint fp = getFingerprintByViewID(v);
-            this.currentFingerprintID = fp.getFingerprintID();
-            captureCallback.onCaptureStart(getFingerprintByID(this.currentFingerprintID));
+        captureCallback.onCaptureStop(getFingerprintByID(this.currentFingerprintID));
+        Fingerprint fp = getFingerprintByViewID(v);
+        this.currentFingerprintID = fp.getFingerprintID();
+        captureCallback.onCaptureStart(getFingerprintByID(this.currentFingerprintID));
     }
-
-
     public void setCurrentFingerprintID(FingerprintID currentFingerprintID) {
         this.currentFingerprintID = currentFingerprintID;
     }
@@ -173,29 +120,19 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
     @Override
     public Void call() throws Exception {
 
-        while(true){
+        while (!exitCapture) {
 
-            if(exitCapture){break;}
-
-            while(!startCapture){
-                synchronized (syncObject){
+            while (!startCapture) {
+                synchronized (syncObject) {
                     try {
                         syncObject.wait();
-                    }catch(Exception exc){
-
+                    } catch (Exception exc) {
+                        Log.d(TAG, "Error while capturing " + exc);
                     }
                 }
             }
 
-            startCapture=false;
-
-            if(this.autoCaptureOn){
-                if(BuildConfig.isDebug) {
-                    Log.d("FaisalActivity", ">>>>> Going to capture fingerprint >>>> " + currentFingerprintID);
-                }
-                Fingerprint fp = getFingerprintByID(currentFingerprintID);
-                captureCallback.onCaptureStart(fp);
-            }
+            startCapture = false;
         }
 
         return Void.TYPE.newInstance();

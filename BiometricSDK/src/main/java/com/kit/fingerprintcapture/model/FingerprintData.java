@@ -3,9 +3,32 @@ package com.kit.fingerprintcapture.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class FingerprintData implements Parcelable {
+import com.kit.fingerprintcapture.template.ISOTemplate;
+
+import java.io.Serializable;
+
+public class FingerprintData implements Parcelable, Serializable {
     private FingerprintID id;
     private byte[] fingerprintData;
+
+    private ISOTemplate isoTemplate;
+
+    public FingerprintID getId() {
+        return id;
+    }
+
+    public void setId(FingerprintID id) {
+        this.id = id;
+    }
+
+    public ISOTemplate getIsoTemplate() {
+        return isoTemplate;
+    }
+
+    public void setIsoTemplate(ISOTemplate isoTemplate) {
+        this.isoTemplate = isoTemplate;
+    }
+
     private long qualityScore;
 
     public FingerprintData() {
@@ -27,27 +50,39 @@ public class FingerprintData implements Parcelable {
         this.id = id;
     }
 
+
     protected FingerprintData(Parcel in) {
         this.id = FingerprintID.getFingerprintID(in.readInt());
+
         int dataLen = in.readInt();
-        fingerprintData = new byte[dataLen];
-        in.readByteArray(fingerprintData);
+        if (dataLen > 0) {
+            fingerprintData = new byte[dataLen];
+            in.readByteArray(fingerprintData);
+        } else {
+            fingerprintData = null;
+        }
+
         qualityScore = in.readLong();
+        isoTemplate = in.readParcelable(ISOTemplate.class.getClassLoader());
     }
+
+
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.id.getID());
-        if(this.fingerprintData!=null) {
+
+        if (this.fingerprintData != null) {
             dest.writeInt(this.fingerprintData.length);
             dest.writeByteArray(this.fingerprintData);
-        }
-        else {
+        } else {
             dest.writeInt(0);
         }
 
         dest.writeLong(qualityScore);
+        dest.writeParcelable(isoTemplate, flags);
     }
+
 
     @Override
     public int describeContents() {
