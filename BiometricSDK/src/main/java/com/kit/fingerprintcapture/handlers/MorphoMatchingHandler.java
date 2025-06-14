@@ -134,4 +134,38 @@ public class MorphoMatchingHandler implements IFingerMatcher {
     }
 
 
+    public void compareWithAllStoredTemplates(byte[] nowImage, int nowWidth, int nowHeight) {
+        try {
+            if (nowImage == null || nowImage.length == 0) {
+                Log.e(TAG, "Empty fingerprint image. Cannot compare.");
+                return;
+            }
+
+            // Create template from image
+            FingerprintTemplate currentTemplate = new FingerprintTemplate()
+                    .dpi(500)
+                    .create(nowImage);
+
+            // Iterate and compare with each stored template
+            for (Map.Entry<FingerprintID, FingerprintTemplate> entry : templateList.entrySet()) {
+                FingerprintID id = entry.getKey();
+                FingerprintTemplate storedTemplate = entry.getValue();
+
+                // Compare using matcher
+                FingerprintMatcher matcher = new FingerprintMatcher()
+                        .index(storedTemplate);
+
+                double score = matcher.match(currentTemplate);
+
+                // Log result
+                Log.d(TAG, "Match Score with " + id.getName() + ": " + score);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error during comparison: " + e.getMessage(), e);
+        }
+    }
+
+
+
 }

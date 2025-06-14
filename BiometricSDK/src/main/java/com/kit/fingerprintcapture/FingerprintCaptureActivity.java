@@ -58,6 +58,8 @@ import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.FileUtils;
 import com.kit.fingerprintcapture.utils.FingerprintUtils;
 import com.kit.fingerprintcapture.utils.ImageProc;
+import com.machinezoo.sourceafis.FingerprintMatcher;
+import com.machinezoo.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +77,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     String TAG = "FingerprintCaptureActivity";
 
     private ImageView mFingerprintImage;
+
+
     private TextView mFingerprintText;
     private TextView mClickFingerprint;
 
@@ -161,7 +165,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         mDoneBtn.setOnClickListener(v -> {
 
             prepareReturnData();
-            finish();
+      //      finish();
 //                if (!isFingerprintMissing()) {
 //                    Log.d(TAG, "onCreate() called with: if]");
 //                    prepareReturnData();
@@ -474,6 +478,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     boolean[] matched = new boolean[1];
                     ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID(), imgData, width, height, matched);
 
+
                     if ((ret == 0) && matched[0]) {
                         mFingerprintText.setText(R.string.duplicate_fingerprint);
                         onCaptureError("Duplicate fingerprint");
@@ -629,6 +634,10 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     public void prepareReturnData() {
 
+
+        List<Fingerprint> capturedFingers = new ArrayList<>();
+
+
         Log.d(TAG, "prepareReturnData() called");
         Intent data = new Intent();
         try{
@@ -675,10 +684,75 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                     // ✅ Attach ISO Template to FingerprintData
                     fp.getFingerprintData().setIsoTemplate(isoTemplate);
 
+                    capturedFingers.add(fp);
+
                     // ✅ Send FingerprintData with attached ISOTemplate
                     data.putExtra(fp.getFingerprintID().getName(), (Parcelable) fp.getFingerprintData());
                 }
             }
+
+
+            ExecutorService comparisonExecutor = Executors.newSingleThreadExecutor();
+            comparisonExecutor.execute(() -> {
+                long startTime = System.currentTimeMillis();
+                int totalComparisons = 0;
+
+                // 🔁 Timer thread to log every second
+                Thread timerThread = new Thread(() -> {
+                    int seconds = 0;
+                    try {
+                        while (!Thread.currentThread().isInterrupted()) {
+                            Thread.sleep(1000);
+                            seconds++;
+                            Log.d(TAG, "Matching Elapsed: " + seconds + " sec");
+                        }
+                    } catch (InterruptedException ignored) {
+                    }
+                });
+                timerThread.start();
+
+                // Precompute templates
+                Map<FingerprintID, FingerprintTemplate> templateMap = new HashMap<>();
+                for (Fingerprint fp : capturedFingers) {
+                    FingerprintTemplate template = new FingerprintTemplate()
+                            .dpi(500)
+                            .create(fp.getFingerprintData().getFingerprintData());
+                    templateMap.put(fp.getFingerprintID(), template);
+                }
+
+                for (int i = 0; i < capturedFingers.size(); i++) {
+                    Fingerprint f1 = capturedFingers.get(i);
+                    FingerprintTemplate source = templateMap.get(f1.getFingerprintID());
+                    FingerprintMatcher matcher = new FingerprintMatcher().index(source);
+
+                    for (int j = 0; j < capturedFingers.size(); j++) {
+                        if (i == j) continue;
+                        Fingerprint f2 = capturedFingers.get(j);
+                        FingerprintTemplate target = templateMap.get(f2.getFingerprintID());
+                        double score = matcher.match(target);
+                        totalComparisons++;
+
+                        Log.d(TAG, "Comparing " + f1.getFingerprintID().getName() +
+                                " vs " + f2.getFingerprintID().getName() +
+                                " -> Score: " + score +
+                                (score >= 40 ? " ✅ MATCH" : " ❌ NO MATCH"));
+                    }
+                }
+
+                // Stop the timer thread
+                timerThread.interrupt();
+
+                long endTime = System.currentTimeMillis();
+                long durationMs = endTime - startTime;
+                long secondsTaken = (durationMs / 1000) % 60;
+                long minutesTaken = (durationMs / 1000) / 60;
+
+                Log.d(TAG, "===== Fingerprint Similarity Check Completed =====");
+                Log.d(TAG, "Total Comparisons: " + totalComparisons);
+                Log.d(TAG, "Time Taken: " + minutesTaken + " min " + secondsTaken + " sec");
+            });
+
+
 
             setResult(Activity.RESULT_OK, data);
         }catch(Throwable t){
