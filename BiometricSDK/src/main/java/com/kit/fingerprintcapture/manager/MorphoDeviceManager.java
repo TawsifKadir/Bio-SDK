@@ -100,7 +100,17 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
         mQualityScore=0;
         capturing = false;
         deviceIsSet = false;
+
+
+        /// Define Morpho specific matcher here
     }
+
+    @Override
+    public void verifyFingerprint(byte[] imgData, int width, int height) {
+
+    }
+
+
 
     @Override
     public long initDevice() {

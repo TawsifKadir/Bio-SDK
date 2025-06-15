@@ -26,6 +26,11 @@ public class DummyDeviceManager implements IDeviceManager{
     }
 
     @Override
+    public void verifyFingerprint(byte[] imgData, int width, int height) {
+
+    }
+
+    @Override
     public long initDevice() {
 
         try{

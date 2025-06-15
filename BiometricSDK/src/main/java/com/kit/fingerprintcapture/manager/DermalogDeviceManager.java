@@ -56,8 +56,12 @@ public class DermalogDeviceManager implements IDeviceManager{
     }
 
     @Override
-    public long initDevice() {
+    public void verifyFingerprint(byte[] imgData, int width, int height) {
 
+    }
+
+    @Override
+    public long initDevice() {
         Log.d(TAG, "initDermalogDevice");
         try{
             com.dermalog.afis.fingercode3.Android.SetLicense(BuildConfig.LICENSE.getBytes(), mainActivity.getApplicationContext());
@@ -84,7 +88,6 @@ public class DermalogDeviceManager implements IDeviceManager{
     @Override
     public long startCapture() {
         long ret = ErrorCodes.FPC_SUCCESS;
-
         try{
             ret = startFingerCapture();
         } catch (BiometricPassportException e) {
@@ -221,53 +224,50 @@ public class DermalogDeviceManager implements IDeviceManager{
 
         }
 
-        scannerHandle.registerCallback(new DeviceCallback() {
-            @Override
-            public void onCall(Device device, DeviceCallbackEventArgument deviceCallbackEventArgument) {
+        scannerHandle.registerCallback((device, deviceCallbackEventArgument) -> {
 
-                Bitmap bmp;
-                ImageArgument imageArgument = null;
+            Bitmap bmp;
+            ImageArgument imageArgument = null;
 
-                for (EventArgument ea : deviceCallbackEventArgument.getArguments()) {
-                    if (ea instanceof ImageArgument) {
-                        imageArgument = (ImageArgument) ea;
-                    }
+            for (EventArgument ea : deviceCallbackEventArgument.getArguments()) {
+                if (ea instanceof ImageArgument) {
+                    imageArgument = (ImageArgument) ea;
                 }
-
-                switch (deviceCallbackEventArgument.getEventId()){
-                    case START:
-                        bmp = ImageProc.createEmptyBitmap(400,250);
-                        deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
-                        break;
-                    case FINGER_DETECT:
-                        Log.d(TAG, "finger case: FINGER DETECT");
-                        processImage(imageArgument);
-                        break;
-                    case FINGER_REMOVE:
-                        Log.d(TAG, "finger case: FINGER REMOVE");
-                        bmp = ImageProc.createEmptyBitmap(400,250);
-                        deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
-                        break;
-                    case FINGER_IMAGE:
-                        Log.d(TAG, "finger case: FINGER IMAGE");
-                        if (imageArgument != null){
-                            try {
-                                bmp = BitmapUtil.fromImageArgument(imageArgument);
-                                if (bmp != null){
-                                    Log.d(TAG, "onFingerprintPreview going with bitmap " + bmp);
-                                    deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
-                                }
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }else {
-                            bmp = ImageProc.createEmptyBitmap(400,250);
-                            deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
-                        }
-                        break;
-                }
-
             }
+
+            switch (deviceCallbackEventArgument.getEventId()){
+                case START:
+                    bmp = ImageProc.createEmptyBitmap(400,250);
+                    deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                    break;
+                case FINGER_DETECT:
+                    Log.d(TAG, "finger case: FINGER DETECT");
+                    processImage(imageArgument);
+                    break;
+                case FINGER_REMOVE:
+                    Log.d(TAG, "finger case: FINGER REMOVE");
+                    bmp = ImageProc.createEmptyBitmap(400,250);
+                    deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                    break;
+                case FINGER_IMAGE:
+                    Log.d(TAG, "finger case: FINGER IMAGE");
+                    if (imageArgument != null){
+                        try {
+                            bmp = BitmapUtil.fromImageArgument(imageArgument);
+                            if (bmp != null){
+                                Log.d(TAG, "onFingerprintPreview going with bitmap " + bmp);
+                                deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }else {
+                        bmp = ImageProc.createEmptyBitmap(400,250);
+                        deviceDataConsumer.onFingerprintPreview(bmp, bmp.getWidth(), bmp.getHeight());
+                    }
+                    break;
+            }
+
         });
 
     }

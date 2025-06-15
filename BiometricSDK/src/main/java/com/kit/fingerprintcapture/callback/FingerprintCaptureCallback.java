@@ -1,11 +1,11 @@
 package com.kit.fingerprintcapture.callback;
 
-import com.kit.fingerprintcapture.model.Fingerprint;
+import com.kit.fingerprintcapture.model.FingerprintCaptureItem;
 
 public interface FingerprintCaptureCallback {
-    void onCaptureStart(Fingerprint fp);
-    void onCaptureEnd(Fingerprint fp);
-    void onCaptureStop(Fingerprint fp);
-    void onCaptureFailed(Fingerprint fp);
+    void onCaptureStart(FingerprintCaptureItem fp);
+    void onCaptureEnd(FingerprintCaptureItem fp);
+    void onCaptureStop(FingerprintCaptureItem fp);
+    void onCaptureFailed(FingerprintCaptureItem fp);
 
 }

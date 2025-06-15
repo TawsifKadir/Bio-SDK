@@ -5,7 +5,7 @@ import android.view.View;
 
 import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
-import com.kit.fingerprintcapture.model.Fingerprint;
+import com.kit.fingerprintcapture.model.FingerprintCaptureItem;
 import com.kit.fingerprintcapture.model.FingerprintID;
 
 import java.util.ArrayList;
@@ -16,13 +16,13 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
 
     public static final String TAG = "FingerprintCaptureHandler";
     private final Object syncObject;
-    private final ArrayList<Fingerprint> fingerPrintList;
+    private final ArrayList<FingerprintCaptureItem> fingerPrintList;
     private FingerprintID currentFingerprintID;
     private final FingerprintCaptureCallback captureCallback;
     private boolean startCapture;
     private boolean exitCapture;
 
-    public FingerprintCaptureHandler(FingerprintCaptureCallback captureCallback , ArrayList<Fingerprint> fingerPrintList) {
+    public FingerprintCaptureHandler(FingerprintCaptureCallback captureCallback , ArrayList<FingerprintCaptureItem> fingerPrintList) {
         syncObject = new Object();
         currentFingerprintID = FingerprintID.RIGHT_THUMB;
         startCapture = false;
@@ -36,10 +36,10 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
             Log.d("FingerprintCapture", ">>>>> Entered setFingerprintData >>>> ");
             Log.d("FingerprintCapture", ">>>>> Fingerprint Data Size : " + fpData.length);
         }
-        Fingerprint fingerprint = getFingerprintByID(currentFingerprintID);
-        fingerprint.getFingerprintData().setFingerprintId(id);
-        fingerprint.getFingerprintData().setFingerprintData(fpData);
-        fingerprint.getFingerprintData().setQualityScore(score);
+        FingerprintCaptureItem fingerprintCaptureItem = getFingerprintByID(currentFingerprintID);
+        fingerprintCaptureItem.getFingerprintData().setFingerprintId(id);
+        fingerprintCaptureItem.getFingerprintData().setFingerprintData(fpData);
+        fingerprintCaptureItem.getFingerprintData().setQualityScore(score);
 
     }
     public void startCapture(){
@@ -84,8 +84,8 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
             syncObject.notifyAll();
         }
     }
-    public Fingerprint getFingerprintByViewID(View v){
-        for(Fingerprint fp:fingerPrintList){
+    public FingerprintCaptureItem getFingerprintByViewID(View v){
+        for(FingerprintCaptureItem fp:fingerPrintList){
             if(fp.getFingerprintUI().getFingerprintBtn().getId() == v.getId()){
                 return fp;
             }
@@ -93,8 +93,8 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
         return null;
     }
 
-    public Fingerprint getFingerprintByID(FingerprintID fpID){
-        for(Fingerprint fp:fingerPrintList){
+    public FingerprintCaptureItem getFingerprintByID(FingerprintID fpID){
+        for(FingerprintCaptureItem fp : fingerPrintList){
             if(fp.getFingerprintID() == fpID){
                 return fp;
             }
@@ -102,14 +102,14 @@ public class FingerprintCaptureHandler implements Callable<Void>, View.OnClickLi
         return null;
     }
 
-    public ArrayList<Fingerprint> getFingerPrintList(){
+    public ArrayList<FingerprintCaptureItem> getFingerPrintList(){
         return this.fingerPrintList;
     }
 
     @Override
     public void onClick(View v) {
         captureCallback.onCaptureStop(getFingerprintByID(this.currentFingerprintID));
-        Fingerprint fp = getFingerprintByViewID(v);
+        FingerprintCaptureItem fp = getFingerprintByViewID(v);
         this.currentFingerprintID = fp.getFingerprintID();
         captureCallback.onCaptureStart(getFingerprintByID(this.currentFingerprintID));
     }

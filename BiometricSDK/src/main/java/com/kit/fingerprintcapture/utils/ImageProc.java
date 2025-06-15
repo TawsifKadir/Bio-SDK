@@ -133,8 +133,7 @@ public class ImageProc {
         return bmpGrayscale;
     }
 
-    public static Long computeScore(byte[] mImageBuffer, int width, int height)
-    {
+    public static Long computeScore(byte[] mImageBuffer, int width, int height) {
         Long score = (long)-1;
 
         Log.d("UTILS","Entered to compute score >>>>> ");
@@ -171,8 +170,7 @@ public class ImageProc {
     }
 
 
-    public static byte[] toGrayscaleArray(Bitmap bmpOriginal)
-    {
+    public static byte[] toGrayscaleArray(Bitmap bmpOriginal) {
         int width, height;
         height = bmpOriginal.getHeight();
         width = bmpOriginal.getWidth();

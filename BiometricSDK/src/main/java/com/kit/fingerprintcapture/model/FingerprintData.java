@@ -10,8 +10,8 @@ import java.io.Serializable;
 public class FingerprintData implements Parcelable, Serializable {
     private FingerprintID id;
     private byte[] fingerprintData;
-
     private ISOTemplate isoTemplate;
+    private double score;
 
     public FingerprintID getId() {
         return id;

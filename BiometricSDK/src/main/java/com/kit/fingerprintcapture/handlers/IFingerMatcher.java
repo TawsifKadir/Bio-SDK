@@ -8,8 +8,6 @@ import com.kit.fingerprintcapture.template.MatchResult;
 import java.util.List;
 
 public interface IFingerMatcher {
-
-
     // Used by Morpho
     long verifyFingerPrint(FingerprintID nowID, byte[] nowImage, int nowWidth, int nowHeight, boolean[] matched);
 

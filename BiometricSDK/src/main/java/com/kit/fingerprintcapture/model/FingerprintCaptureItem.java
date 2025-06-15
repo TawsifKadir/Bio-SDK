@@ -5,7 +5,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class Fingerprint {
+public class FingerprintCaptureItem {
     private FingerprintID fingerprintID;
     private FingerprintUI fingerprintUI;
     private FingerprintData fingerprintData;
@@ -13,7 +13,7 @@ public class Fingerprint {
     private FingerprintStatus status;
 
 
-    public Fingerprint(FingerprintID fingerprintID, FingerprintUI fingerprintUI, FingerprintData fingerprintData, FingerprintStatus state) {
+    public FingerprintCaptureItem(FingerprintID fingerprintID, FingerprintUI fingerprintUI, FingerprintData fingerprintData, FingerprintStatus state) {
         this.fingerprintID = fingerprintID;
         this.fingerprintUI = fingerprintUI;
         this.fingerprintData = fingerprintData;
@@ -57,7 +57,7 @@ public class Fingerprint {
 
     }
 
-    public static Fingerprint newInstance(View v, FingerprintID fingerprintID, int fpBtnID, int fpMarkerID, int fpScoreTxtID){
+    public static FingerprintCaptureItem newInstance(View v, FingerprintID fingerprintID, int fpBtnID, int fpMarkerID, int fpScoreTxtID){
         ImageButton fpBtn = (ImageButton)v.findViewById(fpBtnID);
         ImageView fpMarker = (ImageView)v.findViewById(fpMarkerID);
         TextView fpScoreTxt = (TextView)v.findViewById(fpScoreTxtID);
@@ -70,7 +70,7 @@ public class Fingerprint {
         fpUI.setFingerprintMarker(fpMarker);
         fpUI.setFingerprintScore(fpScoreTxt);
 
-        Fingerprint fPrint = new Fingerprint(fingerprintID,fpUI,fpData,FingerprintStatus.NOT_CAPTURED);
+        FingerprintCaptureItem fPrint = new FingerprintCaptureItem(fingerprintID,fpUI,fpData,FingerprintStatus.NOT_CAPTURED);
 
         return fPrint;
     }

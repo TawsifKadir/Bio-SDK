@@ -5,9 +5,9 @@
         <string name="again_capture">Do you want to capture %1$s again?</string>
         <string name="all_fingerprint_captured">All fingerprints are captured</string>
         <string name="verification_alert_tile">Verification Alert</string>
-        <string name="verification_alert">No fingerprint is captured for verification. \n The verification will fail if no fingerprint is captured. \n Are you sure you want to exit?</string>
+        <string name="verification_alert">No fingerprintCaptureItem is captured for verification. \n The verification will fail if no fingerprintCaptureItem is captured. \n Are you sure you want to exit?</string>
         <string name="capturing">Capturing...</string>
-        <string name="remove_fingerprint">Please remove fingerprint</string>
+        <string name="remove_fingerprint">Please remove fingerprintCaptureItem</string>
         <string name="click_fingerprint">Click on finger to capture</string>
 
         <string name="done">Done</string>
@@ -49,8 +49,8 @@
         <string name="duplicate_fingerprint">Duplicate Fingerprint</string>
 
         <string name="noFingerprintExceptionDlgTitle">Fingerprint Capture Exception</string>
-        <string name="noAccessToDevice">Warning: cannot connect to fingerprint sensor.\n\nPlease open item \"Peripheral Management\" in this application main menu and check following settings :\n\t- Fingerprint sensor should be enabled\n\t- USB mode should be set to "Host". Or it should be set to "Auto" and PC shouldn\'t be connected to tablet.\n\nPlease also check that no other fingerprint sensor is connected to tablet.</string>
-        <string name="noFingerprintExceptionMsg">There was an exception during the fingerprint capture. Some fingers are missing.Please specify a reason</string>
+        <string name="noAccessToDevice">Warning: cannot connect to fingerprintCaptureItem sensor.\n\nPlease open item \"Peripheral Management\" in this application main menu and check following settings :\n\t- Fingerprint sensor should be enabled\n\t- USB mode should be set to "Host". Or it should be set to "Auto" and PC shouldn\'t be connected to tablet.\n\nPlease also check that no other fingerprintCaptureItem sensor is connected to tablet.</string>
+        <string name="noFingerprintExceptionMsg">There was an exception during the fingerprintCaptureItem capture. Some fingers are missing.Please specify a reason</string>
 
         <string name="toast_image_intent_null">Image picker option is missing!</string>
         <string name="lbl_set_profile_photo">Set profile image</string>

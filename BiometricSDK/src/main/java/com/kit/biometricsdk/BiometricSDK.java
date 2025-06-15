@@ -17,6 +17,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.kit.fingerprintcapture.activity.FingerprintCaptureActivity;
+import com.kit.fingerprintcapture.activity.FingerprintCaptureActivity2;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.photocapture.presentation.activity.PhotoCaptureActivity2;
@@ -60,7 +62,7 @@ public class BiometricSDK extends AppCompatActivity {
         mFpCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent nowIntent = new Intent(BiometricSDK.this,com.kit.fingerprintcapture.FingerprintCaptureActivity.class);
+                Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity2.class);
                 startActivityForResult(nowIntent,3);
             }
         });
