@@ -1,12 +1,14 @@
 package com.kit.fingerprintcapture.viewmodel;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.IFingerMatcher;
 import com.kit.fingerprintcapture.handlers.MorphoMatchingHandler;
@@ -28,12 +30,32 @@ public class FingerprintCaptureViewModel extends ViewModel {
     String TAG = "FingerprintCaptureViewmodel";
 
 
-    private final MutableLiveData<List<FingerprintCaptureItem>> fingerprintList = new MutableLiveData<>();
+    public final MutableLiveData<List<FingerprintCaptureItem>> fingerprintList = new MutableLiveData<>();
     private final MutableLiveData<FingerprintCaptureItem> currentFingerprint = new MutableLiveData<>();
     private final MutableLiveData<Boolean> captureStarted = new MutableLiveData<>(false);
     private final MutableLiveData<String> fingerprintStatusMessage = new MutableLiveData<>();
     private final ExecutorService captureExecutor = Executors.newSingleThreadExecutor();
     private final ExecutorService startCaptureExecutor = Executors.newSingleThreadExecutor();
+
+    private boolean isDummyDevice = false;
+
+    public IDeviceManager getmDeviceManager() {
+        return mDeviceManager;
+    }
+
+    public void setmDeviceManager(IDeviceManager mDeviceManager) {
+        this.mDeviceManager = mDeviceManager;
+    }
+
+    private IDeviceManager mDeviceManager;
+
+    public boolean isDummyDevice() {
+        return isDummyDevice;
+    }
+
+    public void setDummyDevice(boolean dummyDevice) {
+        isDummyDevice = dummyDevice;
+    }
 
     private FingerprintCaptureHandler captureHandler;
 
@@ -60,6 +82,18 @@ public class FingerprintCaptureViewModel extends ViewModel {
     public LiveData<FingerprintCaptureItem> getCurrentFingerprint() {
         return currentFingerprint;
     }
+
+
+
+    public void setFingerprintData(FingerprintCaptureItem curentItem , long score , byte[] fpData){
+
+//        FingerprintCaptureItem fingerprintCaptureItem = getFingerprintByID(currentFingerprintID);
+//        fingerprintCaptureItem.getFingerprintData().setFingerprintId(id);
+        curentItem.getFingerprintData().setFingerprintData(fpData);
+        curentItem.getFingerprintData().setQualityScore(score);
+
+    }
+
 
     public LiveData<String> getStatusMessage() {
         return fingerprintStatusMessage;

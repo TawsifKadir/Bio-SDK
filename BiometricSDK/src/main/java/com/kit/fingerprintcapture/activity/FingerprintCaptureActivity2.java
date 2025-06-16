@@ -1,5 +1,6 @@
 package com.kit.fingerprintcapture.activity;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,17 +11,26 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.dermalog.common.exception.ErrorCodes;
+import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
+import com.kit.fingerprintcapture.manager.DummyDeviceManager;
+import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.FingerprintCaptureItem;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.model.FingerprintStatus;
 import com.kit.fingerprintcapture.utils.ImageProc;
+import com.kit.fingerprintcapture.viewmodel.FingerprintCaptureViewModel;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class FingerprintCaptureActivity2 extends AppCompatActivity implements DeviceDataCallback, View.OnClickListener {
     public static final String TAG = "FingerprintCaptureActivity2";
@@ -33,7 +43,12 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
 
     private Button mDoneBtn;
 
-    private ArrayList<FingerprintCaptureItem> fingerprintCaptureItemList = new ArrayList<>();
+    FingerprintCaptureViewModel viewModel;
+
+
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +59,19 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
 
         // Keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        viewModel = new ViewModelProvider(this).get(FingerprintCaptureViewModel.class);
 
 
         setupUI();
     }
 
+
+
+
     private void setupUI(){
+
+         ArrayList<FingerprintCaptureItem> fingerprintCaptureItemList = new ArrayList<>();
+
 
         mFingerprintImage = findViewById(R.id.fingerprint_image);
         mFingerprintText = findViewById(R.id.fingerprint_text);
@@ -82,14 +104,95 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
         for(FingerprintCaptureItem fp: fingerprintCaptureItemList){
             fp.getFingerprintUI().getFingerprintBtn().setOnClickListener(this);
         }
+
+        viewModel.fingerprintList.setValue(fingerprintCaptureItemList);
     }
+
+
+
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(viewModel.isDummyDevice()){
+
+            viewModel.setmDeviceManager(new DummyDeviceManager(this,this));
+        } else {
+            viewModel.setmDeviceManager(new MorphoDeviceManager(this,this));
+            Log.d(TAG, "morpho    ");
+        }
+    }
+
+
+
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        disableControls();
+
+        mFingerprintText.setVisibility(View.INVISIBLE);
+        mClickFingerprint.setText(R.string.device_initizing);
+
+        try {
+            long result = viewModel.getmDeviceManager().initDevice();
+
+            if(BuildConfig.isDebug){
+                Log.d(TAG, "initDevice() returned : " + result);
+            }
+
+            if(result!= ErrorCodes.FPC_SUCCESS){
+                showNoAccessToDevice();
+                return;
+            }else{
+                result = viewModel.getmDeviceManager().openDevice();
+                if(result != ErrorCodes.FPC_SUCCESS) {
+                    showFingerprintDeviceNotInitialized(result);
+                }else{
+                    mFingerprintText.setVisibility(View.VISIBLE);
+                    mClickFingerprint.setText(R.string.click_fingerprint);
+
+                    if(!viewModel.isDummyDevice()) {
+//                        try {
+//                            Matcher nowMatcher = new Matcher();
+//                            nowMatcher.setRotationToleranceInDegree(180);
+//                            mfpMatchHandler.setMatcher(nowMatcher);
+//                        } catch (FC3Exception e) {
+//                            e.printStackTrace();
+//                            Toast.makeText(this, "FingerCode3: NO LICENSE", Toast.LENGTH_LONG).show();
+//                            mfpMatchHandler.setMatcher(null);
+//                        }
+                    }else{
+                        // mfpMatchHandler.setMatcher(null);
+                    }
+                }
+            }
+        }catch(Throwable t){
+            t.printStackTrace();
+        }finally {
+//            if (!isDummyDevice){
+//                if (mfpMatchHandler.getMatcher() == null){
+//                    showFingerprintDeviceNotInitialized(-1);
+//                }
+//            }
+        }
+
+        enableControls();
+    }
+
+
+
+
+
+
 
 
     @Override
     public void onClick(View v) {
         int currentId = v.getId();
 
-        for(FingerprintCaptureItem item : fingerprintCaptureItemList){
+        for(FingerprintCaptureItem item : Objects.requireNonNull(viewModel.fingerprintList.getValue())){
             if(currentId == item.getFingerprintUI().getFingerprintBtn().getId()){
                 onCaptureStart(item);
             }
@@ -108,7 +211,7 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
             setCaptureStartMarker(fp);
             setStartCaptureFpView(fp);
             startAnimation(fp);
-//            mDeviceManager.startCapture();
+            viewModel.getmDeviceManager().startCapture();
 
         });
     }
@@ -117,14 +220,26 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
         runOnUiThread(() -> {
             try {
                 fp.setStatus(FingerprintStatus.CAPTURED);
-                setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 50, fp);
-                setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 50, fp);
+
+                boolean lowQuality = fp.getFingerprintData().getQualityScore() < 50;
+
+                setCaptureFinishedMarker(lowQuality, fp);
+                setFinishCaptureFpView(lowQuality, fp);
                 fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+
+                // ✅ Show toast
+                Toast.makeText(
+                        this,  // Replace with a valid context, e.g., `this` if inside Activity
+                        lowQuality ? "Fingerprint captured, but quality is low!"+ fp.getFingerprintData().getQualityScore() : "Fingerprint captured successfully.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
             } finally {
                 enableControls();
             }
         });
     }
+
 
     public void onCaptureStop(FingerprintCaptureItem fp) {
         runOnUiThread(() -> {
@@ -162,13 +277,13 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
 
     public void disableControls(){
         mDoneBtn.setEnabled(false);
-        for(FingerprintCaptureItem fp : fingerprintCaptureItemList){
+        for(FingerprintCaptureItem fp : Objects.requireNonNull(viewModel.fingerprintList.getValue())){
             fp.getFingerprintUI().getFingerprintBtn().setEnabled(false);
         }
     }
     public void enableControls(){
         mDoneBtn.setEnabled(true);
-        for(FingerprintCaptureItem fp : fingerprintCaptureItemList){
+        for(FingerprintCaptureItem fp : Objects.requireNonNull(viewModel.fingerprintList.getValue())){
             fp.getFingerprintUI().getFingerprintBtn().setEnabled(true);
         }
     }
@@ -230,7 +345,41 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
     /// Code for processing Fingerprint
     @Override
     public void onFingerprintData(byte[] imgData, int width, int height, int qualityScore, long captureResult) {
+        try {
 
+
+            long ret = -1;
+
+            if (imgData != null && width > 0 && height > 0) {
+                viewModel.getmDeviceManager().verifyFingerprint(imgData, width, height);
+
+//                if(duplicateDetectionEnabled) {
+//                    boolean[] matched = new boolean[1];
+//                    ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprintCaptureItem.getFingerprintID(), imgData, width, height, matched);
+//
+//
+//                    if ((ret == 0) && matched[0]) {
+//                        mFingerprintText.setText(R.string.duplicate_fingerprint);
+//                        onCaptureError("Duplicate fingerprint");
+//                        runOnUiThread(() -> Toast.makeText(FingerprintCaptureActivity.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show());
+//
+//                        return;
+//                    }
+//                }
+                byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
+                viewModel.setFingerprintData(mCurrentFingerprintCaptureItem, qualityScore, wsqData);
+                runOnUiThread(() -> {
+                    try {
+                        byte[] greyData = ImageProc.fromWSQ(mCurrentFingerprintCaptureItem.getFingerprintData().getFingerprintData(), width, height);
+                      //  mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
+                    } finally {
+                        onCaptureEnd(mCurrentFingerprintCaptureItem);
+                    }
+                });
+            }
+        }catch(Exception exc){
+            Log.d(TAG,exc.getMessage());
+        }
     }
 
     @Override
@@ -262,5 +411,30 @@ public class FingerprintCaptureActivity2 extends AppCompatActivity implements De
             }
         });
     }
+
+
+
+    private void showNoAccessToDevice(){
+        runOnUiThread(() -> {
+            android.app.AlertDialog alertDialog = new android.app.AlertDialog.Builder(FingerprintCaptureActivity2.this).create();
+            alertDialog.setCancelable(false);
+            alertDialog.setTitle(R.string.app_name);
+            alertDialog.setMessage(getString(R.string.noAccessToDevice));
+            alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Ok", (dialogInterface, i) -> FingerprintCaptureActivity2.this.finish());
+            alertDialog.show();
+        });
+    }
+
+    private void showFingerprintDeviceNotInitialized(long result){
+        AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+        dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
+        dlgAlert.setTitle("Fingerprint Registration");
+        dlgAlert.setPositiveButton("OK",
+                (dialog, whichButton) -> finish()
+        );
+        dlgAlert.setCancelable(false);
+        dlgAlert.create().show();
+    }
+
 
 }

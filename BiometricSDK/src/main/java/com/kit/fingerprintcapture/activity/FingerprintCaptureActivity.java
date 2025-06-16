@@ -256,6 +256,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         enableControls();
     }
+
+
     @Override
     public void onDestroy() {
 
@@ -299,6 +301,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             Log.d(TAG, "Exit onDestroy()");
         }
     }
+
+
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
