@@ -7,16 +7,18 @@ public class FingerprintData implements Parcelable {
     private FingerprintID id;
     private byte[] fingerprintData;
     private long qualityScore;
+    private byte[] isoTemplate;
 
     public FingerprintData() {
         this.fingerprintData = null;
         this.qualityScore = 0;
     }
 
-    public FingerprintData(FingerprintID id, byte[] fingerprintData, long qualityScore) {
+    public FingerprintData(FingerprintID id, byte[] fingerprintData, long qualityScore, byte[] isoTemplate) {
         this.id = id;
         this.fingerprintData = fingerprintData;
         this.qualityScore = qualityScore;
+        this.isoTemplate = isoTemplate;
     }
 
     public FingerprintID getFingerprintId() {
@@ -29,21 +31,43 @@ public class FingerprintData implements Parcelable {
 
     protected FingerprintData(Parcel in) {
         this.id = FingerprintID.getFingerprintID(in.readInt());
+
+        // Read fingerprintData
         int dataLen = in.readInt();
         fingerprintData = new byte[dataLen];
         in.readByteArray(fingerprintData);
+
         qualityScore = in.readLong();
+
+        // Read isoTemplate
+        int templateLen = in.readInt();
+        if (templateLen > 0) {
+            isoTemplate = new byte[templateLen];
+            in.readByteArray(isoTemplate);
+        } else {
+            isoTemplate = new byte[0];
+        }
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.id.getID());
-        if(this.fingerprintData!=null)
+
+        // Write fingerprintData
+        if (this.fingerprintData != null)
             dest.writeInt(this.fingerprintData.length);
         else
             dest.writeInt(0);
         dest.writeByteArray(this.fingerprintData);
+
         dest.writeLong(qualityScore);
+
+        // Write isoTemplate
+        if (this.isoTemplate != null)
+            dest.writeInt(this.isoTemplate.length);
+        else
+            dest.writeInt(0);
+        dest.writeByteArray(this.isoTemplate);
     }
 
     @Override
@@ -79,5 +103,11 @@ public class FingerprintData implements Parcelable {
         this.qualityScore = qualityScore;
     }
 
+    public byte[] getIsoTemplate() {
+        return isoTemplate;
+    }
 
+    public void setIsoTemplate(byte[] isoTemplate) {
+        this.isoTemplate = isoTemplate;
+    }
 }

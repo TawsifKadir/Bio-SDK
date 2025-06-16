@@ -18,6 +18,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.kit.fingerprintcapture.model.FingerprintData;
+import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.photocapture.activity.PhotoCaptureActivity2;
 import com.kit.photocapture.test.FaceComparisionTest;
 import com.kit.photocapture.test.FaceRecognitionTest;
@@ -59,54 +61,13 @@ public class BiometricSDK extends AppCompatActivity {
             startActivityForResult(nowIntent,2);
         });
 
-        mFpCaptureBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent nowIntent = new Intent(BiometricSDK.this,com.kit.fingerprintcapture.FingerprintCaptureActivity.class);
-                startActivityForResult(nowIntent,3);
-            }
+        mFpCaptureBtn.setOnClickListener(v -> {
+            Intent nowIntent = new Intent(BiometricSDK.this,com.kit.fingerprintcapture.FingerprintCaptureActivity.class);
+            startActivityForResult(nowIntent,3);
         });
 
         mCloseBtn.setOnClickListener(v -> {
             try {
-//                Bitmap testBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.sample_face);
-//
-//                FaceMeshOptions options = FaceMeshOptions.builder()
-//                        .setStaticImageMode(true)
-//                        .setMaxNumFaces(1)
-//                        .setRefineLandmarks(true)
-//                        .build();
-//
-//                FaceMesh faceMesh = new FaceMesh(this, options);
-//
-//                faceMesh.setErrorListener((message, e) -> {
-//                    Log.e(TAG, "FaceMesh error: " + message, e);
-//                });
-//
-//                faceMesh.setResultListener(result -> {
-//                    if (result == null || result.multiFaceLandmarks().isEmpty()) {
-//                        Log.d(TAG, "❌ No landmarks detected.");
-//                    } else {
-//                        LandmarkProto.NormalizedLandmarkList landmarkList = result.multiFaceLandmarks().get(0);
-//                        int count = landmarkList.getLandmarkCount();
-//                        Log.d(TAG, "✅ Landmark count: " + count);
-//
-//                        // Sample landmark indices to inspect
-//                        int[] sampleIndices = {0, 1, 33, 263};
-//
-//                        for (int idx : sampleIndices) {
-//                            if (idx < count) {
-//                                LandmarkProto.NormalizedLandmark lm = landmarkList.getLandmark(idx);
-//                                Log.d(TAG, String.format("Landmark[%d] -> x: %.4f, y: %.4f, z: %.4f, visibility: %.4f, presence: %.4f",
-//                                        idx, lm.getX(), lm.getY(), lm.getZ(), lm.getVisibility(), lm.getPresence()));
-//                            }
-//                        }
-//                    }
-//                });
-//
-//
-//                faceMesh.send(testBitmap);  // ✅ THIS is the correct call, not `.send(image)`
-
                 FaceComparisionTest.compareTwoFaces(getApplicationContext(), R.drawable.sample_face, R.drawable.demo_ronaldo, "Ronaldo");
                 FaceComparisionTest.compareTwoFaces(getApplicationContext(), R.drawable.sample_face, R.drawable.demo_messi, "Messi");
 
@@ -153,7 +114,60 @@ public class BiometricSDK extends AppCompatActivity {
             }
         }else if(requestCode==3){
             Log.d(TAG, "Returned from fingerprint capture");
+            if (resultCode == RESULT_OK && data != null) {
+                if (data.hasExtra("noFingerprint")) {
+                    boolean hasException = data.getBooleanExtra("noFingerprint", false);
+                    if (hasException) {
+                        int reasonId = data.getIntExtra("noFingerprintReasonID", -1);
+                        String reasonText = data.getStringExtra("noFingerprintReasonText");
+                    }
+                }
+                for (FingerprintID fid : FingerprintID.values()) {
+                    FingerprintData fingerprintData = data.getParcelableExtra(fid.getName());
+                    if (fingerprintData != null) {
+                        logFingerprintData(fid.getName(), fingerprintData);
+                    } else {
+                        Log.d(TAG, "No data found for: " + fid.getName());
+                    }
+                }
+            } else {
+                Log.d(TAG, "Fingerprint capture was canceled or no data returned.");
+            }
         }
+    }
+
+    private void logFingerprintData(String label, FingerprintData data) {
+        Log.d(TAG, "------------ " + label + " ------------");
+
+        if (data.getFingerprintId() != null) {
+            Log.d(TAG, "ID: " + data.getFingerprintId().getName());
+        } else {
+            Log.d(TAG, "ID: null");
+        }
+
+        if (data.getFingerprintData() != null) {
+            Log.d(TAG, "Raw fingerprint byte  " + data.getFingerprintData());
+        } else {
+            Log.d(TAG, "Raw fingerprint data: null");
+        }
+
+        Log.d(TAG, "Quality Score: " + data.getQualityScore());
+
+        if (data.getIsoTemplate() != null) {
+            byte[] iso = data.getIsoTemplate();
+            Log.d(TAG, "ISO Template Size: " + iso.length);
+            Log.d(TAG, "ISO Template First 20 Bytes: " + bytesToHex(iso, 20));
+        } else {
+            Log.d(TAG, "ISO Template: null");
+        }
+    }
+    private String bytesToHex(byte[] bytes, int limit) {
+        if (bytes == null) return "null";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(bytes.length, limit); i++) {
+            sb.append(String.format("%02X ", bytes[i]));
+        }
+        return sb.toString();
     }
 
     public byte[] convertBitmapToByteArray(Bitmap bitmap) {

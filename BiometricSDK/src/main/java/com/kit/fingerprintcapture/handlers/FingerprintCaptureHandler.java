@@ -59,7 +59,7 @@ public class FingerprintCaptureHandler implements Runnable, View.OnClickListener
         }
     }
 
-    public void setFingerprintData(FingerprintID id , long score , byte[] fpData){
+    public void setFingerprintData(FingerprintID id , long score , byte[] fpData, byte[] isoTemplate){
         if(BuildConfig.isDebug) {
             Log.d("FingerprintCapture", ">>>>> Entered setFingerprintData >>>> ");
             Log.d("FingerprintCapture", ">>>>> Fingerprint Data Size : " + fpData.length);
@@ -68,6 +68,7 @@ public class FingerprintCaptureHandler implements Runnable, View.OnClickListener
         fingerprint.getFingerprintData().setFingerprintId(id);
         fingerprint.getFingerprintData().setFingerprintData(fpData);
         fingerprint.getFingerprintData().setQualityScore(score);
+        fingerprint.getFingerprintData().setIsoTemplate(isoTemplate);
 
     }
     public void startCapture(){

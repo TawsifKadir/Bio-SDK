@@ -1,111 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="270dp"
-    android:paddingTop="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
     android:background="@drawable/border_dialog"
-    android:layout_marginTop="20dp">
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="305dp"
-        android:paddingTop="10dp"
-        android:clickable="true"
-        android:padding="10dp"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
         android:background="@drawable/border_dialog"
+        android:clickable="true"
+        android:focusable="true"
         android:focusableInTouchMode="true">
 
-        <LinearLayout
-            android:layout_width="468dp"
-            android:layout_height="100dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="178dp"
-            android:layout_marginEnd="0dp"
-            android:layout_marginBottom="60dp"
-            android:orientation="horizontal"
-            android:paddingTop="10dp">
-
-
-
-            <Button
-                android:id="@+id/okBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="35dp"
-                android:layout_marginEnd="40dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_circular"
-                android:backgroundTint="@color/material_dynamic_primary90"
-                android:shadowRadius="@integer/material_motion_duration_short_1"
-                android:text="Ok" />
-
-            <Button
-                android:id="@+id/closeBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/button_circular"
-                android:layout_marginEnd="26dp"
-                android:shadowRadius="@integer/material_motion_duration_short_1"
-                android:text="Close" />
-
-
-        </LinearLayout>
-
+        <!-- Message Text -->
         <TextView
             android:id="@+id/msgTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="70dp"
-            android:layout_above="@+id/spinner"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="39dp"
-
-            android:layout_marginEnd="31dp"
-            android:layout_marginBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:text="@string/noFingerprintExceptionMsg"
             android:textColor="@color/black"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spinner"
-            android:layout_width="341dp"
-            android:layout_height="48dp"
-            android:layout_above="@+id/otherReasonText"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="33dp"
+        <!-- Spinner -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/spinnerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/msgTxt"
+            android:layout_marginBottom="16dp"
+            android:elevation="8dp"
+            app:boxBackgroundMode="outline"
+            app:endIconMode="dropdown_menu"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="15dp"
-            android:background="@android:drawable/btn_dropdown" />
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:inputType="none"
+                android:clickable="true"
+                android:focusable="false"/>
 
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Other Reason EditText - Now positioned below spinner -->
         <EditText
             android:id="@+id/otherReasonText"
-            android:layout_width="361dp"
-            android:layout_height="40dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="33dp"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="120dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/spinnerContainer"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:padding="8dp"
+            android:minHeight="48dp"
             android:background="@drawable/border"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
-            android:text=""
-            android:textSize="16dp" />
+            android:hint="Enter reason"
+            android:textSize="16sp" />
 
+        <!-- Button Container with Colored Material Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/otherReasonText"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:paddingTop="8dp">
+
+            <!-- Green OK Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/okBtn"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="OK"
+                android:textSize="16sp"
+                android:backgroundTint="@drawable/btn_green_selector"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_check_white"
+                app:iconTint="@android:color/white" />
+
+            <!-- Red Close Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/closeBtn"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Close"
+                android:textSize="16sp"
+                android:backgroundTint="@drawable/btn_red_selector"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_close_white"
+                app:iconTint="@android:color/white" />
+        </LinearLayout>
 
     </RelativeLayout>
-
 </androidx.cardview.widget.CardView>

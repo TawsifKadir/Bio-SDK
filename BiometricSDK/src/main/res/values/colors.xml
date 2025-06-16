@@ -12,4 +12,9 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
 
+    <!-- Material Design Color Palette -->
+    <color name="green500">#4CAF50</color>  <!-- Material Green 500 -->
+    <color name="green600">#43A047</color>  <!-- Darker green for pressed state -->
+    <color name="red500">#F44336</color>    <!-- Material Red 500 -->
+    <color name="red600">#E53935</color>    <!-- Darker red for pressed state -->
 </resources>
