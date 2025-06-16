@@ -1,4 +1,4 @@
-package com.kit.photocapture.activity;
+package com.kit.photocapture.presentation.activity;
 
 import java.io.File;
 import java.lang.Math;

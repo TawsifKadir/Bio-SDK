@@ -2,12 +2,10 @@ package com.kit.biometricsdk;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -20,11 +18,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
-import com.kit.photocapture.activity.PhotoCaptureActivity2;
+import com.kit.photocapture.presentation.activity.PhotoCaptureActivity2;
 import com.kit.photocapture.test.FaceComparisionTest;
-import com.kit.photocapture.test.FaceRecognitionTest;
 import com.kit.photocapture.util.Utility;
-import com.kit.photocapture.activity.PhotoCaptureActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

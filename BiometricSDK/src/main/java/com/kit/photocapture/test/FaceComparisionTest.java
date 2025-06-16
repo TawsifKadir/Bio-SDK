@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.Toast;
 
 
 import com.kit.photocapture.detector.YunetFaceDetectionImpl;
@@ -13,7 +14,9 @@ import com.kit.photocapture.recognizer.SFaceRecognitionModelImpl;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -24,7 +27,10 @@ import org.opencv.imgproc.Imgproc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FaceComparisionTest {
@@ -80,11 +86,14 @@ public class FaceComparisionTest {
             faces1.get(0, 0, faceData1);
             Mat faceBox1 = new Mat(1, 4, org.opencv.core.CvType.CV_32FC1);
             faceBox1.put(0, 0, faceData1[0], faceData1[1], faceData1[2], faceData1[3]);
-            Mat alignedFace1 = faceRecognizer.alignFace(image1, faceBox1);
-            Mat features1 = faceRecognizer.extractFeature(alignedFace1);
+
+            Mat result1 = new Mat();
+            faceRecognizer.alignCrop(image1, faceBox1,result1);
+            faceRecognizer.extractFeature(result1,result1);
 
             // 5. Process second image
             Mat faces2 = new Mat();
+
             Size size2 = faces2.size();
 
             double aspectRatio2 = size2.width/ size2.height;
@@ -108,12 +117,14 @@ public class FaceComparisionTest {
             faces2.get(0, 0, faceData2);
             Mat faceBox2 = new Mat(1, 4, org.opencv.core.CvType.CV_32FC1);
             faceBox2.put(0, 0, faceData2[0], faceData2[1], faceData2[2], faceData2[3]);
-            Mat alignedFace2 = faceRecognizer.alignFace(image2, faceBox2);
-            Mat features2 = faceRecognizer.extractFeature(alignedFace2);
+
+            Mat result2 = new Mat();
+            faceRecognizer.alignCrop(image2, faceBox2,result2);
+            faceRecognizer.extractFeature(result2,result2);
 
             // 6. Compare features
-            double similarity = faceRecognizer.compareFeatures(features1, features2);
-            boolean isMatch = faceRecognizer.isMatch(features1, features2, MATCH_THRESHOLD);
+            double similarity = faceRecognizer.compareFeatures(result1, result2);
+            boolean isMatch = faceRecognizer.isMatch(result1, result2, MATCH_THRESHOLD);
 
             Log.d(TAG, String.format("%s Face similarity: %.4f, Match: %b (Threshold: %.2f)", person,
                     similarity, isMatch, MATCH_THRESHOLD));
@@ -130,6 +141,126 @@ public class FaceComparisionTest {
 
         } catch (Exception e) {
             Log.e(TAG, "Face comparison test failed", e);
+        }
+    }
+
+    public static void compareTwoFaceMats(Context context, Mat image1, Mat image2, String person) {
+        try {
+
+
+            Log.d("ImageCheck", "image1 size: " + image1.size());
+            Log.d("ImageCheck", "image2 size: " + image2.size());
+            Log.d("ImageCheck", "image1 pixel[0]: " + Arrays.toString(image1.get(0, 0)));
+            Log.d("ImageCheck", "image2 pixel[0]: " + Arrays.toString(image2.get(0, 0)));
+
+
+
+            String hash1 = getImageHash(image1);
+            String hash2 = getImageHash(image2);
+
+            Log.d("ImageHash", "image1 hash: " + hash1);
+            Log.d("ImageHash", "image2 hash: " + hash2);
+
+            if (hash1.equals(hash2)) {
+                Log.e(TAG, "Both input images are identical. Aborting comparison.");
+                return;
+            }
+
+            YunetFaceDetectionImpl faceDetector1 = new YunetFaceDetectionImpl(context);
+            faceDetector1.loadDetector();
+
+
+
+            FaceRecognizer faceRecognizer = new SFaceRecognitionModelImpl(context);
+            faceRecognizer.loadRecognizer();
+
+            // Detect first face
+            Mat faces1 = new Mat();
+            faceDetector1.setInputSize(new Size(image1.cols(), image1.rows()));
+            faceDetector1.detect(image1, faces1);
+
+            if (faces1.rows() == 0) {
+                Log.e(TAG, "No face found in image 1");
+                return;
+            }else {
+                Log.e(TAG, "face found in image 1: "+ faces1.rows());
+            }
+
+            YunetFaceDetectionImpl faceDetector2 = new YunetFaceDetectionImpl(context);
+            faceDetector2.loadDetector();
+
+            // Detect second face
+            Mat faces2 = new Mat();
+            faceDetector2.setInputSize(new Size(image2.cols(), image2.rows()));
+            faceDetector2.detect(image2, faces2);
+
+            if (faces2.rows() == 0) {
+                Log.e(TAG, "No face found in image 2");
+                return;
+            }
+            else {
+                Log.e(TAG, "face found in image 2: "+ faces2.rows());
+            }
+
+            float[] faceData1 = new float[14];
+            faces1.get(0, 0, faceData1);
+            Mat faceBox1 = new Mat(1, 4, CvType.CV_32FC1);
+            faceBox1.put(0, 0, faceData1[0], faceData1[1], faceData1[2], faceData1[3]);
+
+            float[] faceData2 = new float[14];
+            faces2.get(0, 0, faceData2);
+            Mat faceBox2 = new Mat(1, 4, CvType.CV_32FC1);
+            faceBox2.put(0, 0, faceData2[0], faceData2[1], faceData2[2], faceData2[3]);
+
+            Mat result1 = new Mat(), result2 = new Mat();
+            faceRecognizer.alignCrop(image1, faceBox1, result1);
+            faceRecognizer.alignCrop(image2, faceBox2, result2);
+
+            Mat feature1 = new Mat(), feature2 = new Mat();
+            faceRecognizer.extractFeature(result1, feature1);
+            faceRecognizer.extractFeature(result2, feature2);
+
+//
+//            double pixel1 = result1.get(0, 0)[0];
+//            double pixel2 = result2.get(0, 0)[0];
+//            Log.d(TAG, "Pixel (0,0) - Result1: " + pixel1 + ", Result2: " + pixel2);
+//
+//            double[] f1 = feature1.get(0, 0);
+//            double[] f2 = feature2.get(0, 0);
+//
+//            Log.d(TAG, "Feature1: " + Arrays.toString(f1));
+//            Log.d(TAG, "Feature2: " + Arrays.toString(f2));
+
+
+            double similarity = faceRecognizer.compareFeatures(feature1, feature2);
+            boolean isMatch = faceRecognizer.isMatch(feature1, feature2, MATCH_THRESHOLD);
+
+            String result = String.format("%s\nSimilarity: %.2f%% — Match: %s", person,
+                    similarity * 100, isMatch ? "YES ✅" : "NO ❌");
+
+            Log.i(TAG, result);
+            Toast.makeText(context, result, Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "compareTwoFaceMats failed", e);
+        }
+    }
+
+
+    public static String getImageHash(Mat img) {
+        MatOfByte buffer = new MatOfByte();
+        Imgcodecs.imencode(".jpg", img, buffer);
+        byte[] byteArray = buffer.toArray();
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(byteArray);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return "";
         }
     }
 

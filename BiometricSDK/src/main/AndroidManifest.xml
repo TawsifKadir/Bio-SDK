@@ -55,14 +55,14 @@
         </activity>
 
         <activity
-            android:name="com.kit.photocapture.activity.PhotoCaptureActivity"
+            android:name="com.kit.photocapture.presentation.activity.PhotoCaptureActivity2"
             android:theme="@style/AppTheme"
             android:screenOrientation="portrait"
             android:exported="true"
             />
 
         <activity
-            android:name="com.kit.photocapture.activity.PhotoCaptureActivity2"
+            android:name="com.kit.photocapture.presentation.activity.CapturedPhotoPreviewActivity"
             android:theme="@style/AppTheme"
             android:screenOrientation="portrait"
             android:exported="true"

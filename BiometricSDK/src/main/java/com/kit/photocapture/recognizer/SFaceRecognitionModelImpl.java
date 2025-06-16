@@ -79,29 +79,24 @@ public class SFaceRecognitionModelImpl implements FaceRecognizer {
     }
 
     @Override
-    public Mat alignFace(Mat srcImage, Mat faceBox) {
+    public void alignCrop(Mat srcImage, Mat faceBox, Mat result) {
         if (faceRecognizer == null) {
             throw new IllegalStateException("Recognizer not loaded. Call loadRecognizer() first.");
         }
 
-        Mat alignedFace = new Mat();
-        faceRecognizer.alignCrop(srcImage, faceBox, alignedFace);
-        return alignedFace;
+        faceRecognizer.alignCrop(srcImage, faceBox, result);
     }
 
     @Override
-    public Mat extractFeature(Mat alignedFace) {
+    public void extractFeature(Mat alignedFace, Mat result) {
         if (faceRecognizer == null) {
             throw new IllegalStateException("Recognizer not loaded. Call loadRecognizer() first.");
         }
-
-        Mat feature = new Mat();
-        faceRecognizer.feature(alignedFace, feature);
-        return feature;
+        faceRecognizer.feature(alignedFace, result);
     }
 
     @Override
-    public double compareFeatures(Mat feature1, Mat feature2) {
+    public double compareFeatures(Mat feature1, Mat feature2) { //
         if (faceRecognizer == null) {
             throw new IllegalStateException("Recognizer not loaded. Call loadRecognizer() first.");
         }
@@ -115,6 +110,7 @@ public class SFaceRecognitionModelImpl implements FaceRecognizer {
         return similarity >= threshold;
     }
 
+    @Override
     public boolean isMatch(Mat feature1, Mat feature2) {
         return isMatch(feature1, feature2, DEFAULT_MATCH_THRESHOLD);
     }
