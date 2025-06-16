@@ -1,11 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
+
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <!-- Customize your theme here -->
-        <item name="colorPrimary">@color/green500</item>
-        <item name="colorPrimaryDark">@color/green600</item>
-        <item name="colorAccent">@color/red500</item>
+        <item name="colorPrimary">@color/li_primary</item>
+        <item name="colorOnPrimary">@color/li_on_primary</item>
+        <item name="colorPrimaryDark">@color/li_primary_dark</item>
+        <item name="colorAccent">@color/li_accent</item>
+
+        <item name="actionMenuTextColor">@color/white</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <!-- Navigation Drawer -->
     </style>
 
-    
+    <style name="AppTheme.NoActionBar">
+        <!-- For Material Components -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>

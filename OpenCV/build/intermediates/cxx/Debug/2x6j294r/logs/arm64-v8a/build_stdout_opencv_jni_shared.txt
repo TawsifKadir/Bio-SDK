@@ -1,2 +1,0 @@
-ninja: Entering directory `C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\.cxx\Debug\2x6j294r\arm64-v8a'
-ninja: no work to do.

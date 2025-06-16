@@ -14,7 +14,6 @@ import android.util.Log;
 
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -144,7 +143,7 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
         isFrameStable = checkAndTrackFrameStability(mRgbaCurrentFrame);
 
         if (isFrameStable) {
-            showRectrangleBox();
+            showRectangleBox();
             processFaceInBox(mRgbaDetectionFrame);
 
         } else {
@@ -289,10 +288,6 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
                 intent.putExtra(CapturedPhotoPreviewActivity.EXTRA_PHOTO_PATH, file.getAbsolutePath());
                 startActivityForResult(intent, 201); // use a request code to capture the result
 
-
-              //  finish();
-
-                // Cleanup
                 croppedFace.release();
                 resizedFace.release();
 
@@ -313,35 +308,6 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
             finish();
         }
     }
-
-
-
-//    private void onCapture() {
-//        if (mCleanCaptureFrame != null && !mCleanCaptureFrame.empty()) {
-//            try {
-//                Bitmap bmp = Bitmap.createBitmap(
-//                        mCleanCaptureFrame.cols(),
-//                        mCleanCaptureFrame.rows(),
-//                        Bitmap.Config.ARGB_8888
-//                );
-//                Utils.matToBitmap(mCleanCaptureFrame, bmp);
-//
-//                File file = new File(getCacheDir(), "captured_photo.jpg");
-//                FileOutputStream out = new FileOutputStream(file);
-//                bmp.compress(Bitmap.CompressFormat.JPEG, 90, out);
-//                out.close();
-//
-//                Intent intent = new Intent(this, CapturedPhotoPreviewActivity.class);
-//                intent.putExtra(CapturedPhotoPreviewActivity.EXTRA_PHOTO_PATH, file.getAbsolutePath());
-//                startActivity(intent);
-//
-//            } catch (Exception e) {
-//                Log.e(TAG, "Error capturing image", e);
-//                Toast.makeText(this, "Error capturing image", Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//    }
-
     private void initializeViews() {
         mStatusText = findViewById(R.id.status_text);
         mOpenCvCameraView = findViewById(R.id.camera_view);
@@ -538,17 +504,19 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
     private void handleUnstableFrame() {
         Log.d("anik01", "❌ Frame unstable — resetting stability count");
 
-        mCapture.setEnabled(false);
-        mCapture.setVisibility(View.INVISIBLE);
+        runOnUiThread(() -> {
+            mCapture.setEnabled(false);
+            mCapture.setVisibility(View.INVISIBLE);
 
-        if (isBoxVisible) {
-            runOnUiThread(() -> {
+            if (isBoxVisible) {
                 mBoxOverlay.setVisibility(INVISIBLE);
                 Log.d("anik01", "🚫 Box is hidden due to instability");
-            });
-            isBoxVisible = false;
-        }
-        stableFrameCount = 0; // dropping the value to start from zero
+                isBoxVisible = false;
+            }
+            stableFrameCount = 0; // dropping the value to start from zero
+        });
+
+
     }
 
 
@@ -560,12 +528,10 @@ public class PhotoCaptureActivity2 extends CameraActivity implements CameraBridg
 
 
 
-    private void showRectrangleBox() {
+    private void showRectangleBox() {
         stableFrameCount++;
         Log.d("anik02", "✅ Stable frame count: " + stableFrameCount);
 
-//        mCapture.setEnabled(false);
-//        mCapture.setVisibility(View.INVISIBLE);
         if (stableFrameCount >= REQUIRED_CONSECUTIVE_STABLE_FRAMES_TO_SHOW_BOX) {
             stableFrameCount = REQUIRED_CONSECUTIVE_STABLE_FRAMES_TO_SHOW_BOX;
             if (!isBoxVisible) {

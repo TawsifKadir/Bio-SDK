@@ -307,7 +307,16 @@
 
         </LinearLayout>
 
-        <Button android:textSize="18sp" android:id="@+id/doneBtn" android:background="@drawable/b_done_dis_no_text" android:layout_width="215dp" android:layout_height="80dp" android:layout_marginLeft="35dp" android:layout_marginTop="10dp" android:text="@string/done" android:layout_toRightOf="@+id/left_score_table"/>
+        <Button
+            android:textSize="18sp"
+            android:id="@+id/doneBtn"
+            android:background="@drawable/b_done_dis_no_text"
+            android:layout_width="215dp"
+            android:layout_height="80dp"
+            android:layout_marginLeft="35dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/done"
+            android:layout_toRightOf="@+id/left_score_table"/>
 
         <TextView
             android:id="@+id/click_fingerprint"

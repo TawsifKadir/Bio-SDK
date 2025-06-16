@@ -1,5 +1,5 @@
 {
-  "installationFolder": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
+  "installationFolder": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }

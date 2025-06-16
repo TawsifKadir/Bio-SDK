@@ -1,0 +1,7 @@
+org.opencv.OpenCV-pngs-0 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\build\generated\res\pngs\release
+org.opencv.OpenCV-resValues-1 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\build\generated\res\resValues\release
+org.opencv.OpenCV-mergeReleaseResources-2 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\build\intermediates\incremental\release\mergeReleaseResources\merged.dir
+org.opencv.OpenCV-mergeReleaseResources-3 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\build\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+org.opencv.OpenCV-release-4 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\build\intermediates\merged_res\release\mergeReleaseResources
+org.opencv.OpenCV-java-5 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\java\res
+org.opencv.OpenCV-release-6 C:\Users\anik1\Documents\KIT\biosdklatest\OpenCV\src\release\res

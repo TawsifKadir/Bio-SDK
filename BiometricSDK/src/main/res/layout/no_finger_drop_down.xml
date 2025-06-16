@@ -48,6 +48,7 @@
                 android:minHeight="48dp"
                 android:inputType="none"
                 android:clickable="true"
+                android:textColor="@color/black"
                 android:focusable="false"/>
 
         </com.google.android.material.textfield.TextInputLayout>

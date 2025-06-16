@@ -16,7 +16,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 
 import com.kit.biometricsdk.R;
 import com.kit.photocapture.util.faceRecongonization.FaceRecognizerHelper;
@@ -24,8 +23,9 @@ import com.kit.photocapture.util.faceRecongonization.LoadImageFromFile;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+
 
 public class FaceMatchActivity extends Activity {
 
@@ -34,7 +34,7 @@ public class FaceMatchActivity extends Activity {
     private static final int REQUEST_CODE_IMAGE2 = 102;
 
 
-    private static final Logger log = LoggerFactory.getLogger(FaceMatchActivity.class);
+
     private ImageView image1View, image2View;
     private Button matchButton;
 

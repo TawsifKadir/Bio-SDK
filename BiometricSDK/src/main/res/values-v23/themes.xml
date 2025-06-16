@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <item name="colorPrimary">@color/li_primary</item>
+        <item name="colorOnPrimary">@color/li_on_primary</item>
+        <item name="colorPrimaryDark">@color/li_primary_dark</item>
+        <item name="colorAccent">@color/li_accent</item>
+
+        <item name="actionMenuTextColor">@color/white</item>
+        <item name="android:textColorPrimary">@color/white</item>
+    </style>
+</resources>

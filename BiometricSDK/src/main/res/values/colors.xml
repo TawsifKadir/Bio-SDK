@@ -17,4 +17,11 @@
     <color name="green600">#43A047</color>  <!-- Darker green for pressed state -->
     <color name="red500">#F44336</color>    <!-- Material Red 500 -->
     <color name="red600">#E53935</color>    <!-- Darker red for pressed state -->
+
+    <color name="li_primary">#11998e</color>
+    <color name="li_on_primary">#ffffff</color>
+    <color name="li_primary_light">#11998e</color>
+    <color name="li_primary_dark">#0D8C82</color>
+    <color name="li_accent">#FF6F69</color>
+    <color name="li_on_accent">#FFFFFF</color>
 </resources>
