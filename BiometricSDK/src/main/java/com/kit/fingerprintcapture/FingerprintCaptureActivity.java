@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit;
 public class FingerprintCaptureActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
 
     String TAG = "FingerprintCaptureActivity";
-
+    public static final String KEY_ENUMERATOR_REGISTRATION = "ENUMERATOR_REGISTRATION";
     private ImageView mFingerprintImage;
     private TextView mFingerprintText;
     private TextView mClickFingerprint;
@@ -88,10 +88,16 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     private NoFingerprintReason mNoFingerprintReason;
     List<NoFingerprintReason> mNoFingerprintReasonList;
 
+    boolean isEnumeratorRegistration = false;
+
+    ///
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fingerprint_capture_layout);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        isEnumeratorRegistration = getIntent().getBooleanExtra(KEY_ENUMERATOR_REGISTRATION, false);
 
         mFingerprintImage = (ImageView)findViewById(R.id.fingerprint_image);
         mFingerprintText = (TextView)findViewById(R.id.fingerprint_text);
@@ -100,6 +106,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         mDoneBtn = (Button)findViewById(R.id.doneBtn);
 
         ArrayList<Fingerprint> fingerprintList = new ArrayList<>();
+
+        /// Matcher code that will take enumerator fingerprint and also beneficiary fingerprint and match
 
         Fingerprint fPrint = Fingerprint.newInstance(getWindow().getDecorView(),FingerprintID.RIGHT_THUMB,R.id.right_thumb,R.id.right_thumb_marker,R.id.right_thumb_score_text);
         fingerprintList.add(fPrint);
@@ -139,15 +147,12 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         Thread t = new Thread(mfpCaptureHandler);
         t.start();
 
-        mDoneBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!isFingerprintMissing()){
-                    prepareReturnData();
-                    finish();
-                }else{
-                    showNoFingerprintExceptionDialog();
-                }
+        mDoneBtn.setOnClickListener(v -> {
+            if(!isFingerprintMissing()){
+                prepareReturnData();
+                finish();
+            }else{
+                showNoFingerprintExceptionDialog();
             }
         });
         for(Fingerprint fp:fingerprintList){
@@ -160,6 +165,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
 
     }
+
     @Override
     public void onStart(){
         super.onStart();
@@ -362,40 +368,36 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     }
     @Override
     public void onCaptureStart(Fingerprint fp) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+        runOnUiThread(() -> {
 
-                if(BuildConfig.isDebug) {
-                    Log.d("FaisalActivity", ">>>>> Entered in on onCaptureStart >>>> ");
-                }
-
-                diableControls();
-
-                mCurrentFingerprint = fp;
-                mCurrentFingerprint.setStatus(FingerprintStatus.CAPTURE_IN_PROGRESS);
-
-                setCaptureStartMarker(fp);
-                setStartCaptureFpView(fp);
-                startAnimation();
-
-                if(BuildConfig.isDebug) {
-                    Log.d("FaisalActivity", ">>>>> Staring autoOn >>>> ");
-                }
-
-                taskExecutor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        mDeviceManager.startCapture();
-                    }
-                });
-
+            if(BuildConfig.isDebug) {
+                Log.d("FaisalActivity", ">>>>> Entered in on onCaptureStart >>>> ");
             }
+
+            diableControls();
+
+            mCurrentFingerprint = fp;
+            mCurrentFingerprint.setStatus(FingerprintStatus.CAPTURE_IN_PROGRESS);
+
+            setCaptureStartMarker(fp);
+            setStartCaptureFpView(fp);
+            startAnimation();
+
+            if(BuildConfig.isDebug) {
+                Log.d("FaisalActivity", ">>>>> Staring autoOn >>>> ");
+            }
+
+            taskExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    mDeviceManager.startCapture();
+                }
+            });
+
         });
 
 
     }
-
         @Override
         public void onCaptureFailed(Fingerprint fp) {
             runOnUiThread(new Runnable() {
@@ -421,8 +423,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             public void run() {
                 try {
                     fp.setStatus(FingerprintStatus.CAPTURED);
-                    setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
-                    setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 50 ? true : false, fp);
+                    setCaptureFinishedMarker(fp.getFingerprintData().getQualityScore() < 60 ? true : false, fp);
+                    setFinishCaptureFpView(fp.getFingerprintData().getQualityScore() < 60 ? true : false, fp);
                     fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
                 }finally {
                     enableControls();
