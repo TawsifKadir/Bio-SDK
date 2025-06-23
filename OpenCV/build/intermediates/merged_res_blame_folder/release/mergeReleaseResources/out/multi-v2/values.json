@@ -4,7 +4,7 @@
             "outputFile": "org.opencv.OpenCV-release-3:/values/values.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\java\\res\\values\\attrs.xml",
+                    "source": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\java\\res\\values\\attrs.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -28,7 +28,7 @@
             "outputFile": "org.opencv.OpenCV-mergeReleaseResources-1:/values/values.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\java\\res\\values\\attrs.xml",
+                    "source": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\java\\res\\values\\attrs.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

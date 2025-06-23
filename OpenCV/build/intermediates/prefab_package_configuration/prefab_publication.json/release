@@ -1,5 +1,5 @@
 {
-  "installationFolder": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
+  "installationFolder": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\build\\intermediates\\prefab_package\\release\\prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": [
           {
@@ -16,32 +16,32 @@
             "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\armeabi-v7a\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\armeabi-v7a\\android_gradle_build.json"
+            "abiLibrary": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\armeabi-v7a\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\armeabi-v7a\\android_gradle_build.json"
           },
           {
             "abiName": "arm64-v8a",
             "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\arm64-v8a\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\arm64-v8a\\android_gradle_build.json"
+            "abiLibrary": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\arm64-v8a\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\arm64-v8a\\android_gradle_build.json"
           },
           {
             "abiName": "x86",
             "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86\\android_gradle_build.json"
+            "abiLibrary": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86\\android_gradle_build.json"
           },
           {
             "abiName": "x86_64",
             "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86_64\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "C:\\Users\\anik1\\Documents\\KIT\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86_64\\android_gradle_build.json"
+            "abiLibrary": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86_64\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk\\biosdklatest\\OpenCV\\.cxx\\RelWithDebInfo\\392e6c5c\\x86_64\\android_gradle_build.json"
           }
         ]
       }
