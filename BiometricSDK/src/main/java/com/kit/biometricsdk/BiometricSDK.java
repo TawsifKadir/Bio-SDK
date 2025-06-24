@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
+import com.kit.photocapture.presentation.activity.PhotoCaptureActivity;
 import com.kit.photocapture.presentation.activity.PhotoCaptureActivity2;
 import com.kit.photocapture.test.FaceComparisionTest;
 import com.kit.photocapture.util.Utility;
@@ -53,7 +54,7 @@ public class BiometricSDK extends AppCompatActivity {
         mPhotoView = findViewById(R.id.photoView);
 
         mPhotoCaptureBtn.setOnClickListener(v -> {
-            Intent nowIntent = new Intent(BiometricSDK.this, PhotoCaptureActivity2.class);
+            Intent nowIntent = new Intent(BiometricSDK.this, PhotoCaptureActivity.class);
             startActivityForResult(nowIntent,2);
         });
 
