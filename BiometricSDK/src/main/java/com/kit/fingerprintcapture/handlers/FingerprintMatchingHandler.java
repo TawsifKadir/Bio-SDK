@@ -31,6 +31,14 @@ public class FingerprintMatchingHandler {
     private HashMap<FingerprintID,FingerprintTemplate> templateList;
     private FingerprintMatcher mFPMatcher = null;
 
+    public HashMap<FingerprintID, FingerprintTemplate> getTemplateList() {
+        return templateList;
+    }
+
+    public void setTemplateList(HashMap<FingerprintID, FingerprintTemplate> templateList) {
+        this.templateList = templateList;
+    }
+
     public FingerprintMatchingHandler(Activity mActivity) {
         this.mActivity = mActivity;
         this.isInitialized = false;

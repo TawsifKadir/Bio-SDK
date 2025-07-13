@@ -16,11 +16,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.kit.fingerprintcapture.FingerprintCaptureActivity;
+import com.kit.fingerprintcapture.FingerprintCaptureActivity2;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.photocapture.presentation.activity.PhotoCaptureActivity;
-import com.kit.photocapture.presentation.activity.PhotoCaptureActivity2;
-import com.kit.photocapture.test.FaceComparisionTest;
 import com.kit.photocapture.util.Utility;
 
 import java.io.ByteArrayOutputStream;
@@ -59,19 +59,58 @@ public class BiometricSDK extends AppCompatActivity {
         });
 
         mFpCaptureBtn.setOnClickListener(v -> {
-            Intent nowIntent = new Intent(BiometricSDK.this,com.kit.fingerprintcapture.FingerprintCaptureActivity.class);
+            Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity.class);
             startActivityForResult(nowIntent,3);
         });
 
-        mCloseBtn.setOnClickListener(v -> {
-            try {
-                FaceComparisionTest.compareTwoFaces(getApplicationContext(), R.drawable.sample_face, R.drawable.demo_ronaldo, "Ronaldo");
-                FaceComparisionTest.compareTwoFaces(getApplicationContext(), R.drawable.sample_face, R.drawable.demo_messi, "Messi");
 
-            } catch (Exception e) {
-                Log.e(TAG, "Error initializing FaceMesh: ", e);
-            }
+        mCloseBtn.setOnClickListener(v -> {
+            Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity2.class);
+            startActivityForResult(nowIntent, 4);
         });
+
+//
+//        mCloseBtn.setOnClickListener(v -> {
+//            // Create intent to navigate to FingerprintCaptureActivity2
+//            Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity2.class);
+//
+//            // Add mock userType
+//            nowIntent.putExtra("userType", "TEST_USER");
+//
+//            // Add mock fingerprint data for RIGHT_THUMB
+//            FingerprintData mockData = new FingerprintData(
+//                    FingerprintID.RIGHT_THUMB,
+//                    new byte[]{1, 2, 3, 4, 5},  // Mock fingerprint bytes
+//                    85,                         // Mock quality score
+//                    new byte[]{9, 8, 7, 6, 5}   // Mock ISO template
+//            );
+//            nowIntent.putExtra(FingerprintID.RIGHT_THUMB.getName(), mockData);
+//
+//            // If needed, add noFingerprint info (simulate no finger)
+//            nowIntent.putExtra("noFingerprint", false);
+//            nowIntent.putExtra("noFingerprintReasonID", -1);
+//            nowIntent.putExtra("noFingerprintReasonText", "");
+//
+//            // Start the activity expecting result
+//            startActivityForResult(nowIntent, 4);
+//
+//            Log.d(TAG, "Started FingerprintCaptureActivity2 with mock data");
+//        });
+//
+
+
+//        mCloseBtn.setOnClickListener(v -> {
+//            Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity2.class);
+//            startActivityForResult(nowIntent,4);
+//
+////            try {
+////                FaceComparisionTest.compareTwoFaces(getApplicationContext(), R.drawable.sample_face, R.drawable.demo_ronaldo, "Ronaldo");
+////                FaceComparisionTest.compareTwoFaces(getApplicationContext(), R.drawable.sample_face, R.drawable.demo_messi, "Messi");
+////
+////            } catch (Exception e) {
+////                Log.e(TAG, "Error initializing FaceMesh: ", e);
+////            }
+//        });
 
     }
 

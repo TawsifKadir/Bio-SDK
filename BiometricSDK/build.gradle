@@ -12,8 +12,12 @@ android {
 //        applicationId "com.kit.biometricsdk"
         minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+
+//
+//        versionCode 1
+//        versionName "1.0"
+
+
         version 1.7
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

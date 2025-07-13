@@ -1,2 +1,0 @@
-ninja: Entering directory `A:\Kit Projects\BioSdk\biosdklatest\OpenCV\.cxx\RelWithDebInfo\392e6c5c\x86'
-ninja: no work to do.

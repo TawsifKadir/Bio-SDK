@@ -48,10 +48,10 @@
             android:name=".BiometricSDK"
             android:theme="@style/AppTheme"
             android:exported="true">
-<!--                <intent-filter>-->
-<!--                    <action android:name="android.intent.action.MAIN" />-->
-<!--                    <category android:name="android.intent.category.LAUNCHER" />-->
-<!--                </intent-filter>-->
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
         </activity>
 
         <activity
@@ -76,6 +76,16 @@
             />
         <activity
             android:name="com.kit.fingerprintcapture.FingerprintCaptureActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="stateHidden"
+            >
+        </activity>
+        <activity
+            android:name="com.kit.fingerprintcapture.FingerprintCaptureActivity2"
             android:theme="@style/AppTheme.NoActionBar"
             android:exported="true"
             android:launchMode="singleTop"

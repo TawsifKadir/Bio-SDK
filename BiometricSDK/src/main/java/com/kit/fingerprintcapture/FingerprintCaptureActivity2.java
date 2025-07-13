@@ -11,13 +11,11 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import android.os.Parcelable;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -28,16 +26,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
-import com.kit.fingerprintcapture.adapters.FingerprintExceptionListAdapter;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
+import com.kit.fingerprintcapture.handlers.FingerPrintMatchChecker;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
 import com.kit.fingerprintcapture.manager.DummyDeviceManager;
@@ -46,28 +43,30 @@ import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.Fingerprint;
 import com.kit.fingerprintcapture.model.FingerprintCache;
 import com.kit.fingerprintcapture.model.FingerprintCacheEntry;
+import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.model.FingerprintStatus;
 
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
 import com.kit.fingerprintcapture.template.ISOTemplate;
+import com.kit.fingerprintcapture.utils.BiometricHelper;
 import com.kit.fingerprintcapture.utils.ImageProc;
 import com.kit.fingerprintcapture.utils.TemplateUtils;
-import com.machinezoo.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
-public class FingerprintCaptureActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
+public class FingerprintCaptureActivity2 extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
 
-    String TAG = "FingerprintCaptureActivity";
+    String TAG = "FingerprintCaptureActivity2";
     public static final String KEY_ENUMERATOR_REGISTRATION = "ENUMERATOR_REGISTRATION";
+
+    public static int Width=248;
+    public static int Height=448;
     private ImageView mFingerprintImage;
     private TextView mFingerprintText;
     private TextView mClickFingerprint;
@@ -82,7 +81,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     private Animation mCurrentAnimation;
 
     private ThreadPoolExecutor taskExecutor;
-    private boolean isDummyDevice = false;
+    private boolean isDummyDevice = true;
     private boolean duplicateDetectionEnabled = true;
 
     private boolean mCloseClicked = false;
@@ -95,14 +94,23 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
     boolean isEnumeratorRegistration = false;
 
-    ///
 
-    protected void onCreate(Bundle savedInstanceState) {
+
+
+
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fingerprint_capture_layout);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         isEnumeratorRegistration = getIntent().getBooleanExtra(KEY_ENUMERATOR_REGISTRATION, false);
+
+
+
+
+
 
         mFingerprintImage = (ImageView)findViewById(R.id.fingerprint_image);
         mFingerprintText = (TextView)findViewById(R.id.fingerprint_text);
@@ -154,44 +162,41 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         mDoneBtn.setOnClickListener(v -> {
 
-            ///
-            // Get the template map
-            HashMap<FingerprintID, FingerprintTemplate> fingerprintTemplateHashMap = mfpMatchHandler.getTemplateList();
-
-            // Prepare list of cache entries
-            List<FingerprintCacheEntry> cacheEntries = new ArrayList<>();
-
-            for (Map.Entry<FingerprintID, FingerprintTemplate> entry : fingerprintTemplateHashMap.entrySet()) {
-                FingerprintID id = entry.getKey();
-                FingerprintTemplate template = entry.getValue();
-
-                if (id != null && template != null) {
-                    try {
-                        // Extract raw image from template (SourceAFIS doesn't support extracting raw image back from template)
-                        // ⚠ Instead, you must have stored the raw image at time of template creation
-                        // Assuming you already keep raw image somewhere, for this example we'll log that we'd store it
-                        // Let's say you have a `rawImageMap` or similar in your handler — or refactor to store raw images
-//                        byte[] rawImageData = mfpMatchHandler.getRawImageForId(id); // <-- You need to add this method to your handler
-
-//                        if (rawImageData != null && rawImageData.length > 0) {
-//                            cacheEntries.add(new FingerprintCacheEntry(id, rawImageData));
-//                            Log.d(TAG, "Added to cache: " + id.getName());
-//                        } else {
-//                            Log.w(TAG, "No raw image found for ID: " + id.getName());
-//                        }
-                     cacheEntries.add(new FingerprintCacheEntry(id, template));
 
 
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error preparing cache entry for ID: " + id.getName(), e);
-                    }
-                }
-            }
+//
+//
+//            List<FingerprintData> capturedList = getCapturedFingerprints(); // You should provide this method or source
+//            FingerPrintMatchChecker checker = new FingerPrintMatchChecker(this);
+//
+//            if (capturedList != null && !capturedList.isEmpty()) {
+//                for (FingerprintData data : capturedList) {
+//                    if (data != null) {
+//                     //   boolean matched = checker.matchCheckAgainstEnumerator(data);
+//                        Log.d(TAG, "Fingerprint ID: "
+//                                + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown")
+//                                + " | Matched: " + matched);
+//                    } else {
+//                        Log.d(TAG, "Captured fingerprint is null, skipping...");
+//                    }
+//                }
+//            } else {
+//                Log.d(TAG, "No captured fingerprints found in activity.");
+//            }
 
-            // Push to cache
-            FingerprintCache.getInstance().setFingerList(cacheEntries);
+//
+//            List<FingerprintData> cachedList = FingerprintCache.getInstance().getFingerList();
+//
+//            if (cachedList != null && !cachedList.isEmpty()) {
+//                for (FingerprintData data : cachedList) {
+//                    logFingerprintData(data);
+//                }
+//            } else {
+//                Log.d(TAG, "FingerprintCache is empty or null");
+//            }
 
-            // Log the cache contents
+//
+
             List<FingerprintCacheEntry> cachedList = FingerprintCache.getInstance().getFingerList();
 
             if (cachedList != null && !cachedList.isEmpty()) {
@@ -204,18 +209,14 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             }
 
 
-            ///
 
-            if (!isFingerprintMissing()) {
-                prepareReturnData();
-                finish();
-            } else {
-                showNoFingerprintExceptionDialog();
-            }
+//            if(!isFingerprintMissing()){
+//                prepareReturnData();
+//                finish();
+//            }else{
+//                showNoFingerprintExceptionDialog();
+//            }
         });
-
-
-
         for(Fingerprint fp:fingerprintList){
             fp.getFingerprintUI().getFingerprintBtn().setOnClickListener(mfpCaptureHandler);
         }
@@ -225,7 +226,11 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
 
+
+
+
     }
+
 
 
 
@@ -342,6 +347,10 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             Log.d(TAG, "Exit onDestroy()");
         }
     }
+
+
+
+
 
     public void diableControls(){
         mDoneBtn.setEnabled(false);
@@ -461,23 +470,23 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
 
     }
-        @Override
-        public void onCaptureFailed(Fingerprint fp) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        fp.setStatus(FingerprintStatus.NOT_CAPTURED);
-                        setCaptureFailedMarker(fp);
-                        setFailedCaptureFpView(fp);
-                        fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
-                        mfpCaptureHandler.captureFailed();
-                    }finally{
-                        enableControls();
-                    }
+    @Override
+    public void onCaptureFailed(Fingerprint fp) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    fp.setStatus(FingerprintStatus.NOT_CAPTURED);
+                    setCaptureFailedMarker(fp);
+                    setFailedCaptureFpView(fp);
+                    fp.getFingerprintUI().getFingerprintMarker().clearAnimation();
+                    mfpCaptureHandler.captureFailed();
+                }finally{
+                    enableControls();
                 }
-            });
-        }
+            }
+        });
+    }
 
     @Override
     public void onCaptureEnd(Fingerprint fp) {
@@ -505,6 +514,8 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         imView.startAnimation(mCurrentAnimation);
     }
 
+
+
     @Override
     public void onFingerprintData(byte[] imgData, int width, int height,int score,long result) {
         try {
@@ -514,11 +525,26 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 ISOTemplate nowTmpl = TemplateUtils.createISOTemplate(imgData, width, height);
                 if(duplicateDetectionEnabled) {
                     boolean[] matched = new boolean[1];
+
+                    /// /
+                    if (imgData != null) {
+                        FingerPrintMatchChecker checker = new FingerPrintMatchChecker();
+                        boolean matchResult = checker.matchRawAgainstEnumerator2(imgData, Width,Height);
+                        Log.d(TAG, "Fingerprint ID: "
+                              /*  + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown")*/
+                                + " | Matched: " + matchResult);
+                    } else {
+                        Log.d(TAG, "Captured fingerprint is null, skipping...");
+                    }
+                    /// /
+
+                    Log.d(TAG,"-------------------------------------\n\n\n" );
+
                     ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID(), imgData, width, height, matched);
                     if ((ret == 0) && matched[0]) {
                         mFingerprintText.setText(R.string.duplicate_fingerprint);
                         onCaptureError("Duplicate fingerprint");
-                        runOnUiThread(() -> Toast.makeText(FingerprintCaptureActivity.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show());
+                        runOnUiThread(() -> Toast.makeText(FingerprintCaptureActivity2.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show());
 
                         return;
                     }
@@ -661,23 +687,13 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     }
 
     private void handleOkClick(AlertDialog dialog, EditText otherReasonEditText) {
-        if (mNoFingerprintReason == NoFingerprintReason.Other) {
-            String input = otherReasonEditText.getText().toString().trim();
+        if (mNoFingerprintReason == NoFingerprintReason.Other &&
+                TextUtils.isEmpty(otherReasonEditText.getText().toString().trim())) {
 
-            // Check for empty input
-            if (TextUtils.isEmpty(input)) {
-                otherReasonEditText.setBackgroundResource(R.drawable.border_error);
-                otherReasonEditText.setHint("Please write a reason");
-                otherReasonEditText.setTextColor(Color.RED);
-                return;
-            }
-
-            // Check for invalid characters (anything other than letters and spaces)
-            if (!input.matches("^[a-zA-Z\\s]+$")) {
-                otherReasonEditText.setError("Only letters are allowed");
-                otherReasonEditText.setTextColor(Color.RED);
-                return;
-            }
+            otherReasonEditText.setBackgroundResource(R.drawable.border_error);
+            otherReasonEditText.setHint("Please write a reason");
+            otherReasonEditText.setTextColor(Color.RED);
+            return;
         }
 
         prepareReturnData();

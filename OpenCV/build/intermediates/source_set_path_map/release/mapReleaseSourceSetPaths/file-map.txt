@@ -1,7 +1,0 @@
-org.opencv.OpenCV-pngs-0 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\build\generated\res\pngs\release
-org.opencv.OpenCV-resValues-1 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\build\generated\res\resValues\release
-org.opencv.OpenCV-mergeReleaseResources-2 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\build\intermediates\incremental\release\mergeReleaseResources\merged.dir
-org.opencv.OpenCV-mergeReleaseResources-3 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\build\intermediates\incremental\release\mergeReleaseResources\stripped.dir
-org.opencv.OpenCV-release-4 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\build\intermediates\merged_res\release\mergeReleaseResources
-org.opencv.OpenCV-java-5 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\java\res
-org.opencv.OpenCV-release-6 A:\Kit Projects\BioSdk\biosdklatest\OpenCV\src\release\res

@@ -1,2 +1,2 @@
-ninja: Entering directory `A:\Kit Projects\BioSdk\biosdklatest\OpenCV\.cxx\Debug\2x6j294r\x86'
+ninja: Entering directory `A:\Kit Projects\BioSdk_Morpho\biosdklatest\OpenCV\.cxx\Debug\2x6j294r\x86'
 ninja: no work to do.
