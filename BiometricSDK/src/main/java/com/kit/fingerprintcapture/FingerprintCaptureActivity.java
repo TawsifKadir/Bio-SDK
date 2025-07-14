@@ -46,6 +46,7 @@ import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.Fingerprint;
 import com.kit.fingerprintcapture.model.FingerprintCache;
 import com.kit.fingerprintcapture.model.FingerprintCacheEntry;
+import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.model.FingerprintStatus;
 
@@ -96,7 +97,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     boolean isEnumeratorRegistration = false;
 
     ///
-
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fingerprint_capture_layout);
@@ -156,52 +157,52 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
 
             ///
             // Get the template map
-            HashMap<FingerprintID, FingerprintTemplate> fingerprintTemplateHashMap = mfpMatchHandler.getTemplateList();
+//            HashMap<FingerprintID, FingerprintTemplate> fingerprintTemplateHashMap = mfpMatchHandler.getTemplateList();
 
             // Prepare list of cache entries
-            List<FingerprintCacheEntry> cacheEntries = new ArrayList<>();
+//            List<FingerprintCacheEntry> cacheEntries = new ArrayList<>();
+//
+//            for (Map.Entry<FingerprintID, FingerprintTemplate> entry : fingerprintTemplateHashMap.entrySet()) {
+//                FingerprintID id = entry.getKey();
+//                FingerprintTemplate template = entry.getValue();
+//
+//                if (id != null && template != null) {
+//                    try {
+//                        // Extract raw image from template (SourceAFIS doesn't support extracting raw image back from template)
+//                        // ⚠ Instead, you must have stored the raw image at time of template creation
+//                        // Assuming you already keep raw image somewhere, for this example we'll log that we'd store it
+//                        // Let's say you have a `rawImageMap` or similar in your handler — or refactor to store raw images
+////                        byte[] rawImageData = mfpMatchHandler.getRawImageForId(id); // <-- You need to add this method to your handler
+//
+////                        if (rawImageData != null && rawImageData.length > 0) {
+////                            cacheEntries.add(new FingerprintCacheEntry(id, rawImageData));
+////                            Log.d(TAG, "Added to cache: " + id.getName());
+////                        } else {
+////                            Log.w(TAG, "No raw image found for ID: " + id.getName());
+////                        }
+//                     cacheEntries.add(new FingerprintCacheEntry(id, template));
+//
+//
+//                    } catch (Exception e) {
+//                        Log.e(TAG, "Error preparing cache entry for ID: " + id.getName(), e);
+//                    }
+//                }
+//            }
 
-            for (Map.Entry<FingerprintID, FingerprintTemplate> entry : fingerprintTemplateHashMap.entrySet()) {
-                FingerprintID id = entry.getKey();
-                FingerprintTemplate template = entry.getValue();
+//            // Push to cache
+//            FingerprintCache.getInstance().setFingerList(cacheEntries);
+//
+//            // Log the cache contents
+//            List<FingerprintCacheEntry> cachedList = FingerprintCache.getInstance().getFingerList();
 
-                if (id != null && template != null) {
-                    try {
-                        // Extract raw image from template (SourceAFIS doesn't support extracting raw image back from template)
-                        // ⚠ Instead, you must have stored the raw image at time of template creation
-                        // Assuming you already keep raw image somewhere, for this example we'll log that we'd store it
-                        // Let's say you have a `rawImageMap` or similar in your handler — or refactor to store raw images
-//                        byte[] rawImageData = mfpMatchHandler.getRawImageForId(id); // <-- You need to add this method to your handler
-
-//                        if (rawImageData != null && rawImageData.length > 0) {
-//                            cacheEntries.add(new FingerprintCacheEntry(id, rawImageData));
-//                            Log.d(TAG, "Added to cache: " + id.getName());
-//                        } else {
-//                            Log.w(TAG, "No raw image found for ID: " + id.getName());
-//                        }
-                     cacheEntries.add(new FingerprintCacheEntry(id, template));
-
-
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error preparing cache entry for ID: " + id.getName(), e);
-                    }
-                }
-            }
-
-            // Push to cache
-            FingerprintCache.getInstance().setFingerList(cacheEntries);
-
-            // Log the cache contents
-            List<FingerprintCacheEntry> cachedList = FingerprintCache.getInstance().getFingerList();
-
-            if (cachedList != null && !cachedList.isEmpty()) {
-                for (FingerprintCacheEntry data : cachedList) {
-                    Log.d(TAG, "Cache Entry ID: " + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown"));
-                    Log.d(TAG, "Raw image size: " + (data.getRawTemplate() != null ? data.getRawTemplate(): " "));
-                }
-            } else {
-                Log.d(TAG, "FingerprintCache is empty or null");
-            }
+//            if (cachedList != null && !cachedList.isEmpty()) {
+//                for (FingerprintCacheEntry data : cachedList) {
+//                    Log.d(TAG, "Cache Entry ID: " + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown"));
+//                    Log.d(TAG, "Raw image size: " + (data.getRawTemplate() != null ? data.getRawTemplate(): " "));
+//                }
+//            } else {
+//                Log.d(TAG, "FingerprintCache is empty or null");
+//            }
 
 
             ///
@@ -590,13 +591,14 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
         MaterialAutoCompleteTextView reasonSpinner = dialogView.findViewById(R.id.spinner);
         Button okButton = dialogView.findViewById(R.id.okBtn);
         Button closeButton = dialogView.findViewById(R.id.closeBtn);
-        EditText otherReasonEditText = dialogView.findViewById(R.id.otherReasonText);
+        mOtherReasonTextView = dialogView.findViewById(R.id.otherReasonText);
+        // EditText otherReasonEditText = mOtherReasonTextView; // Optional alias if needed
 
         // Configure EditText
-        configureEditText(otherReasonEditText);
+        configureEditText(mOtherReasonTextView);
 
         // Setup spinner
-        setupSpinner(reasonSpinner, otherReasonEditText);
+        setupSpinner(reasonSpinner, mOtherReasonTextView);
 
         // Create and configure dialog
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -608,7 +610,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
                 .create();
 
         // Set button click listeners
-        okButton.setOnClickListener(v -> handleOkClick(dialog, otherReasonEditText));
+        okButton.setOnClickListener(v -> handleOkClick(dialog, mOtherReasonTextView));
         closeButton.setOnClickListener(v -> handleCloseClick(dialog));
 
         dialog.show();
@@ -701,6 +703,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             mCloseClicked = false;
         }
     }
+/*
 
     public void prepareReturnData() {
         Intent data = new Intent();
@@ -750,6 +753,141 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             t.printStackTrace();
         }
     }
+*/
+
+
+
+    public void prepareReturnData() {
+        createFingerprintCache(); // Save full fingerprint data in cache
+
+        Intent data = new Intent();
+        try {
+            data.putExtra("noFingerprint", mHasFingerprintException);
+
+            if (BuildConfig.isDebug) {
+                Log.d(TAG, "noFIngerprint : " + mHasFingerprintException);
+            }
+
+            if (mHasFingerprintException) {
+                data.putExtra("noFingerprintReasonID", mNoFingerprintReason.getNoFingerprintReasonID());
+
+                if (BuildConfig.isDebug) {
+                    Log.d(TAG, "noFingerprintReasonID : " + mNoFingerprintReason.getNoFingerprintReasonID());
+                }
+
+//                if (mNoFingerprintReason == NoFingerprintReason.Other) {
+//                    if (mOtherReasonTextView != null) {
+//                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText().toString());
+//                        if (BuildConfig.isDebug) {
+//                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText().toString());
+//                        }
+//                    } else {
+//                        data.putExtra("noFingerprintReasonText", "");
+//                    }
+//                } else {
+//                    data.putExtra("noFingerprintReasonText", "");
+//                }
+
+                if (mNoFingerprintReason != null && mNoFingerprintReason.getNoFingerprintReasonID() == NoFingerprintReason.Other.getNoFingerprintReasonID()) {
+                    if (mOtherReasonTextView != null) {
+                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText().toString());
+                        Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText().toString());
+                        Log.d(TAG, "noFingerprintReasonText : " + " not null ");
+                    } else {
+                        Log.d(TAG, "noFingerprintReasonText : " + " null ");
+                        data.putExtra("noFingerprintReasonText", "");
+                        Log.d(TAG, "noFingerprintReasonText : " + " NoFingerprintReason not Other  :   " + mNoFingerprintReason.getNoFingerprintReasonText() + "   " + mNoFingerprintReason);
+                    }
+                }
+
+
+                Log.d(TAG, "noFingerprintReasonText : " + mNoFingerprintReason.getNoFingerprintReasonID()  + "  "+ NoFingerprintReason.Other.getNoFingerprintReasonID());
+
+            }
+
+            // ✅ Only pass a simple status string instead of raw fingerprint data
+            data.putExtra("fingerprintCaptureStatus", "successful");
+
+            // ✅ Clear fingerprint memory
+            clearFingerprintMemory();
+
+            setResult(Activity.RESULT_OK, data);
+        } catch (Throwable t) {
+            setResult(Activity.RESULT_CANCELED, data);
+            t.printStackTrace();
+        }
+    }
+
+
+
+    private void createFingerprintCache() {
+        FingerprintCache fingerprintCache = FingerprintCache.getInstance();
+        List<FingerprintData> fingerDataList = new ArrayList<>();
+
+        for (Fingerprint fp : mfpCaptureHandler.getFingerPrintList()) {
+            FingerprintData data = fp.getFingerprintData();
+
+            if (data != null && data.getFingerprintData() != null) {
+                // Create a new FingerprintData object and copy fields
+                FingerprintData clonedData = new FingerprintData();
+                clonedData.setFingerprintId(data.getFingerprintId());
+                clonedData.setFingerprintData(data.getFingerprintData() != null ? data.getFingerprintData().clone() : null);
+                clonedData.setIsoTemplate(data.getIsoTemplate() != null ? data.getIsoTemplate().clone() : null);
+                clonedData.setQualityScore(data.getQualityScore());
+
+                fingerDataList.add(clonedData);
+
+
+                String fingerprintID = (fp.getFingerprintID() != null) ? fp.getFingerprintID().getName() : "Unknown";
+                int fingerprintDataSize = (data.getFingerprintData() != null) ? data.getFingerprintData().length : 0;
+                long qualityScore = data.getQualityScore();
+                int isoTemplateSize = (data.getIsoTemplate() != null) ? data.getIsoTemplate().length : 0;
+
+                Log.d("FingerprintCache", "----------------------------");
+                Log.d("FingerprintCache", "Fingerprint ID: " + fingerprintID);
+                Log.d("FingerprintCache", "Data size (bytes): " + fingerprintDataSize);
+                Log.d("FingerprintCache", "Quality Score: " + qualityScore);
+                Log.d("FingerprintCache", "ISO Template size (bytes): " + isoTemplateSize);
+                Log.d("FingerprintCache", "----------------------------");
+
+
+            } else {
+                Log.w("FingerprintCache", "Skipped fingerprint with null data for ID: " +
+                        (fp.getFingerprintID() != null ? fp.getFingerprintID().getName() : "Unknown"));
+            }
+        }
+
+        fingerprintCache.setFingerList(fingerDataList);
+    }
+
+
+
+    private void clearFingerprintMemory() {
+        if (mfpCaptureHandler != null && mfpCaptureHandler.getFingerPrintList() != null) {
+            for (Fingerprint fp : mfpCaptureHandler.getFingerPrintList()) {
+                if (fp.getFingerprintData() != null) {
+                    fp.getFingerprintData().setFingerprintData(null);
+                    fp.getFingerprintData().setIsoTemplate(null);
+                }
+            }
+            mfpCaptureHandler.getFingerPrintList().clear();
+        }
+
+        // Optional: if mfpCaptureHandler is no longer needed
+        //   mfpCaptureHandler = null;
+
+        // Nullify UI elements if not needed anymore
+        //  mOtherReasonTextView = null;
+
+        // Suggest garbage collection (optional but may help on low-memory devices)
+        System.gc();
+    }
+
+
+
+
+
+
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

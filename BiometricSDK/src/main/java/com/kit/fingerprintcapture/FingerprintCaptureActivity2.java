@@ -197,17 +197,17 @@ protected void onCreate(Bundle savedInstanceState) {
 
 //
 
-            List<FingerprintCacheEntry> cachedList = FingerprintCache.getInstance().getFingerList();
-
-            if (cachedList != null && !cachedList.isEmpty()) {
-                for (FingerprintCacheEntry data : cachedList) {
-                    Log.d(TAG, "Cache Entry ID: " + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown"));
-                    Log.d(TAG, "Raw image size: " + (data.getRawTemplate() != null ? data.getRawTemplate(): " "));
-                }
-            } else {
-                Log.d(TAG, "FingerprintCache is empty or null");
-            }
-
+//            List<FingerprintCacheEntry> cachedList = FingerprintCache.getInstance().getFingerList();
+//
+//            if (cachedList != null && !cachedList.isEmpty()) {
+//                for (FingerprintCacheEntry data : cachedList) {
+//                    Log.d(TAG, "Cache Entry ID: " + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown"));
+//                    Log.d(TAG, "Raw image size: " + (data.getRawTemplate() != null ? data.getRawTemplate(): " "));
+//                }
+//            } else {
+//                Log.d(TAG, "FingerprintCache is empty or null");
+//            }
+//
 
 
 //            if(!isFingerprintMissing()){

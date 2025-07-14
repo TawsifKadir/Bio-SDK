@@ -18,6 +18,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.kit.fingerprintcapture.FingerprintCaptureActivity;
 import com.kit.fingerprintcapture.FingerprintCaptureActivity2;
+
+import com.kit.fingerprintcapture.model.FingerprintCache;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.photocapture.presentation.activity.PhotoCaptureActivity;
@@ -25,6 +27,8 @@ import com.kit.photocapture.util.Utility;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+
 
 
 
@@ -148,7 +152,8 @@ public class BiometricSDK extends AppCompatActivity {
             }else{
                 Log.d(TAG, "Error occurred ");
             }
-        }else if(requestCode==3){
+        }
+        else if(requestCode==3){
             Log.d(TAG, "Returned from fingerprint capture");
             if (resultCode == RESULT_OK && data != null) {
                 if (data.hasExtra("noFingerprint")) {
@@ -170,8 +175,88 @@ public class BiometricSDK extends AppCompatActivity {
                 Log.d(TAG, "Fingerprint capture was canceled or no data returned.");
             }
         }
+        else if( requestCode == 4){
+            Log.d(TAG, "Returned from fingerprint capture");
+
+
+
+            if ( resultCode == RESULT_OK ) {
+
+                Log.d(TAG, "Request Code is ok ");
+                if( data != null)
+                {
+                    Log.d(TAG, "Intent Data is not null");
+
+                    // 1. Log Intent extras
+                    logIntentExtras(data);
+
+                    // 2. Get cached fingerprint data
+                    List<FingerprintData> cachedFingerprints = FingerprintCache.getInstance().getFingerList();
+
+                    // 3. Log all fingerprint fields using helper
+                    if (cachedFingerprints != null && !cachedFingerprints.isEmpty()) {
+                        logCachedFingerprints(cachedFingerprints);
+                    } else {
+                        Log.d(TAG, "No fingerprint data found in cache.");
+                    }
+
+                }else {
+
+                    Log.d(TAG, "Intent Data is null");
+                }
+                // 4. Clear the cache after logging
+                FingerprintCache.getInstance().clear();
+                Log.d(TAG, "Fingerprint cache cleared.");
+            }
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+//
+//
+//            }
+//            else{
+//                Log.d(TAG, "SDK not suported");
+//            }
+
+        }
     }
 
+
+    private void logIntentExtras(Intent data) {
+        Bundle extras = data.getExtras();
+        if (extras != null) {
+            Log.d(TAG, "----- Received Intent Extras -----");
+            for (String key : extras.keySet()) {
+                Object value = extras.get(key);
+                Log.d(TAG, key + " = " + (value != null ? value.toString() : "null"));
+            }
+            Log.d(TAG, "----------------------------------");
+        } else {
+            Log.d(TAG, "No extras in received intent.");
+        }
+    }
+
+    private void logCachedFingerprints(List<FingerprintData> fingerprintList) {
+        Log.d(TAG, "----- Cached Fingerprint Data -----");
+
+        for (FingerprintData dataItem : fingerprintList) {
+            String idName = (dataItem.getFingerprintId() != null)
+                    ? dataItem.getFingerprintId().getName()
+                    : "Unknown";
+
+            int dataSize = (dataItem.getFingerprintData() != null)
+                    ? dataItem.getFingerprintData().length
+                    : 0;
+
+            int templateSize = (dataItem.getIsoTemplate() != null)
+                    ? dataItem.getIsoTemplate().length
+                    : 0;
+
+            Log.d(TAG, "ID: " + idName);
+            Log.d(TAG, "Fingerprint Data Size: " + dataSize + " bytes");
+            Log.d(TAG, "ISO Template Size: " + templateSize + " bytes");
+            Log.d(TAG, "Quality Score: " + dataItem.getQualityScore());
+            Log.d(TAG, "-----------------------------------");
+        }
+    }
     private void logFingerprintData(String label, FingerprintData data) {
         Log.d(TAG, "------------ " + label + " ------------");
 

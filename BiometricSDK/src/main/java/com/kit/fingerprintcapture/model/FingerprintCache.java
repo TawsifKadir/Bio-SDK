@@ -4,7 +4,7 @@ import java.util.List;
 
 public class FingerprintCache {
     private static FingerprintCache instance;
-    private List<FingerprintCacheEntry> fingerList;
+    private List<FingerprintData> fingerList;
 
     private FingerprintCache() {}
 
@@ -15,11 +15,11 @@ public class FingerprintCache {
         return instance;
     }
 
-    public void setFingerList(List<FingerprintCacheEntry> fingerList) {
+    public void setFingerList(List<FingerprintData> fingerList) {
         this.fingerList = fingerList;
     }
 
-    public List<FingerprintCacheEntry> getFingerList() {
+    public List<FingerprintData> getFingerList() {
         return fingerList;
     }
 
