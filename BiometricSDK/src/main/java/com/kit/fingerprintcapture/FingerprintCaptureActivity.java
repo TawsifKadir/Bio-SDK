@@ -84,7 +84,7 @@ public class FingerprintCaptureActivity extends BaseActivityArr implements Adapt
     private Animation mCurrentAnimation;
 
     private ThreadPoolExecutor taskExecutor;
-    private boolean isDummyDevice = true;
+    private boolean isDummyDevice = false;
     private boolean duplicateDetectionEnabled = true;
 
     private boolean mCloseClicked = false;
@@ -604,7 +604,7 @@ public class FingerprintCaptureActivity extends BaseActivityArr implements Adapt
         // Create and configure dialog
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.noFingerprintExceptionDlgTitle)
-                .setIcon(R.drawable.no_finger_dialog_icon)
+                .setIcon(R.drawable.logo_splash)
                 .setView(dialogView)
                 .setCancelable(false)
                 .setOnDismissListener(this::handleDialogDismiss)
