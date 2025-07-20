@@ -42,6 +42,7 @@ import android.widget.Toast;
 
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
+import com.kit.fingerprintcapture.utils.DebouncedClickHandler;
 import com.kit.photocapture.util.CascadeLoader;
 import com.kit.photocapture.result.ComplianceResult;
 import com.kit.photocapture.view.PhotoCaptureView;
@@ -50,7 +51,7 @@ import com.kit.photocapture.util.Utility;
 import com.yalantis.ucrop.UCrop;
 import com.yalantis.ucrop.UCropActivity;
 
-public class PhotoCaptureActivity extends CameraActivity implements CvCameraViewListener2 , PictureDataCallback {
+public class PhotoCaptureActivity extends CameraActivity implements CvCameraViewListener2 , PictureDataCallback, DebouncedClickHandler {
 
     private static final String    TAG  = "PhotoCaptureActivity";
 
@@ -86,6 +87,8 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     private Uri mResultUri = null;
     private Bitmap mResultBmp = null;
+
+    private boolean isCapturingPhoto = false;
 
     private int nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_BACK;
 
@@ -157,8 +160,14 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
         if(mBack!=null) {
             mBack.setOnClickListener(new View.OnClickListener() {
+
                 @Override
                 public void onClick(View v) {
+                    if (!isSingleClick()) {
+                        Log.d(TAG, "Debounced double click");
+                        return;
+                    }
+
                     prepareReturnData();
                     PhotoCaptureActivity.this.finish();
                 }
@@ -168,17 +177,36 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         mCapture = findViewById(R.id.captureBtn);
 
         if(mCapture!=null) {
-            mCapture.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+            mCapture.setOnClickListener(v -> {
+                if (isCapturingPhoto) {
+                    Log.d(TAG, "Capture already in progress. Ignoring.");
+                    return;
+                }
+
+                isCapturingPhoto = true;
+                mCapture.setEnabled(false); // 🔒 Disable button to prevent rapid clicks
+
+                try {
+                    Log.d(TAG, "Calling takePicture...");
                     ((PhotoCaptureView) mOpenCvCameraView).takePicture();
+                } catch (RuntimeException e) {
+                    Log.e(TAG, "Camera.takePicture() failed: " + e.getMessage());
+                    isCapturingPhoto = false;
+                    mCapture.setEnabled(true); // 🔓 Re-enable if capture fails
                 }
             });
+
         }
 
         mSwitch = findViewById(R.id.switchBtn);
         if(mSwitch!=null) {
             mSwitch.setOnClickListener(v -> {
+
+
+                if (!isSingleClick()) {
+                    Log.d(TAG, "Debounced double click");
+                    return;
+                }
                 boolean isError = false;
                 Throwable errorObject = null;
                 if(mOpenCvCameraView!=null){
@@ -412,6 +440,9 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
             CaptureDataProcessor captureDataProcessor = new CaptureDataProcessor();
             captureDataProcessor.execute(data);
         }
+
+        isCapturingPhoto = false;
+        runOnUiThread(() -> mCapture.setEnabled(true));  // 🔓 Ensure button re-enabled
     }
 
 

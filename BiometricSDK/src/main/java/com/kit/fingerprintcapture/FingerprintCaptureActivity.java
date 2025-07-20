@@ -52,6 +52,7 @@ import com.kit.fingerprintcapture.model.FingerprintStatus;
 
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
 import com.kit.fingerprintcapture.template.ISOTemplate;
+import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.ImageProc;
 import com.kit.fingerprintcapture.utils.TemplateUtils;
 import com.machinezoo.sourceafis.FingerprintTemplate;
@@ -65,7 +66,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
-public class FingerprintCaptureActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
+public class FingerprintCaptureActivity extends BaseActivityArr implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
 
     String TAG = "FingerprintCaptureActivity";
     public static final String KEY_ENUMERATOR_REGISTRATION = "ENUMERATOR_REGISTRATION";
@@ -83,7 +84,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
     private Animation mCurrentAnimation;
 
     private ThreadPoolExecutor taskExecutor;
-    private boolean isDummyDevice = false;
+    private boolean isDummyDevice = true;
     private boolean duplicateDetectionEnabled = true;
 
     private boolean mCloseClicked = false;
@@ -872,7 +873,7 @@ public class FingerprintCaptureActivity extends AppCompatActivity implements Ada
             }
             mfpCaptureHandler.getFingerPrintList().clear();
         }
-
+        Log.d("FingerprintCache", "Fingerprint cache cleared------------");
         // Optional: if mfpCaptureHandler is no longer needed
         //   mfpCaptureHandler = null;
 

@@ -22,6 +22,7 @@ import com.kit.fingerprintcapture.FingerprintCaptureActivity2;
 import com.kit.fingerprintcapture.model.FingerprintCache;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
+import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.photocapture.presentation.activity.PhotoCaptureActivity;
 import com.kit.photocapture.util.Utility;
 
@@ -32,7 +33,7 @@ import java.util.List;
 
 
 
-public class BiometricSDK extends AppCompatActivity {
+public class BiometricSDK extends BaseActivityArr {
     private Button mCloseBtn;
     private Button mPhotoCaptureBtn;
     private Button mFpCaptureBtn;

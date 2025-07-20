@@ -1,0 +1,26 @@
+{
+  "installationFolder": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "gradlePath": ":OpenCV",
+  "packageInfo": {
+    "packageName": "OpenCV",
+    "packageSchemaVersion": 2,
+    "packageDependencies": [],
+    "modules": [
+      {
+        "moduleName": "opencv_jni_shared",
+        "moduleHeaders": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\native\\jni\\include",
+        "moduleExportLibraries": [],
+        "abis": [
+          {
+            "abiName": "arm64-v8a",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\android_gradle_build.json"
+          }
+        ]
+      }
+    ]
+  }
+}

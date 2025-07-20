@@ -49,6 +49,7 @@ import com.kit.fingerprintcapture.model.FingerprintStatus;
 
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
 import com.kit.fingerprintcapture.template.ISOTemplate;
+import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.BiometricHelper;
 import com.kit.fingerprintcapture.utils.ImageProc;
 import com.kit.fingerprintcapture.utils.TemplateUtils;
@@ -60,7 +61,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
-public class FingerprintCaptureActivity2 extends AppCompatActivity implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
+public class FingerprintCaptureActivity2 extends BaseActivityArr implements AdapterView.OnItemSelectedListener, DeviceDataCallback, FingerprintCaptureCallback {
 
     String TAG = "FingerprintCaptureActivity2";
     public static final String KEY_ENUMERATOR_REGISTRATION = "ENUMERATOR_REGISTRATION";
@@ -210,12 +211,12 @@ protected void onCreate(Bundle savedInstanceState) {
 //
 
 
-//            if(!isFingerprintMissing()){
-//                prepareReturnData();
-//                finish();
-//            }else{
-//                showNoFingerprintExceptionDialog();
-//            }
+            if(!isFingerprintMissing()){
+                prepareReturnData();
+                finish();
+            }else{
+                showNoFingerprintExceptionDialog();
+            }
         });
         for(Fingerprint fp:fingerprintList){
             fp.getFingerprintUI().getFingerprintBtn().setOnClickListener(mfpCaptureHandler);
@@ -616,13 +617,14 @@ protected void onCreate(Bundle savedInstanceState) {
         MaterialAutoCompleteTextView reasonSpinner = dialogView.findViewById(R.id.spinner);
         Button okButton = dialogView.findViewById(R.id.okBtn);
         Button closeButton = dialogView.findViewById(R.id.closeBtn);
-        EditText otherReasonEditText = dialogView.findViewById(R.id.otherReasonText);
+        mOtherReasonTextView = dialogView.findViewById(R.id.otherReasonText);
+        // EditText otherReasonEditText = mOtherReasonTextView; // Optional alias if needed
 
         // Configure EditText
-        configureEditText(otherReasonEditText);
+        configureEditText(mOtherReasonTextView);
 
         // Setup spinner
-        setupSpinner(reasonSpinner, otherReasonEditText);
+        setupSpinner(reasonSpinner, mOtherReasonTextView);
 
         // Create and configure dialog
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -634,11 +636,12 @@ protected void onCreate(Bundle savedInstanceState) {
                 .create();
 
         // Set button click listeners
-        okButton.setOnClickListener(v -> handleOkClick(dialog, otherReasonEditText));
+        okButton.setOnClickListener(v -> handleOkClick(dialog, mOtherReasonTextView));
         closeButton.setOnClickListener(v -> handleCloseClick(dialog));
 
         dialog.show();
     }
+
 
     private void configureEditText(EditText editText) {
         editText.setTextColor(Color.BLACK);
@@ -718,54 +721,133 @@ protected void onCreate(Bundle savedInstanceState) {
         }
     }
 
+
     public void prepareReturnData() {
+        createFingerprintCache(); // Save full fingerprint data in cache
+
         Intent data = new Intent();
-        try{
+        try {
+            data.putExtra("noFingerprint", mHasFingerprintException);
 
-            data.putExtra("noFingerprint",mHasFingerprintException);
-
-            if(BuildConfig.isDebug) {
+            if (BuildConfig.isDebug) {
                 Log.d(TAG, "noFIngerprint : " + mHasFingerprintException);
             }
 
-            if(mHasFingerprintException){
-                data.putExtra("noFingerprintReasonID",mNoFingerprintReason.getNoFingerprintReasonID());
+            if (mHasFingerprintException) {
+                data.putExtra("noFingerprintReasonID", mNoFingerprintReason.getNoFingerprintReasonID());
 
-                if(BuildConfig.isDebug) {
+                if (BuildConfig.isDebug) {
                     Log.d(TAG, "noFingerprintReasonID : " + mNoFingerprintReason.getNoFingerprintReasonID());
                 }
 
-                if(mNoFingerprintReason==NoFingerprintReason.Other){
-                    if(mOtherReasonTextView!=null) {
-                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText());
-                        if (BuildConfig.isDebug) {
-                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText());
-                        }
-                    }
-                    else {
+//                if (mNoFingerprintReason == NoFingerprintReason.Other) {
+//                    if (mOtherReasonTextView != null) {
+//                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText().toString());
+//                        if (BuildConfig.isDebug) {
+//                            Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText().toString());
+//                        }
+//                    } else {
+//                        data.putExtra("noFingerprintReasonText", "");
+//                    }
+//                } else {
+//                    data.putExtra("noFingerprintReasonText", "");
+//                }
+
+                if (mNoFingerprintReason != null && mNoFingerprintReason.getNoFingerprintReasonID() == NoFingerprintReason.Other.getNoFingerprintReasonID()) {
+                    if (mOtherReasonTextView != null) {
+                        data.putExtra("noFingerprintReasonText", mOtherReasonTextView.getText().toString());
+                        Log.d(TAG, "noFingerprintReasonText : " + mOtherReasonTextView.getText().toString());
+                        Log.d(TAG, "noFingerprintReasonText : " + " not null ");
+                    } else {
+                        Log.d(TAG, "noFingerprintReasonText : " + " null ");
                         data.putExtra("noFingerprintReasonText", "");
+                        Log.d(TAG, "noFingerprintReasonText : " + " NoFingerprintReason not Other  :   " + mNoFingerprintReason.getNoFingerprintReasonText() + "   " + mNoFingerprintReason);
                     }
-                }else{
-                    data.putExtra("noFingerprintReasonText","");
                 }
+
+
+                Log.d(TAG, "noFingerprintReasonText : " + mNoFingerprintReason.getNoFingerprintReasonID()  + "  "+ NoFingerprintReason.Other.getNoFingerprintReasonID());
+
             }
 
-            for (Fingerprint fp : mfpCaptureHandler.getFingerPrintList()) {
-                if (fp.getFingerprintData().getFingerprintData() != null) {
+            // ✅ Only pass a simple status string instead of raw fingerprint data
+            data.putExtra("fingerprintCaptureStatus", "successful");
 
-                    // ✅ Send FingerprintData with attached ISOTemplate
-                    data.putExtra(fp.getFingerprintID().getName(),  fp.getFingerprintData());
-                }
-            }
-
-
+            // ✅ Clear fingerprint memory
+            clearFingerprintMemory();
 
             setResult(Activity.RESULT_OK, data);
-        }catch(Throwable t){
-            setResult(Activity.RESULT_CANCELED,data);
+        } catch (Throwable t) {
+            setResult(Activity.RESULT_CANCELED, data);
             t.printStackTrace();
         }
     }
+
+
+
+    private void createFingerprintCache() {
+        FingerprintCache fingerprintCache = FingerprintCache.getInstance();
+        List<FingerprintData> fingerDataList = new ArrayList<>();
+
+        for (Fingerprint fp : mfpCaptureHandler.getFingerPrintList()) {
+            FingerprintData data = fp.getFingerprintData();
+
+            if (data != null && data.getFingerprintData() != null) {
+                // Create a new FingerprintData object and copy fields
+                FingerprintData clonedData = new FingerprintData();
+                clonedData.setFingerprintId(data.getFingerprintId());
+                clonedData.setFingerprintData(data.getFingerprintData() != null ? data.getFingerprintData().clone() : null);
+                clonedData.setIsoTemplate(data.getIsoTemplate() != null ? data.getIsoTemplate().clone() : null);
+                clonedData.setQualityScore(data.getQualityScore());
+
+                fingerDataList.add(clonedData);
+
+
+                String fingerprintID = (fp.getFingerprintID() != null) ? fp.getFingerprintID().getName() : "Unknown";
+                int fingerprintDataSize = (data.getFingerprintData() != null) ? data.getFingerprintData().length : 0;
+                long qualityScore = data.getQualityScore();
+                int isoTemplateSize = (data.getIsoTemplate() != null) ? data.getIsoTemplate().length : 0;
+
+                Log.d("FingerprintCache", "----------------------------");
+                Log.d("FingerprintCache", "Fingerprint ID: " + fingerprintID);
+                Log.d("FingerprintCache", "Data size (bytes): " + fingerprintDataSize);
+                Log.d("FingerprintCache", "Quality Score: " + qualityScore);
+                Log.d("FingerprintCache", "ISO Template size (bytes): " + isoTemplateSize);
+                Log.d("FingerprintCache", "----------------------------");
+
+
+            } else {
+                Log.w("FingerprintCache", "Skipped fingerprint with null data for ID: " +
+                        (fp.getFingerprintID() != null ? fp.getFingerprintID().getName() : "Unknown"));
+            }
+        }
+
+        fingerprintCache.setFingerList(fingerDataList);
+    }
+
+
+
+    private void clearFingerprintMemory() {
+        if (mfpCaptureHandler != null && mfpCaptureHandler.getFingerPrintList() != null) {
+            for (Fingerprint fp : mfpCaptureHandler.getFingerPrintList()) {
+                if (fp.getFingerprintData() != null) {
+                    fp.getFingerprintData().setFingerprintData(null);
+                    fp.getFingerprintData().setIsoTemplate(null);
+                }
+            }
+            mfpCaptureHandler.getFingerPrintList().clear();
+        }
+        Log.d("FingerprintCache", "Fingerprint cache cleared------------");
+        // Optional: if mfpCaptureHandler is no longer needed
+        //   mfpCaptureHandler = null;
+
+        // Nullify UI elements if not needed anymore
+        //  mOtherReasonTextView = null;
+
+        // Suggest garbage collection (optional but may help on low-memory devices)
+        System.gc();
+    }
+
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
