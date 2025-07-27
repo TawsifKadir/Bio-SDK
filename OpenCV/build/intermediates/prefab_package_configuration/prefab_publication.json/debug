@@ -12,12 +12,36 @@
         "moduleExportLibraries": [],
         "abis": [
           {
+            "abiName": "armeabi-v7a",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\armeabi-v7a\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\armeabi-v7a\\android_gradle_build.json"
+          },
+          {
             "abiName": "arm64-v8a",
             "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
             "abiLibrary": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\libopencv_jni_shared.a",
             "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\android_gradle_build.json"
+          },
+          {
+            "abiName": "x86",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\x86\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\x86\\android_gradle_build.json"
+          },
+          {
+            "abiName": "x86_64",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\x86_64\\libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\.cxx\\Debug\\2x6j294r\\x86_64\\android_gradle_build.json"
           }
         ]
       }

@@ -53,6 +53,9 @@ import com.yalantis.ucrop.UCropActivity;
 
 public class PhotoCaptureActivity extends CameraActivity implements CvCameraViewListener2 , PictureDataCallback, DebouncedClickHandler {
 
+
+    private boolean isCapturingPhoto = false;
+
     private static final String    TAG  = "PhotoCaptureActivity";
 
     private static final int MAX_IMAGE_WIDTH = 120;
@@ -87,8 +90,6 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     private Uri mResultUri = null;
     private Bitmap mResultBmp = null;
-
-    private boolean isCapturingPhoto = false;
 
     private int nowCameraIndex = CameraBridgeViewBase.CAMERA_ID_BACK;
 
@@ -133,7 +134,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         if (!OpenCVLoader.initDebug()) {
             if(BuildConfig.isDebug)
                 Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-           //// OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+            //// OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
         }else {
             if(BuildConfig.isDebug)
                 Log.d(TAG, "OpenCV library found inside package. Using it!");
@@ -161,6 +162,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         if(mBack!=null) {
             mBack.setOnClickListener(new View.OnClickListener() {
 
+
                 @Override
                 public void onClick(View v) {
                     if (!isSingleClick()) {
@@ -178,22 +180,32 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
         if(mCapture!=null) {
             mCapture.setOnClickListener(v -> {
+                if (!isSingleClick()) {
+                    Log.d(TAG, "Debounced double click");
+                    return;
+                }
+
                 if (isCapturingPhoto) {
                     Log.d(TAG, "Capture already in progress. Ignoring.");
                     return;
                 }
 
-                isCapturingPhoto = true;
-                mCapture.setEnabled(false); // 🔒 Disable button to prevent rapid clicks
+                // Check if camera is available
+
 
                 try {
                     Log.d(TAG, "Calling takePicture...");
+                    isCapturingPhoto = true;
+                    mCapture.setEnabled(false); // 🔒 disable the button
+
                     ((PhotoCaptureView) mOpenCvCameraView).takePicture();
                 } catch (RuntimeException e) {
                     Log.e(TAG, "Camera.takePicture() failed: " + e.getMessage());
                     isCapturingPhoto = false;
-                    mCapture.setEnabled(true); // 🔓 Re-enable if capture fails
+                    mCapture.setEnabled(true); // 🔓 re-enable in case of failure
+                    //    Toast.makeText(this, "Capture failed. Try again.", Toast.LENGTH_SHORT).show();
                 }
+
             });
 
         }
@@ -202,11 +214,12 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         if(mSwitch!=null) {
             mSwitch.setOnClickListener(v -> {
 
-
                 if (!isSingleClick()) {
                     Log.d(TAG, "Debounced double click");
                     return;
                 }
+
+                Log.d(TAG, "Switch button clicked");
                 boolean isError = false;
                 Throwable errorObject = null;
                 if(mOpenCvCameraView!=null){
@@ -225,6 +238,11 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     }finally {
 
                         mOpenCvCameraView.enableView();
+// After mOpenCvCameraView.enableView();
+                        isCapturingPhoto = false;
+                        if (mCapture != null) {
+                            mCapture.setEnabled(true);
+                        }
 
                         if(isError){
                             if(BuildConfig.isDebug){
@@ -248,6 +266,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     public void onPause()
     {
         super.onPause();
+        isCapturingPhoto = false;
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
         mComplianceResult = ComplianceResult.NOT_INITIALIZED;
@@ -257,6 +276,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
     public void onResume()
     {
         super.onResume();
+        isCapturingPhoto = false;
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.enableView();
 
@@ -278,6 +298,11 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         mBgr = new Mat();
         mBgrScaled = new Mat();
         mFaces = new Mat();
+
+
+        // Reset capture state just in case
+        isCapturingPhoto = false;
+        if (mCapture != null) mCapture.setEnabled(true);
     }
 
     public void onCameraViewStopped() {
@@ -298,7 +323,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
             if(BuildConfig.isDebug)
                 Log.d(TAG, "Detected face (" + faceData[0] + ", " + faceData[1] + ", " +
-                    faceData[2] + ", " + faceData[3] + ")");
+                        faceData[2] + ", " + faceData[3] + ")");
 
             // Draw bounding box
             Imgproc.rectangle(rgba, new Rect(Math.round(mScale*faceData[0]), Math.round(mScale*faceData[1]),
@@ -358,7 +383,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 errorObject = t;
             }finally {
                 if(isError){
-                    Toast.makeText(PhotoCaptureActivity.this, "Error occured while checking compliance.", Toast.LENGTH_LONG).show();
+                    //  Toast.makeText(PhotoCaptureActivity.this, "Error occured while checking compliance.", Toast.LENGTH_LONG).show();
                     errorObject.printStackTrace();
                 }
                 nowMBgr.release();
@@ -432,6 +457,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
     @Override
     public void onPictureData(byte[] data) {
+
         if(BuildConfig.isDebug)
             Log.d(TAG,"Picture Data Available");
         if(data!=null) {
@@ -442,7 +468,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
         }
 
         isCapturingPhoto = false;
-        runOnUiThread(() -> mCapture.setEnabled(true));  // 🔓 Ensure button re-enabled
+        runOnUiThread(() -> mCapture.setEnabled(true));
     }
 
 
@@ -518,13 +544,16 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        isCapturingPhoto = false;
                         Toast.makeText(PhotoCaptureActivity.this, "Error occured " + cropError.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
 
                 cropError.printStackTrace();
             }
-            ((PhotoCaptureView)mOpenCvCameraView).startPreview();
+            runOnUiThread(() -> {
+                ((PhotoCaptureView)mOpenCvCameraView).startPreview();
+            });
         }
     }
 
@@ -547,6 +576,8 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
 
 
     public void prepareReturnData(){
+        isCapturingPhoto = false;
+
         Intent data = new Intent();
         try{
             if(mResultUri!=null) {
@@ -603,6 +634,7 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                         @Override
                         public void run() {
                             Toast.makeText(PhotoCaptureActivity.this, mComplianceResult.getComplianceTxt(), Toast.LENGTH_LONG).show();
+                            mCapture.setEnabled(true);
                         }
                     });
 
@@ -621,12 +653,24 @@ public class PhotoCaptureActivity extends CameraActivity implements CvCameraView
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(PhotoCaptureActivity.this, "Error occured while capturing photo.", Toast.LENGTH_LONG).show();
+                            mCapture.setEnabled(true); // 🔓 Re-enable
+                            //   Toast.makeText(PhotoCaptureActivity.this, "Error occured while capturing photo.", Toast.LENGTH_LONG).show();
                         }
                     });
 
                     errorObject.printStackTrace();
-                    ((PhotoCaptureView)mOpenCvCameraView).startPreview();
+                    runOnUiThread(() -> {
+                        try {
+                            if (mOpenCvCameraView != null && mOpenCvCameraView.isEnabled()) {
+                                ((PhotoCaptureView) mOpenCvCameraView).startPreview();
+                            } else {
+                                Log.w(TAG, "startPreview skipped: camera view is null or disabled");
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to start preview safely: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    });
                 }
                 nowImage.release();
                 flippedImage.release();
