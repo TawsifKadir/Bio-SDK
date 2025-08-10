@@ -45,7 +45,6 @@ import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.Fingerprint;
 import com.kit.fingerprintcapture.model.FingerprintCache;
-import com.kit.fingerprintcapture.model.FingerprintCacheEntry;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.model.FingerprintStatus;
@@ -515,6 +514,7 @@ public class FingerprintCaptureActivity extends BaseActivityArr implements Adapt
             if (imgData != null && width > 0 && height > 0) {
                 ISOTemplate nowTmpl = TemplateUtils.createISOTemplate(imgData, width, height);
                 if(duplicateDetectionEnabled) {
+                    Log.d(TAG, "onFingerprintData() duplicateDetectionEnabled ");
                     boolean[] matched = new boolean[1];
                     ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID(), imgData, width, height, matched);
                     if ((ret == 0) && matched[0]) {

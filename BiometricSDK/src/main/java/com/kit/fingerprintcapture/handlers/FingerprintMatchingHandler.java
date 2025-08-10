@@ -1,35 +1,34 @@
 package com.kit.fingerprintcapture.handlers;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.usb.UsbManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.kit.BuildConfig;
+import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
-import com.machinezoo.sourceafis.FingerprintImage;
+import com.kit.fingerprintcapture.template.ISOTemplate;
+import com.kit.fingerprintcapture.template.MatchResult;
 import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-import SecuGen.FDxSDKPro.JSGFPLib;
-import SecuGen.FDxSDKPro.SGFDxErrorCode;
-import SecuGen.FDxSDKPro.SGFDxSecurityLevel;
-import SecuGen.FDxSDKPro.SGFDxTemplateFormat;
-import SecuGen.FDxSDKPro.SGFingerInfo;
-import SecuGen.FDxSDKPro.SGImpressionType;
-
 public class FingerprintMatchingHandler {
+    private static final Logger log = LoggerFactory.getLogger(FingerprintMatchingHandler.class);
     String TAG = "FingerprintMatchingHandler";
     private Activity mActivity;
     private boolean isInitialized;
     private HashMap<FingerprintID,FingerprintTemplate> templateList;
-    private FingerprintMatcher mFPMatcher = null;
+    private FingerprintMatcher mFPMatcher;
 
     public HashMap<FingerprintID, FingerprintTemplate> getTemplateList() {
         return templateList;
@@ -44,87 +43,164 @@ public class FingerprintMatchingHandler {
         this.isInitialized = false;
         this.templateList = new HashMap<>();
         this.mFPMatcher = new FingerprintMatcher();
-
     }
 
-    public long verifyFingerPrint(FingerprintID nowID,byte[] nowImage, int nowWidth, int nowHeight,boolean[] matched){
+    public long verifyFingerPrint(FingerprintID nowID, byte[] nowImage, int nowWidth, int nowHeight, boolean[] matched) {
 
         long result = -1;
         boolean isError = false;
         Throwable errorObject = null;
         FingerprintTemplate nowFPTemplate = null;
-        FingerprintTemplate toMatch = null;
-        if(BuildConfig.isDebug) {
-            Log.d(TAG, "Entered verifiyFingerprint");
-        }
-        if(matched==null) return result;
+
+        if (matched == null) return result;
 
         matched[0] = false;
 
-
         try {
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "Preparing template");
-            }
+            Log.d(TAG, "Preparing template");
+
+            // Create the fingerprint template from the given image data
             nowFPTemplate = new FingerprintTemplate();
-            toMatch = nowFPTemplate.dpi(500).create(nowImage,nowWidth,nowHeight);
+            nowFPTemplate.dpi(500).create(nowImage, nowWidth, nowHeight);
 
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "Template prepared");
-            }
+            Log.d(TAG, "Height: "+ nowHeight + " Weifth: " + nowWidth);
 
-            if(mFPMatcher!=null){
+            // Initialize the fingerprint matcher if it is not already initialized
+            if (mFPMatcher == null) {
                 mFPMatcher = new FingerprintMatcher();
             }
 
-            if(!templateList.isEmpty()){
+            // Iterate through the entire template list and match each template
+            boolean matchFound = false;  // Flag to track if a match is found
+            double highestMatch = 0; // Variable to store the highest match score
+            FingerprintID matchedID = null;  // Store the ID of the matched template
 
-                Iterator nowIterator = templateList.entrySet().iterator();
+            if (!templateList.isEmpty()) {
+                Iterator<Map.Entry<FingerprintID, FingerprintTemplate>> nowIterator = templateList.entrySet().iterator();
                 while (nowIterator.hasNext()) {
-                    Map.Entry mapElement = (Map.Entry) nowIterator.next();
-                    if ((mapElement.getKey()) == nowID) continue;
-                    FingerprintTemplate existingTemplate = (FingerprintTemplate) mapElement.getValue();
+                    Map.Entry<FingerprintID, FingerprintTemplate> mapElement = nowIterator.next();
+
+                    // Skip the current fingerprint if its ID matches the nowID (to avoid comparing the same template)
+                    if (mapElement.getKey() == nowID) {
+                        continue;
+                    }
+
+                    // Get the existing template and index it
+                    FingerprintTemplate existingTemplate = mapElement.getValue();
                     mFPMatcher.index(existingTemplate);
+
+                    // Perform the matching
+                    double matchScore = mFPMatcher.match(nowFPTemplate);
+                    Log.d(TAG, "Match score with ID " + mapElement.getKey() + ": " + matchScore);
+
+                    // Check if the match score exceeds the threshold (20 in this case)
+                    if (matchScore > highestMatch) {
+                        highestMatch = matchScore;
+                        matchedID = mapElement.getKey();
+                    }
+
+                    // Set the flag if a match is found
+                    if (highestMatch > 20) {
+                        matchFound = true;
+                        break; // Exit loop early if a valid match is found
+                    }
                 }
+            }
 
-            }
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "Performing match");
-            }
-            double nowMatch = mFPMatcher.match(nowFPTemplate);
-            if(BuildConfig.isDebug) {
-                Log.d(TAG, "Match done. Result : " + nowMatch);
-            }
-            matched[0] = (nowMatch>40)?true:false;
+            // If a match is found, update the matched array
+            matched[0] = matchFound;
 
-            if(!matched[0]){
-                templateList.put(nowID,nowFPTemplate);
-            }else{
-                templateList.put(nowID,nowFPTemplate);
+            // Log the highest match score
+            Log.d(TAG, "Highest match score: " + highestMatch);
+
+            // If no match is found, add the new template to the template list
+            if (!matchFound) {
+                templateList.put(nowID, nowFPTemplate);
             }
+
+            // Log the size of the template list
+            Log.d(TAG, "Template list size is " + ((templateList != null) ? templateList.size() : 0));
 
             result = 0;
 
-        }catch(Throwable t){
-            isError=true;
-            errorObject=t;
+        } catch (Throwable t) {
+            isError = true;
+            errorObject = t;
 
-        }finally {
-            if(isError){
-                Log.e(TAG, "Verify Fingerprint Error : "+errorObject.getMessage());
+        } finally {
+            if (isError) {
+                Log.e(TAG, "Verify Fingerprint Error: " + errorObject.getMessage());
                 errorObject.printStackTrace();
                 result = -1;
                 errorObject = null;
             }
             nowFPTemplate = null;
-            toMatch = null;
         }
 
-        if(BuildConfig.isDebug) {
-            Log.d(TAG, "Leaving verifiyFingerprint");
+        if (BuildConfig.isDebug) {
+            Log.d(TAG, "Leaving verifyFingerprint");
         }
         return result;
+    }
 
+    public void verifyFingerPrint2(Integer fingerprintId, FingerprintTemplate searchTemplate,
+                                   List<FingerprintTemplate> referenceFingerTemplateList,
+                                   List<MatchResult> results) {
+        Log.d(TAG, "Entered verifyFingerPrint2");
+        double matchThreshold = 20.0;
+
+
+        // Clear and initialize results
+        if (results == null) {
+            results = new ArrayList<>();
+        } else {
+            results.clear();
+        }
+
+        // Check for null or empty inputs
+        if (searchTemplate == null || referenceFingerTemplateList == null || referenceFingerTemplateList.isEmpty()) {
+            Log.d(TAG, "Null or empty inputs detected");
+            return;
+        }
+
+        try {
+            Log.d(TAG, "Starting matching process");
+            FingerprintMatcher matcher = new FingerprintMatcher();
+            matcher.index(searchTemplate);  // Index the search template
+
+            Log.d(TAG, "Fetching reference templates");
+            for (FingerprintTemplate currentTemplate : referenceFingerTemplateList) {
+                if (currentTemplate != null) {
+                    // Perform matching and set the result
+                    double matchScore = matcher.match(currentTemplate);
+                    int intScore = (int) Math.round(matchScore);
+                    Log.d(TAG, "match scorre: "+ intScore);
+
+
+                    // Only add result if match score exceeds the threshold
+                    if (matchScore >= matchThreshold) {
+                        MatchResult result = new MatchResult();
+                        result.setId(fingerprintId); // Set the provided fingerprint ID
+                        result.setMatchScore(intScore); // Set the calculated match score
+                        results.add(result);
+                        Log.d(TAG, "Match score for template with ID " + FingerprintID.getFingerprintID(fingerprintId) + " is high threshold: " + matchScore);
+                    } else {
+                        Log.d(TAG, "Match score for template with ID " + FingerprintID.getFingerprintID(fingerprintId) + " is below threshold: " + matchScore);
+                    }
+                } else {
+                    Log.d(TAG, "Skipping null reference template");
+                }
+            }
+            Log.d(TAG, "Matching completed");
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error in verifyFingerPrint2: " + e.getMessage(), e);
+            results.clear(); // Clear results on error
+        } finally {
+            if (BuildConfig.isDebug) {
+                Log.d(TAG, "Leaving verifyFingerPrint2");
+            }
+        }
     }
 
 }

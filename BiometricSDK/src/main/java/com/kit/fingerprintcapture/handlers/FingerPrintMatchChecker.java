@@ -4,13 +4,6 @@ package com.kit.fingerprintcapture.handlers;
 
 import android.util.Log;
 
-import com.kit.fingerprintcapture.model.FingerprintCache;
-import com.kit.fingerprintcapture.model.FingerprintCacheEntry;
-
-import com.machinezoo.sourceafis.FingerprintMatcher;
-import com.machinezoo.sourceafis.FingerprintTemplate;
-
-import java.util.List;
 
 public class FingerPrintMatchChecker {
     private static final String TAG = "FingerprintCacheMatcher";

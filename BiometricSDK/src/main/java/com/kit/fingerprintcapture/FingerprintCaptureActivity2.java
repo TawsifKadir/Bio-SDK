@@ -1,7 +1,6 @@
 package com.kit.fingerprintcapture;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -27,14 +26,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
+import com.kit.common.CustomToastHandler;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
-import com.kit.fingerprintcapture.handlers.FingerPrintMatchChecker;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
 import com.kit.fingerprintcapture.manager.DummyDeviceManager;
@@ -42,17 +40,17 @@ import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.Fingerprint;
 import com.kit.fingerprintcapture.model.FingerprintCache;
-import com.kit.fingerprintcapture.model.FingerprintCacheEntry;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.model.FingerprintStatus;
 
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
-import com.kit.fingerprintcapture.template.ISOTemplate;
+import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.BaseActivityArr;
-import com.kit.fingerprintcapture.utils.BiometricHelper;
+import com.kit.fingerprintcapture.utils.FingerprintUtils;
+import com.kit.fingerprintcapture.utils.FingerprintsManager;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.kit.fingerprintcapture.utils.TemplateUtils;
+import com.machinezoo.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,8 +90,10 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
     private Boolean mHasFingerprintException;
     private NoFingerprintReason mNoFingerprintReason;
     List<NoFingerprintReason> mNoFingerprintReasonList;
-
+    FingerprintsManager fingerprintsManager = new FingerprintsManager();
     boolean isEnumeratorRegistration = false;
+
+//    TextView logText ;
 
 
 
@@ -116,6 +116,9 @@ protected void onCreate(Bundle savedInstanceState) {
         mFingerprintImage = (ImageView)findViewById(R.id.fingerprint_image);
         mFingerprintText = (TextView)findViewById(R.id.fingerprint_text);
         mClickFingerprint = (TextView)findViewById(R.id.click_fingerprint);
+
+//        logText =  (TextView) findViewById(R.id.logText);
+//        logText.setVisibility(View.VISIBLE);
 
         mDoneBtn = (Button)findViewById(R.id.doneBtn);
 
@@ -515,56 +518,288 @@ protected void onCreate(Bundle savedInstanceState) {
         imView.startAnimation(mCurrentAnimation);
     }
 
+//
+//
+//    @Override
+//    public void onFingerprintData(byte[] imgData, int width, int height,int score,long result) {
+//        try {
+//            long ret = -1;
+//
+//            if (imgData != null && width > 0 && height > 0) {
+//                ISOTemplate nowTmpl = TemplateUtils.createISOTemplate(imgData, width, height);
+//                if(duplicateDetectionEnabled) {
+//                    boolean[] matched = new boolean[1];
+//
+//                    /// /
+//                    if (imgData != null) {
+//                        FingerPrintMatchChecker checker = new FingerPrintMatchChecker();
+//                        boolean matchResult = checker.matchRawAgainstEnumerator2(imgData, Width,Height);
+//                        Log.d(TAG, "Fingerprint ID: "
+//                              /*  + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown")*/
+//                                + " | Matched: " + matchResult);
+//                    } else {
+//                        Log.d(TAG, "Captured fingerprint is null, skipping...");
+//                    }
+//                    /// /
+//
+//                    Log.d(TAG,"-------------------------------------\n\n\n" );
+//
+//                    ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID(), imgData, width, height, matched);
+//                    if ((ret == 0) && matched[0]) {
+//                        mFingerprintText.setText(R.string.duplicate_fingerprint);
+//                        onCaptureError("Duplicate fingerprint");
+//                        runOnUiThread(() -> Toast.makeText(FingerprintCaptureActivity2.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show());
+//
+//                        return;
+//                    }
+//                }
+//                byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
+//                mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), score, wsqData, nowTmpl.getIsoTemplate());
+//                runOnUiThread(() -> {
+//                    try {
+//                        byte[] greyData = ImageProc.fromWSQ(mCurrentFingerprint.getFingerprintData().getFingerprintData(), width, height);
+//                        mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
+//                    } finally {
+//                        onCaptureEnd(mCurrentFingerprint);
+//                    }
+//                });
+//            }
+//        }catch(Exception exc){
+//            Log.d(TAG,exc.getMessage());
+//        }
+//    }
+//
 
 
-    @Override
-    public void onFingerprintData(byte[] imgData, int width, int height,int score,long result) {
+
+
+
+/*
+    public void onFingerprintData2(byte[] imgData, int width, int height,int score,long result) {
+
         try {
-            long ret = -1;
-
             if (imgData != null && width > 0 && height > 0) {
-                ISOTemplate nowTmpl = TemplateUtils.createISOTemplate(imgData, width, height);
-                if(duplicateDetectionEnabled) {
-                    boolean[] matched = new boolean[1];
+                FingerprintData candidateFingerprintData = FingerprintUtils.imageToFingerprintDataModel(imgData,score,width,height,mCurrentFingerprint.getFingerprintID());
+                ISOTemplate candidateTemplate = new ISOTemplate(candidateFingerprintData.getIsoTemplate(), candidateFingerprintData.getIsoTemplate().length);
+                fingerprintsManager.removeTakenFingerFromIsoTemplate(candidateFingerprintData.getFingerprintId());
+                fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
+                List<MatchResult> matchListForTakenFingers = new ArrayList<>();
+                List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
 
-                    /// /
-                    if (imgData != null) {
-                        FingerPrintMatchChecker checker = new FingerPrintMatchChecker();
-                        boolean matchResult = checker.matchRawAgainstEnumerator2(imgData, Width,Height);
-                        Log.d(TAG, "Fingerprint ID: "
-                              /*  + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown")*/
-                                + " | Matched: " + matchResult);
-                    } else {
-                        Log.d(TAG, "Captured fingerprint is null, skipping...");
-                    }
-                    /// /
 
-                    Log.d(TAG,"-------------------------------------\n\n\n" );
+                mfpMatchHandler.verifyFingerPrint(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getTakenFingersISOTemplates().values()), matchListForTakenFingers, TemplateFormat.ISO19794_2_2005, TemplateFormat.ISO19794_2_2005);
+                mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID().getID(), candidateTemplate, new ArrayList<>(fingerprintsManager.getEnumeratorISOTemplates().values()), matchListForEnumeratorFingers, TemplateFormat.ISO19794_2_2005, TemplateFormat.ISO19794_2_2005);
 
-                    ret = mfpMatchHandler.verifyFingerPrint(mCurrentFingerprint.getFingerprintID(), imgData, width, height, matched);
-                    if ((ret == 0) && matched[0]) {
-                        mFingerprintText.setText(R.string.duplicate_fingerprint);
-                        onCaptureError("Duplicate fingerprint");
-                        runOnUiThread(() -> Toast.makeText(FingerprintCaptureActivity2.this,"Duplicate fingerprint captured. Please recapture different finger.",Toast.LENGTH_LONG).show());
+//
+//
+//                if (!matchListForTakenFingers.isEmpty()) {
+//                    Log.d("FingerprintMatchTAG", "Results from reference templates:");
+//                    for (MatchResult result1 : matchListForTakenFingers) {
+//                        Log.d("FingerprintMatchTAG", "Matched Template ID: " + FingerprintID.getNameById(result1.getId()) +
+//                                ", Match Score: " + result1.getMatchScore());
+//                    }
+//                } else {
+//                    Log.d("FingerprintMatchTAG", "No matches found in reference templates.");
+//                }
+//
+//                Log.d("FingerprintMatchTAG", "\n\nEnumerator template entities to verify against \n\n");
+//
+//                if (!matchListForEnumeratorFingers.isEmpty()) {
+//                    Log.d("FingerprintMatchTAG", "Results from enumerator templates:");
+//                    for (MatchResult result1 : matchListForEnumeratorFingers) {
+//                        Log.d("FingerprintMatchTAG", "Matched Template ID: " +  FingerprintID.getNameById(result1.getId()) +
+//                                ", Match Score: " + result1.getMatchScore());
+//                    }
+//                } else {
+//                    Log.d("FingerprintMatchTAG", "No matches found in enumerator templates.");
+//                }
+//
 
-                        return;
-                    }
+                if (!matchListForTakenFingers.isEmpty() ) {
+
+                    mFingerprintText.setText(R.string.duplicate_fingerprint);
+                    onCaptureError("Duplicate fingerprint");
+                    runOnUiThread(() -> CustomToastHandler.showErrorToast(FingerprintCaptureActivity2.this, "Duplicate fingerprint captured. Please recapture different finger."));
+
+                    return;
                 }
-                byte[] wsqData = ImageProc.toWSQ(imgData, width, height);
-                mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), score, wsqData, nowTmpl.getIsoTemplate());
-                runOnUiThread(() -> {
-                    try {
-                        byte[] greyData = ImageProc.fromWSQ(mCurrentFingerprint.getFingerprintData().getFingerprintData(), width, height);
-                        mFingerprintImage.setImageBitmap(ImageProc.toGrayscale(greyData, width, height));
-                    } finally {
-                        onCaptureEnd(mCurrentFingerprint);
+                if ( !matchListForEnumeratorFingers.isEmpty()) {
+
+                    mFingerprintText.setText(R.string.duplicate_fingerprint);
+                    onCaptureError("Duplicate fingerprint");
+                    runOnUiThread(() -> CustomToastHandler.showErrorToast(FingerprintCaptureActivity2.this, "Fingerprint matched with the enumerator. Please recapture different finger."));
+
+                    return;
+                }
+
+
+
+
+                fingerprintsManager.appendTakenFingerIsoTemplete(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
+                fingerprintsManager.appendTakenFingerData(candidateFingerprintData);
+
+
+                mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), candidateFingerprintData.getQualityScore(), candidateFingerprintData.getFingerprintData(),candidateTemplate);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Bitmap bmp = ImageProc.toGrayscale(imgData,width,height);
+                            mFingerprintImage.setImageBitmap(bmp);
+                        } finally {
+                            onCaptureEnd(mCurrentFingerprint);
+                        }
                     }
                 });
+            }else{
+                mFingerprintImage.setImageBitmap(ImageProc.createEmptyBitmap(width,height));
             }
         }catch(Exception exc){
-            Log.d(TAG,exc.getMessage());
+            ///Log.d(TAG,exc.getMessage());
+            exc.printStackTrace();
         }
     }
+*/
+
+
+@Override
+public void onFingerprintData(byte[] imgData, int width, int height,int score,long result) {
+
+        try {
+            if (imgData != null && width > 0 && height > 0) {
+                FingerprintData candidateFingerprintData = FingerprintUtils.imageToFingerprintDataModel(imgData,score,width, height,mCurrentFingerprint.getFingerprintID());
+                FingerprintTemplate candidateTemplate =new FingerprintTemplate();
+                candidateTemplate.dpi(500).create(imgData, width, height);
+                fingerprintsManager.removeTakenFingerFromFingerprintTemplate(candidateFingerprintData.getFingerprintId());
+                fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
+                List<MatchResult> matchListForTakenFingers = new ArrayList<>();
+                List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
+
+
+// Assuming takenResults is a list or collection of FingerprintData objects
+                StringBuilder logStringBuilder = new StringBuilder();
+                for (FingerprintData fingerprintData : fingerprintsManager.getTakenFingers()) {
+                    logStringBuilder.append("ID: ").append(fingerprintData.getFingerprintId().getID());
+//                            .append("\nFingerprint Data Size: ").append(fingerprintData.getFingerprintData().length)
+//                            .append("\nQuality Score: ").append(fingerprintData.getQualityScore())
+//                            .append("\nISO Template Size: ").append(fingerprintData.getIsoTemplate().length)
+//                            .append("\n\n");  // Adds space between each FingerprintData log
+                }
+
+// Set the log text
+//                logText.setText(logStringBuilder.toString());
+
+
+
+
+                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getTakenFingersTemplates().values()), matchListForTakenFingers);
+//                mfpMatchHandler.verifyFingerPrint2(mCurrentFingerprint.getFingerprintID().getID(), candidateFingerprintData, new ArrayList<>(fingerprintsManager.getEnumeratorFingers()), matchListForEnumeratorFingers);
+
+// Show detailed toast for taken fingers match results
+                if (!matchListForTakenFingers.isEmpty()) {
+                    StringBuilder takenResults = new StringBuilder();
+                    takenResults.append("Taken Fingers Match Results:\n");
+                    for (MatchResult result1 : matchListForTakenFingers) {
+                        takenResults.append("ID: ").append(result1.getId())
+                                .append(", Score: ").append(result1.getMatchScore())
+                                .append(" - ").append(result1.getMatchScore() > 40 ? "MATCH" : "NO MATCH")
+                                .append("\n");
+                    }
+//                    logText.setText(takenResults.toString());
+
+                    // Toast.makeText(this, takenResults.toString(), Toast.LENGTH_LONG).show();
+                } else {
+//                    logText.setText( "No taken fingers matched");
+
+                    // Toast.makeText(this, "No taken fingers matched", Toast.LENGTH_SHORT).show();
+                }
+
+// Show detailed toast for enumerator fingers match results
+//                if (!matchListForEnumeratorFingers.isEmpty()) {
+//                    StringBuilder enumResults = new StringBuilder();
+//                    enumResults.append("Enumerator Fingers Match Results:\n");
+//                    for (MatchResult result1 : matchListForEnumeratorFingers) {
+//                        enumResults.append("ID: ").append(result1.getId())
+//                                .append(", Score: ").append(result1.getMatchScore())
+//                                .append(" - ").append(result1.getMatchScore() > 40 ? "MATCH" : "NO MATCH")
+//                                .append("\n");
+//                    }
+//                   // logText.setText(enumResults.toString());
+//                   // Toast.makeText(this, enumResults.toString(), Toast.LENGTH_LONG).show();
+//                } else {
+//                   // logText.setText("No enumerator fingers matched");
+//                   // Toast.makeText(this, "No enumerator fingers matched", Toast.LENGTH_SHORT).show();
+//                }
+
+
+
+//
+//
+//                if (!matchListForTakenFingers.isEmpty()) {
+//                    Log.d("FingerprintMatchTAG", "Results from reference templates:");
+//                    for (MatchResult result1 : matchListForTakenFingers) {
+//                        Log.d("FingerprintMatchTAG", "Matched Template ID: " + FingerprintID.getNameById(result1.getId()) +
+//                                ", Match Score: " + result1.getMatchScore());
+//                    }
+//                } else {
+//                    Log.d("FingerprintMatchTAG", "No matches found in reference templates.");
+//                }
+//
+//                Log.d("FingerprintMatchTAG", "\n\nEnumerator template entities to verify against \n\n");
+//
+//                if (!matchListForEnumeratorFingers.isEmpty()) {
+//                    Log.d("FingerprintMatchTAG", "Results from enumerator templates:");
+//                    for (MatchResult result1 : matchListForEnumeratorFingers) {
+//                        Log.d("FingerprintMatchTAG", "Matched Template ID: " +  FingerprintID.getNameById(result1.getId()) +
+//                                ", Match Score: " + result1.getMatchScore());
+//                    }
+//                } else {
+//                    Log.d("FingerprintMatchTAG", "No matches found in enumerator templates.");
+//                }
+//
+
+                if (!matchListForTakenFingers.isEmpty() ) {
+
+                    mFingerprintText.setText(R.string.duplicate_fingerprint);
+                    onCaptureError("Duplicate fingerprint");
+                    runOnUiThread(() -> CustomToastHandler.showErrorToast(FingerprintCaptureActivity2.this, "Duplicate fingerprint captured. Please recapture different finger."));
+
+                    return;
+                }
+                if ( !matchListForEnumeratorFingers.isEmpty()) {
+
+                    mFingerprintText.setText(R.string.duplicate_fingerprint);
+                    onCaptureError("Duplicate fingerprint");
+                    runOnUiThread(() -> CustomToastHandler.showErrorToast(FingerprintCaptureActivity2.this, "Fingerprint matched with the enumerator. Please recapture different finger."));
+
+                    return;
+                }
+
+                fingerprintsManager.appendTakenFingerFingerTemplete(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
+                fingerprintsManager.appendTakenFingerData(candidateFingerprintData);
+                mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), candidateFingerprintData.getQualityScore(), candidateFingerprintData.getFingerprintData(),candidateFingerprintData.getIsoTemplate());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Bitmap bmp = ImageProc.toGrayscale(imgData,width,height);
+                            mFingerprintImage.setImageBitmap(bmp);
+                        } finally {
+                            onCaptureEnd(mCurrentFingerprint);
+                        }
+                    }
+                });
+            }else{
+              //  mFingerprintImage.setImageBitmap(ImageProc.createEmptyBitmap(width,height));
+            }
+        }catch(Exception exc){
+            ///Log.d(TAG,exc.getMessage());
+            exc.printStackTrace();
+        }
+    }
+
+
 
     @Override
     public void onFingerprintPreview(Bitmap img, int width, int height) {
