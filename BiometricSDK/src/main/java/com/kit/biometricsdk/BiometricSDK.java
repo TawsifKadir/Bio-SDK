@@ -11,7 +11,6 @@ import android.widget.ImageView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -19,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.kit.fingerprintcapture.FingerprintCaptureActivity;
 import com.kit.fingerprintcapture.FingerprintCaptureActivity2;
 
+import com.kit.fingerprintcapture.FingerprintVerificationActivity;
 import com.kit.fingerprintcapture.model.FingerprintCache;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
@@ -34,9 +34,11 @@ import java.util.List;
 
 
 public class BiometricSDK extends BaseActivityArr {
-    private Button mCloseBtn;
+    private Button mFpCaptureBtn2;
     private Button mPhotoCaptureBtn;
-    private Button mFpCaptureBtn;
+    private Button mFpCaptureBtn1;
+    private Button mVerifyBtn;
+
     private ImageView mPhotoView;
 
     private String TAG = "MAIN_ACTIVITY";
@@ -52,9 +54,13 @@ public class BiometricSDK extends BaseActivityArr {
             return insets;
         });
 
-        mFpCaptureBtn = findViewById(R.id.fpCaptureBtn);
+        mFpCaptureBtn1 = findViewById(R.id.fpCaptureBtn);
         mPhotoCaptureBtn = findViewById(R.id.photoCaptureBtn);
-        mCloseBtn = findViewById(R.id.closeBtn);
+        mFpCaptureBtn2 = findViewById(R.id.closeBtn);
+        mVerifyBtn = findViewById(R.id.fpFnVeri);
+
+        mFpCaptureBtn1.setText("Fp1");
+        mFpCaptureBtn2.setText("Fp2");
 
         mPhotoView = findViewById(R.id.photoView);
 
@@ -63,16 +69,23 @@ public class BiometricSDK extends BaseActivityArr {
             startActivityForResult(nowIntent,2);
         });
 
-        mFpCaptureBtn.setOnClickListener(v -> {
+        mFpCaptureBtn1.setOnClickListener(v -> {
             Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity.class);
             startActivityForResult(nowIntent,3);
         });
 
 
-        mCloseBtn.setOnClickListener(v -> {
+        mFpCaptureBtn2.setOnClickListener(v -> {
             Intent nowIntent = new Intent(BiometricSDK.this, FingerprintCaptureActivity2.class);
             startActivityForResult(nowIntent, 4);
         });
+
+
+        mVerifyBtn.setOnClickListener(v -> {
+            Intent nowIntent = new Intent(BiometricSDK.this, FingerprintVerificationActivity.class);
+            startActivityForResult(nowIntent, 5);
+        });
+
 
 //
 //        mCloseBtn.setOnClickListener(v -> {
@@ -179,8 +192,6 @@ public class BiometricSDK extends BaseActivityArr {
         else if( requestCode == 4){
             Log.d(TAG, "Returned from fingerprint capture");
 
-
-
             if ( resultCode == RESULT_OK ) {
 
                 Log.d(TAG, "Request Code is ok ");
@@ -206,16 +217,9 @@ public class BiometricSDK extends BaseActivityArr {
                     Log.d(TAG, "Intent Data is null");
                 }
                 // 4. Clear the cache after logging
-                FingerprintCache.getInstance().clear();
-                Log.d(TAG, "Fingerprint cache cleared.");
+                // FingerprintCache.getInstance().clear();
+                // Log.d(TAG, "Fingerprint cache cleared.");
             }
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-//
-//
-//            }
-//            else{
-//                Log.d(TAG, "SDK not suported");
-//            }
 
         }
     }

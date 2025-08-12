@@ -1,5 +1,6 @@
 package com.kit.fingerprintcapture.utils;
 
+import android.net.Uri;
 import android.util.Log;
 
 import com.kit.fingerprintcapture.model.FingerprintCache;
@@ -7,6 +8,10 @@ import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +21,9 @@ import java.util.Map;
 public class FingerprintsManager {
 
 
+    private static final Logger log = LoggerFactory.getLogger(FingerprintsManager.class);
+
+    public static String TAG = "FingerprintsManager";
     private Map<Integer, FingerprintTemplate> takenFingersTemplates =  new HashMap<>();
     private Map<Integer, FingerprintTemplate> enumeratorTemplates =  new HashMap<>();
 
@@ -29,7 +37,6 @@ public class FingerprintsManager {
 
     public FingerprintsManager() {
         Log.d("FingerprintsManager", "Initializing FingerprintsManager...");
-
         // Load takenFingers from cache and build taken FingerprintTemplates
         FingerprintCache cache = FingerprintCache.getInstance();
         if (cache != null && cache.getFingerList() != null) {
@@ -37,13 +44,10 @@ public class FingerprintsManager {
                     ? cache.getFingerList()
                     : new ArrayList<>());
             Log.d("FingerprintsManager", "Loaded enumeratorFingers from cache. Count: " + enumeratorFingers.size());
-
             for(FingerprintData fd: enumeratorFingers)
             {
                 Log.d("FingerprintsManager", "Finger: \n" + fd.toString());
-
             }
-
             // Build enumerator FingerprintTemplates
             buildEnumeratorFingerprintTemplates();
             Log.d("FingerprintsManager", "Built enumeratorFingerprintTemplates. Count: " + enumeratorTemplates.size());
@@ -141,11 +145,41 @@ public class FingerprintsManager {
 
     public void buildEnumeratorFingerprintTemplates() {
         enumeratorTemplates.clear();
-        for (FingerprintData data : takenFingers) {
+        for (FingerprintData data : enumeratorFingers) {
             if (data != null && data.getFingerprintId() != null && data.getFingerprintData() != null) {
                 FingerprintTemplate fingerprintTemplate = new FingerprintTemplate();
-                fingerprintTemplate.dpi(500).create(ImageProc.fromWSQ(data.getFingerprintData(), nowWidth, nowHeight));
-                enumeratorTemplates.put(data.getFingerprintId().getID(), fingerprintTemplate);
+                if(data.getFingerprintData() != null)
+                {
+                    Log.d(TAG, "data size: " + data.getFingerprintData().length);
+                    byte[] img = data.getFingerprintData();
+
+                    byte[] decodedImage = ImageProc.fromWSQ(img, nowWidth, nowHeight);
+                    if (decodedImage == null) {
+                        Log.e(TAG, "WSQ decode failed for finger ID: " + data.getFingerprintId().getID());
+                        continue;
+                    }
+
+// Build template (unchanged)
+                    try {
+                        fingerprintTemplate.dpi(500).create(decodedImage, nowWidth, nowHeight);
+                        enumeratorTemplates.put(data.getFingerprintId().getID(), fingerprintTemplate);
+                        Log.d(TAG, "Template built for finger ID: " + data.getFingerprintId().getID());
+                    } catch (Exception e) {
+                        Log.d(TAG, "Template data " + fingerprintTemplate);
+                        Log.d(TAG, "FingerprintData id: " + data.getFingerprintId().getID());
+                        Log.e(TAG, "Error creating fingerprint template for ID: "
+                                + data.getFingerprintId().getID(), e);
+                    }
+
+                 //   enumeratorTemplates.put(data.getFingerprintId().getID(), fingerprintTemplate);
+
+
+                }
+                else {
+                    Log.d(TAG, "data is null ");
+
+                }
+
             }
         }
     }

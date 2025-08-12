@@ -1,6 +1,7 @@
 package com.kit.fingerprintcapture;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -13,9 +14,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.button.MaterialButton;
+import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
 import com.kit.common.CustomToastHandler;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
+import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
 import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
@@ -55,7 +58,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     private IDeviceManager mDeviceManager;
     private FingerprintMatchingHandler mfpMatchHandler;
 
-
+    private FingerprintCaptureHandler mfpCaptureHandler;
     private FingerprintTemplate currentFingerprintTemplate;
     private final FingerprintsManager fingerprintsManager = new FingerprintsManager();
 
@@ -103,11 +106,57 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
 
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void onResume(){
         enableCapturing();
-        //disableButtonControls();
-        initDevice();
+
+        try {
+            long result = mDeviceManager.initDevice();
+            if(BuildConfig.isDebug){
+                Log.d(TAG, "initDevice() returned : " + result);
+            }
+            if(result!=0){
+                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+                dlgAlert.setMessage("Fingerprint device initialization failed with error : "+result);
+                dlgAlert.setTitle("Fingerprint SDK");
+                dlgAlert.setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int whichButton){
+                                finish();
+                                return;
+                            }
+                        }
+                );
+                dlgAlert.setCancelable(false);
+                dlgAlert.create().show();
+            }
+        }catch(Throwable t){
+
+            t.printStackTrace();
+
+        }
+
+        try{
+            if(mDeviceManager.isPermissionAcquired()){
+                long result = mDeviceManager.openDevice();
+                if(result!=0) {
+                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+                    dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
+                    dlgAlert.setTitle("Fingerprint SDK");
+                    dlgAlert.setPositiveButton("OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    finish();
+                                }
+                            }
+                    );
+                    dlgAlert.setCancelable(false);
+                    dlgAlert.create().show();
+                }
+            }
+        }catch(Exception exc){
+
+        }
+        super.onResume();
     }
 
     @Override
@@ -121,33 +170,6 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
         shutdownExecutors();
         cleanupDevice();
         super.onDestroy();
-    }
-
-    private void initDevice() {
-        executorService.submit(() -> {
-            try {
-                long result = mDeviceManager.initDevice();
-//                if (result != ErrorCodes.FPC_SUCCESS) {
-//                    showErrorDialogOnUi("Device init failed: " + result);
-//                    return;
-//                }
-//
-//                result = mDeviceManager.openDevice();
-//                if (result != ErrorCodes.FPC_SUCCESS) {
-//                    showErrorDialogOnUi("Device open failed: " + result);
-//                    return;
-//                }
-
-//                Matcher matcher = new Matcher();
-//                matcher.setRotationToleranceInDegree(180);
-//                mfpMatchHandler.setMatcher(matcher);
-
-              //  runOnUiThread(this::enableCapturing);
-            } catch (Throwable t) {
-                Log.e(TAG, "Device init error", t);
-                showErrorDialogOnUi("Device error: " + t.getMessage());
-            }
-        });
     }
 
     private void startFingerprintCapture() {
@@ -170,17 +192,21 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
             mfpMatchHandler.verifyFingerPrint2(
                     FingerprintID.RIGHT_THUMB.getID(),
                     currentFingerprintTemplate,
-                    new ArrayList<>(fingerprintsManager.getTakenFingersTemplates().values()),
+                    new ArrayList<>(fingerprintsManager.getEnumeratorTemplates().values()),
                     matchList
             );
+
+            Log.d(TAG, "startVerification() called");
 
             runOnUiThread(() -> {
                 if (!matchList.isEmpty()) {
                     fingerprintText.setText("Fingerprint Mathed");
+                    Log.d(TAG, "startVerification() called matched");
                     CustomToastHandler.showErrorToast(this, "Successfully matched!!");
                     enableProceedButton();
                 } else {
                     fingerprintText.setText("Fingerprint Not Mathed");
+                    Log.d(TAG, "startVerification() called not matched");
                     CustomToastHandler.showErrorToast(this, "Did not match!!");
                     enableCapturing();
                 }
@@ -192,9 +218,8 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     @Override
     public void onFingerprintData(byte[] imgData, int width, int height, int score, long result) {
         if (imgData != null && width > 0 && height > 0) {
-//            FingerprintData data = FingerprintUtils.imageToFingerprintDataModel(imgData, width, height, FingerprintID.LEFT_THUMB.getID());
-//            currentFingerprintTemplate = new ISOTemplate(data.getIsoTemplate(), data.getIsoTemplate().length);
-
+            currentFingerprintTemplate =new FingerprintTemplate();
+            currentFingerprintTemplate.dpi(500).create(imgData, width, height);
             runOnUiThread(() -> {
                 fingerprintImage.setImageBitmap(ImageProc.toGrayscale(imgData, width, height));
                 startVerification();

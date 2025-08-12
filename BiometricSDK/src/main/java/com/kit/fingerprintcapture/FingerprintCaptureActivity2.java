@@ -1,5 +1,7 @@
 package com.kit.fingerprintcapture;
 
+import static com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler.MATCH_THRESHOULD;
+
 import androidx.appcompat.app.AlertDialog;
 
 import android.app.Activity;
@@ -233,7 +235,16 @@ protected void onCreate(Bundle savedInstanceState) {
 
 
 
+    Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " + fingerprintsManager.getEnumeratorFingers().size());
+    for(FingerprintData fd: fingerprintsManager.getEnumeratorFingers())
+    {
+        Log.d(TAG, "Finger: \n" + fd.toString());
     }
+    for(FingerprintTemplate fd: fingerprintsManager.getEnumeratorTemplates().values())
+    {
+        Log.d(TAG, "Finger: \n" + fd.toString().length());
+    }
+}
 
 
 
@@ -677,87 +688,40 @@ public void onFingerprintData(byte[] imgData, int width, int height,int score,lo
                 List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
 
 
-// Assuming takenResults is a list or collection of FingerprintData objects
-                StringBuilder logStringBuilder = new StringBuilder();
-                for (FingerprintData fingerprintData : fingerprintsManager.getTakenFingers()) {
-                    logStringBuilder.append("ID: ").append(fingerprintData.getFingerprintId().getID());
-//                            .append("\nFingerprint Data Size: ").append(fingerprintData.getFingerprintData().length)
-//                            .append("\nQuality Score: ").append(fingerprintData.getQualityScore())
-//                            .append("\nISO Template Size: ").append(fingerprintData.getIsoTemplate().length)
-//                            .append("\n\n");  // Adds space between each FingerprintData log
-                }
-
-// Set the log text
-//                logText.setText(logStringBuilder.toString());
-
-
-
-
                 mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getTakenFingersTemplates().values()), matchListForTakenFingers);
-//                mfpMatchHandler.verifyFingerPrint2(mCurrentFingerprint.getFingerprintID().getID(), candidateFingerprintData, new ArrayList<>(fingerprintsManager.getEnumeratorFingers()), matchListForEnumeratorFingers);
+                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getEnumeratorTemplates().values()), matchListForEnumeratorFingers);
 
-// Show detailed toast for taken fingers match results
+
+
+                //log start
                 if (!matchListForTakenFingers.isEmpty()) {
                     StringBuilder takenResults = new StringBuilder();
                     takenResults.append("Taken Fingers Match Results:\n");
                     for (MatchResult result1 : matchListForTakenFingers) {
                         takenResults.append("ID: ").append(result1.getId())
                                 .append(", Score: ").append(result1.getMatchScore())
-                                .append(" - ").append(result1.getMatchScore() > 40 ? "MATCH" : "NO MATCH")
+                                .append(" - ").append(result1.getMatchScore() > MATCH_THRESHOULD ? "MATCH" : "NO MATCH")
                                 .append("\n");
                     }
-//                    logText.setText(takenResults.toString());
-
-                    // Toast.makeText(this, takenResults.toString(), Toast.LENGTH_LONG).show();
                 } else {
-//                    logText.setText( "No taken fingers matched");
-
-                    // Toast.makeText(this, "No taken fingers matched", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG,  "No taken fingers matchedn with Taken fingers");
                 }
 
-// Show detailed toast for enumerator fingers match results
-//                if (!matchListForEnumeratorFingers.isEmpty()) {
-//                    StringBuilder enumResults = new StringBuilder();
-//                    enumResults.append("Enumerator Fingers Match Results:\n");
-//                    for (MatchResult result1 : matchListForEnumeratorFingers) {
-//                        enumResults.append("ID: ").append(result1.getId())
-//                                .append(", Score: ").append(result1.getMatchScore())
-//                                .append(" - ").append(result1.getMatchScore() > 40 ? "MATCH" : "NO MATCH")
-//                                .append("\n");
-//                    }
-//                   // logText.setText(enumResults.toString());
-//                   // Toast.makeText(this, enumResults.toString(), Toast.LENGTH_LONG).show();
-//                } else {
-//                   // logText.setText("No enumerator fingers matched");
-//                   // Toast.makeText(this, "No enumerator fingers matched", Toast.LENGTH_SHORT).show();
-//                }
 
+                if (!matchListForEnumeratorFingers.isEmpty()) {
+                    StringBuilder takenResults = new StringBuilder();
+                    takenResults.append("Enumerator Fingers Match Results:\n");
+                    for (MatchResult result1 : matchListForTakenFingers) {
+                        takenResults.append("ID: ").append(result1.getId())
+                                .append(", Score: ").append(result1.getMatchScore())
+                                .append(" - ").append(result1.getMatchScore() > MATCH_THRESHOULD ? "MATCH" : "NO MATCH")
+                                .append("\n");
+                    }
+                } else {
+                    Log.d(TAG,  "No taken fingers matched with enumerator");
+                }
+               //log end
 
-
-//
-//
-//                if (!matchListForTakenFingers.isEmpty()) {
-//                    Log.d("FingerprintMatchTAG", "Results from reference templates:");
-//                    for (MatchResult result1 : matchListForTakenFingers) {
-//                        Log.d("FingerprintMatchTAG", "Matched Template ID: " + FingerprintID.getNameById(result1.getId()) +
-//                                ", Match Score: " + result1.getMatchScore());
-//                    }
-//                } else {
-//                    Log.d("FingerprintMatchTAG", "No matches found in reference templates.");
-//                }
-//
-//                Log.d("FingerprintMatchTAG", "\n\nEnumerator template entities to verify against \n\n");
-//
-//                if (!matchListForEnumeratorFingers.isEmpty()) {
-//                    Log.d("FingerprintMatchTAG", "Results from enumerator templates:");
-//                    for (MatchResult result1 : matchListForEnumeratorFingers) {
-//                        Log.d("FingerprintMatchTAG", "Matched Template ID: " +  FingerprintID.getNameById(result1.getId()) +
-//                                ", Match Score: " + result1.getMatchScore());
-//                    }
-//                } else {
-//                    Log.d("FingerprintMatchTAG", "No matches found in enumerator templates.");
-//                }
-//
 
                 if (!matchListForTakenFingers.isEmpty() ) {
 

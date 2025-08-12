@@ -1,14 +1,10 @@
 package com.kit.fingerprintcapture.handlers;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.kit.BuildConfig;
-import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
-import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
@@ -29,6 +25,8 @@ public class FingerprintMatchingHandler {
     private boolean isInitialized;
     private HashMap<FingerprintID,FingerprintTemplate> templateList;
     private FingerprintMatcher mFPMatcher;
+
+    static public double MATCH_THRESHOULD = 20.0;
 
     public HashMap<FingerprintID, FingerprintTemplate> getTemplateList() {
         return templateList;
@@ -147,7 +145,7 @@ public class FingerprintMatchingHandler {
                                    List<FingerprintTemplate> referenceFingerTemplateList,
                                    List<MatchResult> results) {
         Log.d(TAG, "Entered verifyFingerPrint2");
-        double matchThreshold = 20.0;
+
 
 
         // Clear and initialize results
@@ -160,6 +158,10 @@ public class FingerprintMatchingHandler {
         // Check for null or empty inputs
         if (searchTemplate == null || referenceFingerTemplateList == null || referenceFingerTemplateList.isEmpty()) {
             Log.d(TAG, "Null or empty inputs detected");
+            if (referenceFingerTemplateList == null || referenceFingerTemplateList.isEmpty())
+            {
+                Log.d(TAG, "Null or empty inputs detected referenceFingerTemplateList");
+            }
             return;
         }
 
@@ -178,7 +180,7 @@ public class FingerprintMatchingHandler {
 
 
                     // Only add result if match score exceeds the threshold
-                    if (matchScore >= matchThreshold) {
+                    if (matchScore >= MATCH_THRESHOULD) {
                         MatchResult result = new MatchResult();
                         result.setId(fingerprintId); // Set the provided fingerprint ID
                         result.setMatchScore(intScore); // Set the calculated match score

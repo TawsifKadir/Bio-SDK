@@ -1,11 +1,15 @@
 package com.kit.fingerprintcapture.utils;
 
+import static com.kit.fingerprintcapture.utils.FingerprintsManager.nowHeight;
+import static com.kit.fingerprintcapture.utils.FingerprintsManager.nowWidth;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 
@@ -72,6 +76,10 @@ public class ImageProc {
 
         return greyData;
     }
+
+
+
+
     public static Bitmap toGrayscale(Bitmap bmpOriginal)
     {
         int width, height;

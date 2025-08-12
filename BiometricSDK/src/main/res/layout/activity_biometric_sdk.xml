@@ -16,35 +16,49 @@
 
         />
 
-    <Button
-        android:id="@+id/photoCaptureBtn"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginBottom="30dp"
-        android:text="Capture Photo"
-        android:layout_gravity="bottom|left"
-         />
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="16dp"
+        android:weightSum="4"
+        android:background="#EEE">
 
-    <Button
-        android:id="@+id/closeBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:layout_marginBottom="30dp"
-        android:text="Close"
-        android:layout_gravity="bottom|center"
-        />
+        <Button
+            android:id="@+id/photoCaptureBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            android:text="Capture Photo" />
 
-    <Button
-        android:id="@+id/fpCaptureBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginRight="30dp"
-        android:layout_marginBottom="30dp"
-        android:text="Capture FP"
-        android:layout_gravity="bottom|right"
-        />
+        <Button
+            android:id="@+id/closeBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            android:text="Close" />
+
+        <Button
+            android:id="@+id/fpCaptureBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            android:text="Capture FP" />
+
+        <Button
+            android:id="@+id/fpFnVeri"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            android:text="Verify" />
+
+    </LinearLayout>
+
 
 </FrameLayout>

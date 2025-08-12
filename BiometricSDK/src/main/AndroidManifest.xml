@@ -34,6 +34,7 @@
     <!-->android:theme="@style/Theme.BiometricSDK"-->
 
     <application
+        android:name="com.MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -47,6 +48,7 @@
         <activity
             android:name=".BiometricSDK"
             android:theme="@style/AppTheme"
+            android:screenOrientation="portrait"
             android:exported="true">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
@@ -67,6 +69,7 @@
             android:screenOrientation="portrait"
             android:exported="true"
             />
+
 
         <activity
             android:name="com.kit.photocapture.presentation.activity.CapturedPhotoPreviewActivity"
@@ -90,6 +93,17 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="stateHidden"
+            >
+        </activity>
+
+        <activity
+            android:name="com.kit.fingerprintcapture.FingerprintVerificationActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="stateHidden"
             >
