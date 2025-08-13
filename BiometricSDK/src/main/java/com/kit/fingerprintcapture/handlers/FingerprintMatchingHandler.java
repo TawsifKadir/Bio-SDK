@@ -9,9 +9,6 @@ import com.kit.fingerprintcapture.template.MatchResult;
 import com.machinezoo.sourceafis.FingerprintMatcher;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FingerprintMatchingHandler {
-    private static final Logger log = LoggerFactory.getLogger(FingerprintMatchingHandler.class);
+
     String TAG = "FingerprintMatchingHandler";
     private Activity mActivity;
     private boolean isInitialized;

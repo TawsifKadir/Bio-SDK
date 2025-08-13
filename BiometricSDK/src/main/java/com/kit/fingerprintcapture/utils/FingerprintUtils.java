@@ -1,71 +1,12 @@
 package com.kit.fingerprintcapture.utils;
 
-import android.app.Application;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.util.Log;
-
-import com.MyApplication;
-import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.template.ISOTemplate;
-import com.kit.fingerprintcapture.template.TemplateExtractor;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 
 public class FingerprintUtils {
 
-    public static int Height = 448;
-    public static int Width = 248;
-
     static String TAG = "FingerPrintUtils";
-
-    // Utils — put in a helper class (e.g., ImageUtils)
-    public static Bitmap grayscaleToBitmap(byte[] data, int width, int height) {
-        int[] colors = new int[width * height];
-        for (int i = 0; i < data.length; i++) {
-            int g = data[i] & 0xFF;
-            colors[i] = 0xFF000000 | (g << 16) | (g << 8) | g; // ARGB from grayscale
-        }
-        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bmp.setPixels(colors, 0, width, 0, 0, width, height);
-        return bmp;
-    }
-
-    public static Uri saveFingerprintImage(byte[] decoded, int width, int height, String fileName)
-            throws IOException {
-
-        Bitmap bmp = grayscaleToBitmap(decoded, width, height);
-        Context ctx = MyApplication.getAppContext(); // Your global app context
-
-        // Create internal storage folder
-        File dir = new File(ctx.getFilesDir(), "bio_reg");
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new IOException("Failed to create bio_reg directory");
-        }
-
-        // Save the file inside bio_reg folder
-        File outFile = new File(dir, fileName);
-        try (FileOutputStream os = new FileOutputStream(outFile)) {
-            if (!bmp.compress(Bitmap.CompressFormat.PNG, 100, os)) {
-                throw new IOException("Bitmap compress failed");
-            }
-        }
-
-        Log.d("FingerprintSave", "Saved to: " + outFile.getAbsolutePath());
-        return Uri.fromFile(outFile); // Internal file URI
-    }
 
     public static FingerprintData imageToFingerprintDataModel(byte[] imgData,int score, int width , int height, FingerprintID fingerprintID) {
         if (imgData == null || fingerprintID == null) {

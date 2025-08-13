@@ -1,6 +1,5 @@
 package com.kit.fingerprintcapture.utils;
 
-import android.net.Uri;
 import android.util.Log;
 
 import com.kit.fingerprintcapture.model.FingerprintCache;
@@ -8,10 +7,6 @@ import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.machinezoo.sourceafis.FingerprintTemplate;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,21 +15,13 @@ import java.util.Map;
 
 public class FingerprintsManager {
 
-
-    private static final Logger log = LoggerFactory.getLogger(FingerprintsManager.class);
-
     public static String TAG = "FingerprintsManager";
     private Map<Integer, FingerprintTemplate> takenFingersTemplates =  new HashMap<>();
     private Map<Integer, FingerprintTemplate> enumeratorTemplates =  new HashMap<>();
 
     private List<FingerprintData> takenFingers = new ArrayList<>();
     private List<FingerprintData> enumeratorFingers = new ArrayList<>();
-
-
     final static int  nowWidth = 256, nowHeight = 400;
-
-
-
     public FingerprintsManager() {
         Log.d("FingerprintsManager", "Initializing FingerprintsManager...");
         // Load takenFingers from cache and build taken FingerprintTemplates
