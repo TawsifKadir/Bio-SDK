@@ -18,9 +18,21 @@ import SecuGen.FDxSDKPro.SGWSQLib;
 public class ImageProc {
     private static SGWSQLib wsqLib;
     static{
-
         wsqLib = new SGWSQLib();
     }
+
+    public static class DecodedImage {
+        public final byte[] pixels;
+        public final int width;
+        public final int height;
+
+        public DecodedImage(byte[] pixels, int width, int height) {
+            this.pixels = pixels;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
     public static Bitmap toGrayscale(byte[] mImageBuffer, int width, int height)
     {
         byte[] Bits = new byte[mImageBuffer.length * 4];
@@ -78,10 +90,28 @@ public class ImageProc {
     }
 
 
+    public static DecodedImage fromWSQ(byte[] wsqBuffer) {
+        if (wsqBuffer == null) return null;
 
+        int[] greyImageOutSize = new int[1];
+        long error = wsqLib.SGWSQGetDecodedImageSize(greyImageOutSize, wsqBuffer, wsqBuffer.length);
 
-    public static Bitmap toGrayscale(Bitmap bmpOriginal)
-    {
+        byte[] greyData = new byte[greyImageOutSize[0]];
+        int[] oWidth = new int[1];
+        int[] oHeight = new int[1];
+        int[] oPixelDepth = new int[1];
+        int[] oPpi = new int[1];
+        int[] oLossyFlag = new int[1];
+
+        error = wsqLib.SGWSQDecode(
+                greyData, oWidth, oHeight, oPixelDepth, oPpi, oLossyFlag,
+                wsqBuffer, wsqBuffer.length
+        );
+
+        return new DecodedImage(greyData, oWidth[0], oHeight[0]);
+    }
+
+    public static Bitmap toGrayscale(Bitmap bmpOriginal) {
         int width, height;
         height = bmpOriginal.getHeight();
         width = bmpOriginal.getWidth();
@@ -101,8 +131,7 @@ public class ImageProc {
         return bmpGrayscale;
     }
 
-    public static Bitmap toBinary(Bitmap bmpOriginal)
-    {
+    public static Bitmap toBinary(Bitmap bmpOriginal) {
         int width, height;
         height = bmpOriginal.getHeight();
         width = bmpOriginal.getWidth();

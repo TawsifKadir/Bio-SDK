@@ -1,7 +1,6 @@
 package com.kit.fingerprintcapture;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -11,13 +10,11 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import android.os.Parcelable;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -28,14 +25,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
-import com.kit.fingerprintcapture.adapters.FingerprintExceptionListAdapter;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.callback.FingerprintCaptureCallback;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
@@ -54,12 +49,9 @@ import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.ImageProc;
 import com.kit.fingerprintcapture.utils.TemplateUtils;
-import com.machinezoo.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;

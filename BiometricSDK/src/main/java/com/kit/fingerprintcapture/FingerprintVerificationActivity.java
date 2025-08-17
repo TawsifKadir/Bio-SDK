@@ -28,7 +28,8 @@ import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.FingerprintsManager;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.machinezoo.sourceafis.FingerprintTemplate;
+import com.kit.fingerprintcapture.utils.TemplateConverter;
+import com.localafis.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -246,8 +247,9 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
 
             byte[] test = base64ToByteArray(wsqtest);
 
-            currentFingerprintTemplate =new FingerprintTemplate();
+            currentFingerprintTemplate = new FingerprintTemplate();
             currentFingerprintTemplate.dpi(500).create(imgData, width, height);
+
             runOnUiThread(() -> {
                 fingerprintImage.setImageBitmap(ImageProc.toGrayscale(imgData, width, height));
                 startVerification();

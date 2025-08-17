@@ -52,10 +52,7 @@ public class Fingerprint {
         this.status = state;
     }
 
-    public void reset(){
-
-
-    }
+    public void reset(){}
 
     public static Fingerprint newInstance(View v, FingerprintID fingerprintID, int fpBtnID, int fpMarkerID, int fpScoreTxtID){
         ImageButton fpBtn = (ImageButton)v.findViewById(fpBtnID);

@@ -52,7 +52,7 @@ import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.FingerprintUtils;
 import com.kit.fingerprintcapture.utils.FingerprintsManager;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.machinezoo.sourceafis.FingerprintTemplate;
+import com.localafis.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -674,9 +674,8 @@ protected void onCreate(Bundle savedInstanceState) {
 */
 
 
-@Override
-public void onFingerprintData(byte[] imgData, int width, int height,int score,long result) {
-
+    @Override
+    public void onFingerprintData(byte[] imgData, int width, int height,int score,long result) {
         try {
             if (imgData != null && width > 0 && height > 0) {
                 FingerprintData candidateFingerprintData = FingerprintUtils.imageToFingerprintDataModel(imgData,score,width, height,mCurrentFingerprint.getFingerprintID());
@@ -687,11 +686,8 @@ public void onFingerprintData(byte[] imgData, int width, int height,int score,lo
                 List<MatchResult> matchListForTakenFingers = new ArrayList<>();
                 List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
 
-
                 mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getTakenFingersTemplates().values()), matchListForTakenFingers);
                 mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getEnumeratorTemplates().values()), matchListForEnumeratorFingers);
-
-
 
                 //log start
                 if (!matchListForTakenFingers.isEmpty()) {
@@ -706,7 +702,6 @@ public void onFingerprintData(byte[] imgData, int width, int height,int score,lo
                 } else {
                     Log.d(TAG,  "No taken fingers matchedn with Taken fingers");
                 }
-
 
                 if (!matchListForEnumeratorFingers.isEmpty()) {
                     StringBuilder takenResults = new StringBuilder();
@@ -741,6 +736,7 @@ public void onFingerprintData(byte[] imgData, int width, int height,int score,lo
                 }
 
                 fingerprintsManager.appendTakenFingerFingerTemplete(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
+    //                fingerprintsManager.appendTakenFingerFingerTempleteFromByteArray(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
                 fingerprintsManager.appendTakenFingerData(candidateFingerprintData);
                 mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), candidateFingerprintData.getQualityScore(), candidateFingerprintData.getFingerprintData(),candidateFingerprintData.getIsoTemplate());
                 runOnUiThread(new Runnable() {

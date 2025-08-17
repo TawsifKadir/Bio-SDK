@@ -6,8 +6,9 @@ import android.util.Log;
 import com.kit.BuildConfig;
 import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.template.MatchResult;
-import com.machinezoo.sourceafis.FingerprintMatcher;
-import com.machinezoo.sourceafis.FingerprintTemplate;
+import com.kit.fingerprintcapture.utils.TemplateConverter;
+import com.localafis.sourceafis.FingerprintMatcher;
+import com.localafis.sourceafis.FingerprintTemplate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -143,8 +144,6 @@ public class FingerprintMatchingHandler {
                                    List<MatchResult> results) {
         Log.d(TAG, "Entered verifyFingerPrint2");
 
-
-
         // Clear and initialize results
         if (results == null) {
             results = new ArrayList<>();
@@ -174,7 +173,6 @@ public class FingerprintMatchingHandler {
                     double matchScore = matcher.match(currentTemplate);
                     int intScore = (int) Math.round(matchScore);
                     Log.d(TAG, "match scorre: "+ intScore);
-
 
                     // Only add result if match score exceeds the threshold
                     if (matchScore >= MATCH_THRESHOULD) {
