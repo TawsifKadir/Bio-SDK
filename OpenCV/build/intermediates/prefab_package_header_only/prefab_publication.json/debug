@@ -1,5 +1,5 @@
 {
-  "installationFolder": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "installationFolder": "A:\\Kit Projects\\Morpho_2\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "A:\\Kit Projects\\BioSdk_Morpho\\biosdklatest\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "A:\\Kit Projects\\Morpho_2\\OpenCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }
