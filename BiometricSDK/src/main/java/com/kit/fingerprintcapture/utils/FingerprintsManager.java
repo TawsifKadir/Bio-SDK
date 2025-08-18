@@ -1,7 +1,9 @@
 package com.kit.fingerprintcapture.utils;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.util.Base64;
 import android.util.Log;
 
 import com.kit.fingerprintcapture.model.FingerprintCache;
@@ -13,10 +15,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class FingerprintsManager {
 
@@ -25,6 +31,9 @@ public class FingerprintsManager {
     private Map<Integer, FingerprintTemplate> enumeratorTemplates =  new HashMap<>();
     private List<FingerprintData> takenFingers = new ArrayList<>();
     private List<FingerprintData> enumeratorFingers = new ArrayList<>();
+    private final ExecutorService executor = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors()
+    );
     final static int  nowWidth = 256, nowHeight = 400;
     public FingerprintsManager() {
         Log.d("FingerprintsManager", "Initializing FingerprintsManager...");
@@ -132,56 +141,79 @@ public class FingerprintsManager {
     public void buildEnumeratorFingerprintTemplates() {
         enumeratorTemplates.clear();
 
+        List<Future<?>> futures = new ArrayList<>();
+
         for (FingerprintData data : enumeratorFingers) {
-            if (data != null && data.getFingerprintId() != null && data.getFingerprintData() != null) {
+            if (data == null || data.getFingerprintId() == null || data.getFingerprintData() == null) {
+                Log.w(TAG, "⚠️ Missing fingerprint data, skipping entry");
+                continue;
+            }
+
+            futures.add(executor.submit(() -> {
+                int fingerId = data.getFingerprintId().getID();
+                byte[] imgBytes = data.getFingerprintData();
+                Log.d(TAG, "Image bytes " + Arrays.toString(Arrays.copyOf(imgBytes, 10)));
+                Log.d(TAG, "Processing fingerprint ID=" + fingerId + " | size=" + imgBytes.length);
+
                 try {
-                    Log.d(TAG, "WSQ data size: " + data.getFingerprintData().length);
-                    // Decode WSQ → grayscale + width/height
-                    ImageProc.DecodedImage decoded = ImageProc.fromWSQ(data.getFingerprintData());
+                    // --- Detect file type ---
+                    String format = detectFormat(imgBytes);
+                    Log.d(TAG, "Detected format: " + format);
+
+                    ImageProc.DecodedImage decoded = null;
+
+                    if ("JPEG".equals(format) || "PNG".equals(format)) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
+                        if (bitmap == null) {
+                            Log.w(TAG, "❌ Failed to decode " + format + " image for finger ID=" + fingerId);
+                            return;
+                        }
+                        decoded = toDecodedImage(bitmap);
+
+                    } else if ("WSQ".equals(format)) {
+                        decoded = ImageProc.fromWSQ(imgBytes);
+                        if (decoded == null) {
+                            Log.w(TAG, "❌ Failed to decode WSQ image for finger ID=" + fingerId);
+                            return;
+                        }
+
+                    } else {
+                        Log.w(TAG, "❌ Unknown/unsupported format for finger ID=" + fingerId);
+                        return;
+                    }
 
                     if (decoded == null || decoded.pixels == null) {
-                        Log.w(TAG, "Decoded image is null for finger ID: " + data.getFingerprintId().getID());
-                        continue;
+                        Log.w(TAG, "❌ Decoded image is null for finger ID=" + fingerId);
+                        return;
                     }
-                    // Build SourceAFIS template from decoded raw image
-                    FingerprintTemplate fingerprintTemplate = new FingerprintTemplate();
-                    fingerprintTemplate.dpi(500).create(decoded.pixels, decoded.width, decoded.height);
-                    // Save in map
-                    enumeratorTemplates.put(data.getFingerprintId().getID(), fingerprintTemplate);
-                    Log.d(TAG, "Template built for finger ID: " + data.getFingerprintId().getID()
-                            + " (w=" + decoded.width + ", h=" + decoded.height + ")");
+
+                    FingerprintTemplate template = new FingerprintTemplate()
+                            .dpi(500)
+                            .create(decoded.pixels, decoded.width, decoded.height);
+
+                    // Save safely in map (concurrent access!)
+                    synchronized (enumeratorTemplates) {
+                        enumeratorTemplates.put(fingerId, template);
+                    }
+
+                    Log.d(TAG, "✅ Template built for ID=" + fingerId +
+                            " (w=" + decoded.width + ", h=" + decoded.height + ")");
+
                 } catch (Exception e) {
-                    Log.e(TAG, "Error creating fingerprint template for ID: "
-                            + data.getFingerprintId().getID(), e);
+                    Log.e(TAG, "❌ Error creating template for finger ID=" + fingerId, e);
                 }
-            } else {
-                Log.w(TAG, "FingerprintData missing for one enumerator");
+            }));
+        }
+
+        // Optional: Wait until all templates are built before returning
+        for (Future<?> f : futures) {
+            try {
+                f.get(); // blocks until finished
+            } catch (Exception e) {
+                Log.e(TAG, "⚠️ Error waiting for fingerprint template task", e);
             }
         }
     }
-
-    public static void saveDecodedImageToFile(ImageProc.DecodedImage decoded, File file) throws IOException {
-        if (decoded == null || decoded.pixels == null) {
-            throw new IllegalArgumentException("Decoded image is null");
-        }
-
-        // Create Bitmap in 8-bit grayscale (use ARGB_8888 and map manually)
-        Bitmap bitmap = Bitmap.createBitmap(decoded.width, decoded.height, Bitmap.Config.ARGB_8888);
-
-        int[] pixelsARGB = new int[decoded.width * decoded.height];
-        for (int i = 0; i < decoded.pixels.length; i++) {
-            int grey = decoded.pixels[i] & 0xFF; // ensure unsigned
-            pixelsARGB[i] = Color.rgb(grey, grey, grey);
-        }
-        bitmap.setPixels(pixelsARGB, 0, decoded.width, 0, 0, decoded.width, decoded.height);
-
-        // Save bitmap as PNG
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-        }
-    }
-
-
     public void loadFromCacheInstance() {
         FingerprintCache cache = FingerprintCache.getInstance();
         if (cache != null && cache.getFingerList() != null) {
@@ -253,6 +285,63 @@ public class FingerprintsManager {
         }
     }
 
+    /**
+     * Detects the image format from header bytes.
+     */
+    private String detectFormat(byte[] data) {
+        if (data == null || data.length < 12) return "UNKNOWN";
+
+        int b0 = data[0] & 0xFF;
+        int b1 = data[1] & 0xFF;
+
+        // JPEG
+        if (b0 == 0xFF && b1 == 0xD8) return "JPEG";
+
+        // PNG
+        if (b0 == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47)
+            return "PNG";
+
+        // WSQ (check SOI marker + "NIST" ASCII later)
+        if (b0 == 0xFF && b1 == 0xA0) {
+            // look ahead for "NIST"
+            for (int i = 0; i < data.length - 4; i++) {
+                if (data[i] == 'N' && data[i+1] == 'I' && data[i+2] == 'S' && data[i+3] == 'T') {
+                    return "WSQ";
+                }
+            }
+            return "WSQ"; // fallback if only header matches
+        }
+
+        return "UNKNOWN";
+    }
+
+
+    /**
+     * Converts Bitmap → grayscale DecodedImage
+     */
+    private ImageProc.DecodedImage toDecodedImage(Bitmap bitmap) {
+        if (bitmap == null) {
+            return new ImageProc.DecodedImage(new byte[0], 0, 0, null);
+        }
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        int[] pixelsInt = new int[width * height];
+        bitmap.getPixels(pixelsInt, 0, width, 0, 0, width, height);
+
+        byte[] pixelsGray = new byte[width * height];
+        for (int i = 0; i < pixelsInt.length; i++) {
+            int color = pixelsInt[i];
+            int r = (color >> 16) & 0xFF;
+            int g = (color >> 8) & 0xFF;
+            int b = (color) & 0xFF;
+            pixelsGray[i] = (byte) ((r + g + b) / 3); // grayscale
+        }
+
+        // return with both raw grayscale pixels AND the original bitmap
+        return new ImageProc.DecodedImage(pixelsGray, width, height, bitmap);
+    }
 
 
 }

@@ -4,14 +4,17 @@ import static com.kit.fingerprintcapture.utils.FingerprintsManager.nowHeight;
 import static com.kit.fingerprintcapture.utils.FingerprintsManager.nowWidth;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.util.Base64;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import SecuGen.FDxSDKPro.SGWSQLib;
 
@@ -25,11 +28,13 @@ public class ImageProc {
         public final byte[] pixels;
         public final int width;
         public final int height;
+        public final Bitmap bitmap; // optional
 
-        public DecodedImage(byte[] pixels, int width, int height) {
+        public DecodedImage(byte[] pixels, int width, int height, Bitmap bitmap) {
             this.pixels = pixels;
             this.width = width;
             this.height = height;
+            this.bitmap = bitmap;
         }
     }
 
@@ -91,26 +96,130 @@ public class ImageProc {
 
 
     public static DecodedImage fromWSQ(byte[] wsqBuffer) {
-        if (wsqBuffer == null) return null;
+        if (wsqBuffer == null || wsqBuffer.length == 0) {
+            return new DecodedImage(new byte[0], 0, 0, null);
+        }
 
-        int[] greyImageOutSize = new int[1];
-        long error = wsqLib.SGWSQGetDecodedImageSize(greyImageOutSize, wsqBuffer, wsqBuffer.length);
+        try {
+            int[] width = new int[1];
+            int[] height = new int[1];
+            int[] depth = new int[1];
+            int[] ppi = new int[1];
+            int[] lossyFlag = new int[1];
 
-        byte[] greyData = new byte[greyImageOutSize[0]];
-        int[] oWidth = new int[1];
-        int[] oHeight = new int[1];
-        int[] oPixelDepth = new int[1];
-        int[] oPpi = new int[1];
-        int[] oLossyFlag = new int[1];
+            // Step 1: Get decoded size
+            int[] outSize = new int[1];
+            long err = wsqLib.SGWSQGetDecodedImageSize(outSize, wsqBuffer, wsqBuffer.length);
+            if (err != 0) {
+                Log.e("ImageProc", "❌ WSQGetDecodedImageSize failed, err=" + err);
+                return new DecodedImage(new byte[0], 0, 0, null);
+            }
 
-        error = wsqLib.SGWSQDecode(
-                greyData, oWidth, oHeight, oPixelDepth, oPpi, oLossyFlag,
-                wsqBuffer, wsqBuffer.length
-        );
+            byte[] pixels = new byte[outSize[0]];
 
-        return new DecodedImage(greyData, oWidth[0], oHeight[0]);
+            // Step 2: Decode WSQ into pixels
+            err = wsqLib.SGWSQDecode(pixels, width, height, depth, ppi, lossyFlag,
+                    wsqBuffer, wsqBuffer.length);
+            if (err != 0) {
+                Log.e("ImageProc", "❌ WSQDecode failed, err=" + err);
+                return new DecodedImage(new byte[0], 0, 0, null);
+            }
+
+            Log.d("ImageProc", "✅ Decoded WSQ → width=" + width[0] +
+                    ", height=" + height[0] +
+                    ", pixels=" + pixels.length);
+
+            // Step 3: Convert raw grayscale pixels into Bitmap
+            Bitmap bitmap = null;
+            try {
+                bitmap = Bitmap.createBitmap(width[0], height[0], Bitmap.Config.ALPHA_8);
+                bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(pixels));
+            } catch (Throwable t) {
+                Log.w("ImageProc", "⚠️ Could not create bitmap from WSQ pixels", t);
+            }
+
+            return new DecodedImage(pixels, width[0], height[0], bitmap);
+
+        } catch (Throwable t) {
+            Log.e("ImageProc", "Exception decoding WSQ", t);
+            return new DecodedImage(new byte[0], 0, 0, null);
+        }
     }
 
+
+
+    public static DecodedImage decodeBase64(String base64Data) {
+        if (base64Data == null || base64Data.isEmpty()) {
+            throw new IllegalArgumentException("Base64 string is empty");
+        }
+
+        byte[] imageBytes = Base64.decode(base64Data, Base64.DEFAULT);
+
+        // Detect by "magic bytes"
+        if (isWSQ(imageBytes)) {
+            return decodeWSQ(imageBytes);
+        } else if (isJPEG(imageBytes) || isPNG(imageBytes)) {
+            return decodeBitmap(imageBytes);
+        } else {
+            throw new IllegalArgumentException("❌ Unknown image format: " + Arrays.toString(Arrays.copyOf(imageBytes, 10)));
+        }
+    }
+
+    private static boolean isWSQ(byte[] data) {
+        // WSQ usually starts with 0xFF 0xA0
+        return data != null && data.length > 2 &&
+                (data[0] & 0xFF) == 0xFF && (data[1] & 0xFF) == 0xA0;
+    }
+
+    private static boolean isJPEG(byte[] data) {
+        // JPEG starts with FF D8
+        return data != null && data.length > 2 &&
+                (data[0] & 0xFF) == 0xFF && (data[1] & 0xFF) == 0xD8;
+    }
+
+    private static boolean isPNG(byte[] data) {
+        // PNG starts with 89 50 4E 47
+        return data != null && data.length > 4 &&
+                (data[0] & 0xFF) == 0x89 && (data[1] & 0xFF) == 0x50 &&
+                (data[2] & 0xFF) == 0x4E && (data[3] & 0xFF) == 0x47;
+    }
+
+    private static DecodedImage decodeWSQ(byte[] wsqBytes) {
+        try {
+            int[] greyImageOutSize = new int[1];
+            long err = ImageProc.wsqLib.SGWSQGetDecodedImageSize(greyImageOutSize, wsqBytes, wsqBytes.length);
+
+            byte[] greyData = new byte[greyImageOutSize[0]];
+            int[] oWidth = new int[1];
+            int[] oHeight = new int[1];
+            int[] oPixelDepth = new int[1];
+            int[] oPpi = new int[1];
+            int[] oLossyFlag = new int[1];
+
+            err = ImageProc.wsqLib.SGWSQDecode(greyData, oWidth, oHeight, oPixelDepth, oPpi, oLossyFlag, wsqBytes, wsqBytes.length);
+
+            return new DecodedImage(greyData, oWidth[0], oHeight[0], null);
+
+        } catch (Exception e) {
+            throw new RuntimeException("WSQ decoding failed", e);
+        }
+    }
+
+    private static DecodedImage decodeBitmap(byte[] imageBytes) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+        if (bitmap == null) {
+            throw new IllegalArgumentException("❌ BitmapFactory could not decode image, size=" + imageBytes.length);
+        }
+
+        // Convert to raw pixel data if you need it
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
+        int[] pixels = new int[w * h];
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+
+        // You may convert ARGB_8888 → grayscale byte[] if needed
+        return new DecodedImage(null, w, h, bitmap);
+    }
     public static Bitmap toGrayscale(Bitmap bmpOriginal) {
         int width, height;
         height = bmpOriginal.getHeight();

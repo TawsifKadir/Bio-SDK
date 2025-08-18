@@ -193,7 +193,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
             mfpMatchHandler.verifyFingerPrint2(
                     FingerprintID.RIGHT_THUMB.getID(),
                     currentFingerprintTemplate,
-                    new ArrayList<>(fingerprintsManager.getEnumeratorTemplates().values()),
+                    fingerprintsManager.getEnumeratorTemplates(),
                     matchList
             );
 

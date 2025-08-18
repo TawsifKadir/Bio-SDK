@@ -98,12 +98,8 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 //    TextView logText ;
 
 
-
-
-
-
-@Override
-protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fingerprint_capture_layout);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -686,8 +682,8 @@ protected void onCreate(Bundle savedInstanceState) {
                 List<MatchResult> matchListForTakenFingers = new ArrayList<>();
                 List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
 
-                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getTakenFingersTemplates().values()), matchListForTakenFingers);
-                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, new ArrayList<>(fingerprintsManager.getEnumeratorTemplates().values()), matchListForEnumeratorFingers);
+                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, fingerprintsManager.getTakenFingersTemplates(), matchListForTakenFingers);
+                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, fingerprintsManager.getEnumeratorTemplates(), matchListForEnumeratorFingers);
 
                 //log start
                 if (!matchListForTakenFingers.isEmpty()) {

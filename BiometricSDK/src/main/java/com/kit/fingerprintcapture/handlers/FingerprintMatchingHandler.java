@@ -200,4 +200,75 @@ public class FingerprintMatchingHandler {
         }
     }
 
+    public void verifyFingerPrint2(
+            Integer candidateFingerId,
+            FingerprintTemplate searchTemplate,
+            Map<Integer, FingerprintTemplate> referenceTemplates,
+            List<MatchResult> results) {
+
+        Log.d(TAG, "Entered verifyFingerPrint2");
+
+        // Clear and initialize results
+        if (results == null) {
+            results = new ArrayList<>();
+        } else {
+            results.clear();
+        }
+
+        // Check for null or empty inputs
+        if (searchTemplate == null || referenceTemplates == null || referenceTemplates.isEmpty()) {
+            Log.d(TAG, "Null or empty inputs detected");
+            if (referenceTemplates == null || referenceTemplates.isEmpty()) {
+                Log.d(TAG, "⚠️ Reference templates are empty");
+            }
+            return;
+        }
+
+        try {
+            Log.d(TAG, "Starting matching process for candidate ID=" + candidateFingerId);
+            FingerprintMatcher matcher = new FingerprintMatcher();
+            matcher.index(searchTemplate); // Index the candidate/search template
+
+            // Iterate reference map
+            for (Map.Entry<Integer, FingerprintTemplate> entry : referenceTemplates.entrySet()) {
+                Integer refFingerId = entry.getKey();
+                FingerprintTemplate refTemplate = entry.getValue();
+
+                if (refTemplate != null) {
+                    // Perform matching
+                    double matchScore = matcher.match(refTemplate);
+                    int intScore = (int) Math.round(matchScore);
+
+                    if (matchScore >= MATCH_THRESHOULD) {
+                        MatchResult result = new MatchResult();
+                        result.setId(refFingerId); // store the reference finger ID that matched
+                        result.setMatchScore(intScore);
+                        results.add(result);
+
+                        Log.d(TAG, "✅ Candidate ID " + FingerprintID.getFingerprintID(candidateFingerId) +
+                                " matched with Reference ID " + FingerprintID.getFingerprintID(refFingerId) +
+                                " | score=" + intScore);
+                    } else {
+                        Log.d(TAG, "❌ Candidate ID " + FingerprintID.getFingerprintID(candidateFingerId) +
+                                " did NOT match with Reference ID " + FingerprintID.getFingerprintID(refFingerId) +
+                                " | score=" + intScore);
+                    }
+                } else {
+                    Log.w(TAG, "⚠️ Skipping null template for reference finger ID=" + refFingerId);
+                }
+            }
+
+            Log.d(TAG, "Matching completed for candidate ID=" + candidateFingerId);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error in verifyFingerPrint2: " + e.getMessage(), e);
+            results.clear(); // Clear results on error
+        } finally {
+            if (BuildConfig.isDebug) {
+                Log.d(TAG, "Leaving verifyFingerPrint2");
+            }
+        }
+    }
+
+
 }
