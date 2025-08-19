@@ -57,6 +57,8 @@ import com.localafis.sourceafis.FingerprintTemplate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -90,6 +92,8 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
     private EditText mOtherReasonTextView;
     private Boolean mHasFingerprintException;
+
+    private ExecutorService executorService;
     private NoFingerprintReason mNoFingerprintReason;
     List<NoFingerprintReason> mNoFingerprintReasonList;
     FingerprintsManager fingerprintsManager = new FingerprintsManager();
@@ -152,8 +156,8 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
 
         taskExecutor = new ThreadPoolExecutor(1, 3, 10, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(2));
-
         mfpCaptureHandler = new FingerprintCaptureHandler(this,fingerprintList);
+        executorService = Executors.newSingleThreadExecutor();
 
         if(duplicateDetectionEnabled){
             mfpMatchHandler = new FingerprintMatchingHandler(this);
@@ -163,53 +167,6 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
         t.start();
 
         mDoneBtn.setOnClickListener(v -> {
-
-
-
-//
-//
-//            List<FingerprintData> capturedList = getCapturedFingerprints(); // You should provide this method or source
-//            FingerPrintMatchChecker checker = new FingerPrintMatchChecker(this);
-//
-//            if (capturedList != null && !capturedList.isEmpty()) {
-//                for (FingerprintData data : capturedList) {
-//                    if (data != null) {
-//                     //   boolean matched = checker.matchCheckAgainstEnumerator(data);
-//                        Log.d(TAG, "Fingerprint ID: "
-//                                + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown")
-//                                + " | Matched: " + matched);
-//                    } else {
-//                        Log.d(TAG, "Captured fingerprint is null, skipping...");
-//                    }
-//                }
-//            } else {
-//                Log.d(TAG, "No captured fingerprints found in activity.");
-//            }
-
-//
-//            List<FingerprintData> cachedList = FingerprintCache.getInstance().getFingerList();
-//
-//            if (cachedList != null && !cachedList.isEmpty()) {
-//                for (FingerprintData data : cachedList) {
-//                    logFingerprintData(data);
-//                }
-//            } else {
-//                Log.d(TAG, "FingerprintCache is empty or null");
-//            }
-
-//
-
-//            List<FingerprintCacheEntry> cachedList = FingerprintCache.getInstance().getFingerList();
-//
-//            if (cachedList != null && !cachedList.isEmpty()) {
-//                for (FingerprintCacheEntry data : cachedList) {
-//                    Log.d(TAG, "Cache Entry ID: " + (data.getFingerprintId() != null ? data.getFingerprintId().getName() : "Unknown"));
-//                    Log.d(TAG, "Raw image size: " + (data.getRawTemplate() != null ? data.getRawTemplate(): " "));
-//                }
-//            } else {
-//                Log.d(TAG, "FingerprintCache is empty or null");
-//            }
-//
 
 
             if(!isFingerprintMissing()){
@@ -228,18 +185,24 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
 
+        showLoading();
+        executorService.submit(() -> {
+            fingerprintsManager.buildEnumeratorFingerprintTemplates();
+            runOnUiThread(this::hideLoading);
+
+            Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " + fingerprintsManager.getEnumeratorFingers().size());
+            for(FingerprintData fd: fingerprintsManager.getEnumeratorFingers())
+            {
+                Log.d(TAG, "Finger: \n" + fd.toString());
+            }
+            for(FingerprintTemplate fd: fingerprintsManager.getEnumeratorTemplates().values())
+            {
+                Log.d(TAG, "Finger: \n" + fd.toString().length());
+            }
+        });
 
 
 
-    Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " + fingerprintsManager.getEnumeratorFingers().size());
-    for(FingerprintData fd: fingerprintsManager.getEnumeratorFingers())
-    {
-        Log.d(TAG, "Finger: \n" + fd.toString());
-    }
-    for(FingerprintTemplate fd: fingerprintsManager.getEnumeratorTemplates().values())
-    {
-        Log.d(TAG, "Finger: \n" + fd.toString().length());
-    }
 }
 
 

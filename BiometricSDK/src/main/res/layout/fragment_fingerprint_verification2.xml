@@ -50,21 +50,19 @@
                         android:layout_height="60dp"
                         android:layout_marginBottom="10dp"
                         android:layout_marginTop="4dp"
+                        android:text="Waiting for finger"
+                        android:textSize="18sp"
                         app:layout_constraintTop_toTopOf="parent"
-                        android:text="Waiting for fingerr"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        android:textSize="18sp" />
+                        app:layout_constraintLeft_toLeftOf="parent" />
 
                     <ImageView
                         android:id="@+id/fingerprint_frame"
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
-                        android:layout_gravity="center"
                         android:src="@drawable/frame"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/fingerprint_text"
                         android:layout_marginTop="10dp"
-                        />
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/fingerprint_text" />
 
                     <ImageView
                         android:id="@+id/fingerprint_image"
@@ -76,7 +74,6 @@
                         app:layout_constraintStart_toStartOf="@id/fingerprint_frame"
                         app:layout_constraintTop_toTopOf="@id/fingerprint_frame" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
             </LinearLayout>
 
             <LinearLayout
@@ -89,14 +86,10 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/fpCaptureBtn"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:text="Capture finger" />
-
             </LinearLayout>
-
         </LinearLayout>
-
-
     </ScrollView>
 
     <LinearLayout
@@ -104,7 +97,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="0dp"
         android:background="#EEEEEE"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -125,9 +117,42 @@
             android:layout_margin="8dp"
             android:enabled="false"
             android:text="Proceed"
-
             android:visibility="visible" />
     </LinearLayout>
 
+    <!-- 🔹 Overlay Loader -->
+    <FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AA000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp"
+            android:background="@drawable/bg_overlay_rounded"
+            android:layout_gravity="center">
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/loadingText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Preparing fingerprint templates..."
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
