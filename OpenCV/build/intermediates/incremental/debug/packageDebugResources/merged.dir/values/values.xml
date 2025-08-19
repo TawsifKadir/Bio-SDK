@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <attr format="reference|color" name="colorBackground"/>
     <declare-styleable name="CameraBridgeViewBase">
        <attr format="boolean" name="show_fps"/>
        <attr format="integer" name="camera_id">

@@ -1,4 +1,5 @@
 int attr camera_id 0x0
+int attr colorBackground 0x0
 int attr show_fps 0x0
 int id any 0x0
 int id back 0x0

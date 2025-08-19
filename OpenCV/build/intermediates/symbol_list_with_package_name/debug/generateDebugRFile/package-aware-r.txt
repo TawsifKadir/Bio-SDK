@@ -1,5 +1,6 @@
 org.opencv
 attr camera_id
+attr colorBackground
 attr show_fps
 id any
 id back

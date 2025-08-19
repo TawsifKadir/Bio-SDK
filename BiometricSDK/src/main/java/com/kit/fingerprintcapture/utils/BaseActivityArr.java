@@ -1,14 +1,22 @@
 package com.kit.fingerprintcapture.utils;
 
 
+import android.app.Dialog;
+import android.content.Context;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.kit.biometricsdk.R;
 
 public class BaseActivityArr extends AppCompatActivity {
     private long lastClickTime = 0;
@@ -31,41 +39,44 @@ public class BaseActivityArr extends AppCompatActivity {
 
 
     private FrameLayout loadingOverlay;
+    private Dialog progressDialog2;
 
-    public void showLoading() {
-        if (loadingOverlay == null) {
-            // Create a full-screen overlay
-            loadingOverlay = new FrameLayout(this);
-            loadingOverlay.setLayoutParams(new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT
-            ));
-            loadingOverlay.setBackgroundColor(0x80000000); // semi-transparent black
-            loadingOverlay.setClickable(true);
-            loadingOverlay.setFocusable(true);
-
-            // Add a ProgressBar at center
-            ProgressBar progressBar = new ProgressBar(this);
-            FrameLayout.LayoutParams pbParams = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-            );
-            pbParams.gravity = Gravity.CENTER;
-            loadingOverlay.addView(progressBar, pbParams);
+    public void showModifiableLoading(String message) {
+        if (progressDialog2 == null) {
+            progressDialog2 = createProgressDialog(this, message, false);
+        } else {
+            if (progressDialog2.isShowing()) {
+                progressDialog2.hide();
+            }
+            progressDialog2 = createProgressDialog(this, message, false);
         }
+        progressDialog2.show();
+    }
 
-        // Attach overlay to the root view
-        ViewGroup root = findViewById(android.R.id.content);
-        if (loadingOverlay.getParent() == null) {
-            root.addView(loadingOverlay);
+
+
+    public void hideModifiableLoading() {
+        if (progressDialog2 != null && progressDialog2.isShowing()){
+            progressDialog2.hide();
         }
     }
 
-    public void hideLoading() {
-        if (loadingOverlay != null) {
-            ViewGroup root = findViewById(android.R.id.content);
-            root.removeView(loadingOverlay);
-        }
+
+    public static Dialog createProgressDialog(Context context, boolean isCancelable) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setCancelable(isCancelable);
+        builder.setView(R.layout.progress_dialog2);
+        return builder.create();
+    }
+
+    public static Dialog createProgressDialog(Context context, String message, boolean isCancelable) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setCancelable(isCancelable);
+        View view = LayoutInflater.from(context).inflate(R.layout.progress_dialog2, null);
+        TextView tvTitle = view.findViewById(R.id.tvTitle);
+        tvTitle.setText(message);
+        builder.setView(view);
+        return builder.create();
     }
 
 }

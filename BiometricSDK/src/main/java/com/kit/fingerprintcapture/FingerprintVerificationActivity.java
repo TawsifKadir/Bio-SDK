@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.material.button.MaterialButton;
 import com.kit.BuildConfig;
@@ -45,6 +46,9 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     private static final String TAG = "FingerprintVerification";
     public static final String KEY_VERIFICATION_RESULT = "Verification";
 
+    private final MutableLiveData<Boolean> loadingToFingerManager = new MutableLiveData<>(true);
+
+
     private TextView fingerprintText;
     private ImageView fingerprintImage;
 //    private MaterialButton verifyBtn;
@@ -70,6 +74,9 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setupLoader();
+
         setContentView(R.layout.fragment_fingerprint_verification2);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -107,23 +114,8 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
         });
 
         findViewById(android.R.id.content).post(this::startAsyncInitialization);
-//
-//        showLoading();
-//
-//        executorService.submit(() -> {
-//            fingerprintsManager.buildEnumeratorFingerprintTemplates();
-//            runOnUiThread(this::hideLoading);
-//
-//            Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " + fingerprintsManager.getEnumeratorFingers().size());
-//            for(FingerprintData fd: fingerprintsManager.getEnumeratorFingers())
-//            {
-//                Log.d(TAG, "Finger: \n" + fd.toString());
-//            }
-//            for(FingerprintTemplate fd: fingerprintsManager.getEnumeratorTemplates().values())
-//            {
-//                Log.d(TAG, "Finger: \n" + fd.toString().length());
-//            }
-//        });
+        loadFingerprintTemplates();
+
     }
 
 
@@ -181,6 +173,44 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
         super.onResume();
     }
 
+    private void setupLoader() {
+        loadingToFingerManager.observe(this, isLoading -> {
+            if (Boolean.TRUE.equals(isLoading)) {
+                showModifiableLoading("Loading, please wait templates are generating ...");
+            } else {
+                hideModifiableLoading();
+            }
+        });
+
+    }
+
+    private void loadFingerprintTemplates() {
+        // Show loader
+        loadingToFingerManager.setValue(true);
+
+        executorService.execute(() -> {
+            try {
+                fingerprintsManager.buildEnumeratorFingerprintTemplates();
+
+                Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " +
+                        fingerprintsManager.getEnumeratorFingers().size());
+
+                for (FingerprintData fd : fingerprintsManager.getEnumeratorFingers()) {
+                    Log.d(TAG, "Finger: \n" + fd.toString());
+                }
+                for (FingerprintTemplate fd : fingerprintsManager.getEnumeratorTemplates().values()) {
+                    Log.d(TAG, "Finger template size: " + fd.toString().length());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error building templates", e);
+            } finally {
+                // Hide loader on UI thread
+                runOnUiThread(() -> loadingToFingerManager.setValue(false));
+            }
+        });
+    }
+
+
     private void startAsyncInitialization() {
         // Templates
         loadingText.setText("Preparing fingerprint templates...");
@@ -237,7 +267,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     @Override
     public void onPause() {
         mDeviceManager.closeDevice();
-        hideLoading();
+        //hideLoading();
         super.onPause();
     }
 

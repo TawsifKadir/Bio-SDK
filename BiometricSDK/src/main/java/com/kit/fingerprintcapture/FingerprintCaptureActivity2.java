@@ -3,6 +3,8 @@ package com.kit.fingerprintcapture;
 import static com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler.MATCH_THRESHOULD;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -70,6 +72,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
     public static int Width=248;
     public static int Height=448;
+    private final MutableLiveData<Boolean> loadingToFingerManager = new MutableLiveData<>(true);
     private ImageView mFingerprintImage;
     private TextView mFingerprintText;
     private TextView mClickFingerprint;
@@ -104,16 +107,14 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        
+        setupLoader();
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fingerprint_capture_layout);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         isEnumeratorRegistration = getIntent().getBooleanExtra(KEY_ENUMERATOR_REGISTRATION, false);
-
-
-
-
-
 
         mFingerprintImage = (ImageView)findViewById(R.id.fingerprint_image);
         mFingerprintText = (TextView)findViewById(R.id.fingerprint_text);
@@ -185,27 +186,48 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
 
-        showLoading();
-        executorService.submit(() -> {
-            fingerprintsManager.buildEnumeratorFingerprintTemplates();
-            runOnUiThread(this::hideLoading);
 
-            Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " + fingerprintsManager.getEnumeratorFingers().size());
-            for(FingerprintData fd: fingerprintsManager.getEnumeratorFingers())
-            {
-                Log.d(TAG, "Finger: \n" + fd.toString());
-            }
-            for(FingerprintTemplate fd: fingerprintsManager.getEnumeratorTemplates().values())
-            {
-                Log.d(TAG, "Finger: \n" + fd.toString().length());
-            }
-        });
-
+        loadFingerprintTemplates();
 
 
 }
 
+    private void setupLoader() {
+        loadingToFingerManager.observe(this, isLoading -> {
+            if (Boolean.TRUE.equals(isLoading)) {
+                showModifiableLoading("Loading, please wait templates are generating ...");
+            } else {
+                hideModifiableLoading();
+            }
+        });
 
+    }
+
+    private void loadFingerprintTemplates() {
+        // Show loader
+        loadingToFingerManager.setValue(true);
+
+        executorService.execute(() -> {
+            try {
+                fingerprintsManager.buildEnumeratorFingerprintTemplates();
+
+                Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " +
+                        fingerprintsManager.getEnumeratorFingers().size());
+
+                for (FingerprintData fd : fingerprintsManager.getEnumeratorFingers()) {
+                    Log.d(TAG, "Finger: \n" + fd.toString());
+                }
+                for (FingerprintTemplate fd : fingerprintsManager.getEnumeratorTemplates().values()) {
+                    Log.d(TAG, "Finger template size: " + fd.toString().length());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error building templates", e);
+            } finally {
+                // Hide loader on UI thread
+                runOnUiThread(() -> loadingToFingerManager.setValue(false));
+            }
+        });
+    }
 
 
     @Override

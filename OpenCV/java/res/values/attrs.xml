@@ -8,4 +8,6 @@
           <enum name="front" value="98" />
        </attr>
     </declare-styleable>
+
+    <attr name="colorBackground" format="reference|color" />
 </resources>
