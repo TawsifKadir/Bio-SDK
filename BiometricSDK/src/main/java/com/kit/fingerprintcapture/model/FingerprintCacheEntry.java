@@ -1,6 +1,7 @@
 package com.kit.fingerprintcapture.model;
 
-import com.localafis.sourceafis.FingerprintTemplate;
+
+import com.machinezoo.sourceafis.FingerprintTemplate;
 
 public class FingerprintCacheEntry {
     private FingerprintID fingerprintId;

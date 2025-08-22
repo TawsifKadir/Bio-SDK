@@ -496,4 +496,8 @@ public class MorphoDeviceManager implements IDeviceManager,Observer{
         toast.show();
     }
 
+    public MorphoDevice getDeviceHandle(){
+        return this.morphoDevice;
+    }
+
 }

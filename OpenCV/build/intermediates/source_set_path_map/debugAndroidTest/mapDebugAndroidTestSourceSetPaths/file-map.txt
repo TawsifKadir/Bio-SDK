@@ -1,0 +1,5 @@
+org.opencv.test.OpenCV-androidTest-0 E:\Bio-SDK-2-Morpho\OpenCV\build\generated\res\resValues\androidTest\debug
+org.opencv.test.OpenCV-mergeDebugAndroidTestResources-1 E:\Bio-SDK-2-Morpho\OpenCV\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+org.opencv.test.OpenCV-mergeDebugAndroidTestResources-2 E:\Bio-SDK-2-Morpho\OpenCV\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+org.opencv.test.OpenCV-debugAndroidTest-3 E:\Bio-SDK-2-Morpho\OpenCV\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
+org.opencv.test.OpenCV-debug-4 E:\Bio-SDK-2-Morpho\OpenCV\build\intermediates\packaged_res\debug\packageDebugResources

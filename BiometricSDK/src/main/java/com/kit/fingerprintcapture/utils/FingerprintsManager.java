@@ -1,21 +1,14 @@
 package com.kit.fingerprintcapture.utils;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.util.Base64;
 import android.util.Log;
 
 import com.kit.fingerprintcapture.model.FingerprintCache;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
-import com.localafis.sourceafis.FingerprintTemplate;
+import com.kit.fingerprintcapture.template.ISOTemplate;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,8 +20,8 @@ import java.util.concurrent.Future;
 public class FingerprintsManager {
 
     public static String TAG = "FingerprintsManager";
-    private Map<Integer, FingerprintTemplate> takenFingersTemplates =  new HashMap<>();
-    private Map<Integer, FingerprintTemplate> enumeratorTemplates =  new HashMap<>();
+    private Map<Integer, ISOTemplate> takenFingersTemplates =  new HashMap<>();
+    private Map<Integer, ISOTemplate> enumeratorTemplates =  new HashMap<>();
     private List<FingerprintData> takenFingers = new ArrayList<>();
     private List<FingerprintData> enumeratorFingers = new ArrayList<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(
@@ -54,38 +47,24 @@ public class FingerprintsManager {
             Log.d("FingerprintsManager", "No data in cache for takenFingers.");
         }
     }
-    public Map<Integer, FingerprintTemplate> getTakenFingersTemplates() {
+    public Map<Integer, ISOTemplate> getTakenFingersTemplates() {
         return takenFingersTemplates;
     }
 
-    public void setTakenFingersTemplates(Map<Integer, FingerprintTemplate> takenFingersTemplates) {
+    public void setTakenFingersTemplates(Map<Integer, ISOTemplate> takenFingersTemplates) {
         this.takenFingersTemplates = takenFingersTemplates;
     }
 
-    public Map<Integer, FingerprintTemplate> getEnumeratorTemplates() {
+    public Map<Integer, ISOTemplate> getEnumeratorTemplates() {
         return enumeratorTemplates;
     }
-    public void setEnumeratorTemplates(Map<Integer, FingerprintTemplate> enumeratorTemplates) {
+    public void setEnumeratorTemplates(Map<Integer, ISOTemplate> enumeratorTemplates) {
         this.enumeratorTemplates = enumeratorTemplates;
     }
     // Append methods
-    public void appendTakenFingerFingerTemplete(FingerprintID fingerId, FingerprintTemplate template) {
+    public void appendTakenFingerFingerTemplete(FingerprintID fingerId, ISOTemplate template) {
         if (fingerId != null && template != null) {
             takenFingersTemplates.put(fingerId.getID(), template);
-        }
-    }
-
-    public void appendTakenFingerFingerTempleteFromByteArray(FingerprintID fingerId, byte[] template) {
-        if (fingerId != null && template != null) {
-            FingerprintTemplate tempTemplate = new FingerprintTemplate();
-            tempTemplate.convert(template);
-            takenFingersTemplates.put(fingerId.getID(), tempTemplate);
-        }
-    }
-
-    public void appendEnumeratorTemplate(FingerprintID fingerId, FingerprintTemplate template) {
-        if (fingerId != null && template != null) {
-            enumeratorTemplates.put(fingerId.getID(), template);
         }
     }
 
@@ -131,9 +110,13 @@ public class FingerprintsManager {
         takenFingersTemplates.clear();
         for (FingerprintData data : takenFingers) {
             if (data != null && data.getFingerprintId() != null && data.getFingerprintData() != null) {
-                FingerprintTemplate fingerprintTemplate = new FingerprintTemplate();
+                ISOTemplate fingerprintTemplate = null;
                 ImageProc.DecodedImage decodedImage = ImageProc.fromWSQ(data.getFingerprintData());
-                fingerprintTemplate.dpi(500).create(decodedImage.pixels, decodedImage.width, decodedImage.height);
+                try{
+                    fingerprintTemplate = TemplateUtils.createISOTemplate(decodedImage.pixels, decodedImage.width, decodedImage.height);
+                }catch (Exception e){
+                    Log.d(TAG, "Error is " + e.getMessage());
+                }
                 takenFingersTemplates.put(data.getFingerprintId().getID(), fingerprintTemplate);
             }
         }
@@ -150,88 +133,90 @@ public class FingerprintsManager {
             }
 
             int fingerId = data.getFingerprintId().getID();
-            byte[] imgBytes = data.getFingerprintData();
+            byte[] templateBytes = data.getIsoTemplate();
+            ISOTemplate template = new ISOTemplate(templateBytes, templateBytes.length);
+            enumeratorTemplates.put(fingerId, template);
 
             // Detect upfront
-            String format = detectFormat(imgBytes);
+//            String format = detectFormat(imgBytes);
 
-            if ("WSQ".equals(format)) {
-                // Force WSQ decoding in the caller thread (sequential, avoids crash)
-                processWSQ(fingerId, imgBytes);
-            } else {
-                // Non-WSQ formats can run in parallel safely
-                futures.add(executor.submit(() -> processOtherFormats(fingerId, imgBytes, format)));
-            }
+//            if ("WSQ".equals(format)) {
+//                // Force WSQ decoding in the caller thread (sequential, avoids crash)
+//                processWSQ(fingerId, imgBytes);
+//            } else {
+//                // Non-WSQ formats can run in parallel safely
+//                futures.add(executor.submit(() -> processOtherFormats(fingerId, imgBytes, format)));
+//            }
         }
 
-        // Wait for non-WSQ futures
-        for (Future<?> f : futures) {
-            try {
-                f.get();
-            } catch (Exception e) {
-                Log.e(TAG, "⚠️ Error waiting for fingerprint template task", e);
-            }
-        }
+//        // Wait for non-WSQ futures
+//        for (Future<?> f : futures) {
+//            try {
+//                f.get();
+//            } catch (Exception e) {
+//                Log.e(TAG, "⚠️ Error waiting for fingerprint template task", e);
+//            }
+//        }
     }
 
-    private void processWSQ(int fingerId, byte[] imgBytes) {
-        try {
-            ImageProc.DecodedImage decoded = ImageProc.fromWSQ(imgBytes);
-
-            if (decoded == null || decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
-                Log.w(TAG, "❌ WSQ decode failed for finger ID=" + fingerId);
-                return;
-            }
-
-            FingerprintTemplate template = new FingerprintTemplate()
-                    .dpi(500)
-                    .create(decoded.pixels, decoded.width, decoded.height);
-
-            synchronized (enumeratorTemplates) {
-                enumeratorTemplates.put(fingerId, template);
-            }
-
-            Log.d(TAG, "✅ WSQ template built for ID=" + fingerId +
-                    " (w=" + decoded.width + ", h=" + decoded.height + ")");
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Error creating WSQ template for finger ID=" + fingerId, e);
-        }
-    }
-
-    private void processOtherFormats(int fingerId, byte[] imgBytes, String format) {
-        try {
-            ImageProc.DecodedImage decoded = null;
-
-            if ("JPEG".equals(format) || "PNG".equals(format)) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
-                if (bitmap == null) {
-                    Log.w(TAG, "❌ Failed to decode " + format + " image for finger ID=" + fingerId);
-                    return;
-                }
-                decoded = toDecodedImage(bitmap);
-            }
-
-            if (decoded == null || decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
-                Log.w(TAG, "❌ Decoded image invalid for finger ID=" + fingerId);
-                return;
-            }
-
-            FingerprintTemplate template = new FingerprintTemplate()
-                    .dpi(500)
-                    .create(decoded.pixels, decoded.width, decoded.height);
-
-            synchronized (enumeratorTemplates) {
-                enumeratorTemplates.put(fingerId, template);
-            }
-
-            Log.d(TAG, "✅ Template built for ID=" + fingerId +
-                    " (w=" + decoded.width + ", h=" + decoded.height + ")");
-
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Error creating template for finger ID=" + fingerId, e);
-        }
-    }
+//    private void processWSQ(int fingerId, byte[] imgBytes) {
+//        try {
+//            ImageProc.DecodedImage decoded = ImageProc.fromWSQ(imgBytes);
+//
+//            if (decoded == null || decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
+//                Log.w(TAG, "❌ WSQ decode failed for finger ID=" + fingerId);
+//                return;
+//            }
+//
+//            FingerprintTemplate template = new FingerprintTemplate()
+//                    .dpi(500)
+//                    .create(decoded.pixels, decoded.width, decoded.height);
+//
+//            synchronized (enumeratorTemplates) {
+//                enumeratorTemplates.put(fingerId, template);
+//            }
+//
+//            Log.d(TAG, "✅ WSQ template built for ID=" + fingerId +
+//                    " (w=" + decoded.width + ", h=" + decoded.height + ")");
+//
+//        } catch (Exception e) {
+//            Log.e(TAG, "❌ Error creating WSQ template for finger ID=" + fingerId, e);
+//        }
+//    }
+//
+//    private void processOtherFormats(int fingerId, byte[] imgBytes, String format) {
+//        try {
+//            ImageProc.DecodedImage decoded = null;
+//
+//            if ("JPEG".equals(format) || "PNG".equals(format)) {
+//                Bitmap bitmap = BitmapFactory.decodeByteArray(imgBytes, 0, imgBytes.length);
+//                if (bitmap == null) {
+//                    Log.w(TAG, "❌ Failed to decode " + format + " image for finger ID=" + fingerId);
+//                    return;
+//                }
+//                decoded = toDecodedImage(bitmap);
+//            }
+//
+//            if (decoded == null || decoded.pixels == null || decoded.width <= 0 || decoded.height <= 0) {
+//                Log.w(TAG, "❌ Decoded image invalid for finger ID=" + fingerId);
+//                return;
+//            }
+//
+//            FingerprintTemplate template = new FingerprintTemplate()
+//                    .dpi(500)
+//                    .create(decoded.pixels, decoded.width, decoded.height);
+//
+//            synchronized (enumeratorTemplates) {
+//                enumeratorTemplates.put(fingerId, template);
+//            }
+//
+//            Log.d(TAG, "✅ Template built for ID=" + fingerId +
+//                    " (w=" + decoded.width + ", h=" + decoded.height + ")");
+//
+//        } catch (Exception e) {
+//            Log.e(TAG, "❌ Error creating template for finger ID=" + fingerId, e);
+//        }
+//    }
     public void loadFromCacheInstance() {
         FingerprintCache cache = FingerprintCache.getInstance();
         if (cache != null && cache.getFingerList() != null) {

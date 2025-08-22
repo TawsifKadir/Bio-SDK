@@ -26,12 +26,12 @@ import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.FingerprintData;
 import com.kit.fingerprintcapture.model.FingerprintID;
+import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.FingerprintsManager;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.kit.fingerprintcapture.utils.TemplateConverter;
-import com.localafis.sourceafis.FingerprintTemplate;
+import com.kit.fingerprintcapture.utils.TemplateUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +67,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     private volatile boolean templatesReady = false;
     private volatile boolean deviceReady = false;
     private FingerprintCaptureHandler mfpCaptureHandler;
-    private FingerprintTemplate currentFingerprintTemplate;
+    private ISOTemplate currentFingerprintTemplate;
     private final FingerprintsManager fingerprintsManager = new FingerprintsManager();
 
     @SuppressLint("MissingInflatedId")
@@ -198,9 +198,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
                 for (FingerprintData fd : fingerprintsManager.getEnumeratorFingers()) {
                     Log.d(TAG, "Finger: \n" + fd.toString());
                 }
-                for (FingerprintTemplate fd : fingerprintsManager.getEnumeratorTemplates().values()) {
-                    Log.d(TAG, "Finger template size: " + fd.toString().length());
-                }
+
             } catch (Exception e) {
                 Log.e(TAG, "Error building templates", e);
             } finally {
@@ -238,6 +236,9 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
                 showError("Device open failed: " + open);
                 return;
             }
+
+            mfpMatchHandler.setMorphoDevice( ((MorphoDeviceManager)mDeviceManager).getDeviceHandle() );
+
             deviceReady = true;
             checkReadyAndUnlockUI();
         });
@@ -324,9 +325,11 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
     public void onFingerprintData(byte[] imgData, int width, int height, int score, long result) {
         if (imgData != null && width > 0 && height > 0) {
 
-
-            currentFingerprintTemplate = new FingerprintTemplate();
-            currentFingerprintTemplate.dpi(500).create(imgData, width, height);
+            try {
+                currentFingerprintTemplate = TemplateUtils.createISOTemplate(imgData, width, height);
+            }catch (Exception e){
+                Log.d(TAG, "Error when generating template " + e.getMessage());
+            }
 
             runOnUiThread(() -> {
                 fingerprintImage.setImageBitmap(ImageProc.toGrayscale(imgData, width, height));

@@ -49,12 +49,13 @@ import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.model.FingerprintStatus;
 
 import com.kit.fingerprintcapture.model.NoFingerprintReason;
+import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.FingerprintUtils;
 import com.kit.fingerprintcapture.utils.FingerprintsManager;
 import com.kit.fingerprintcapture.utils.ImageProc;
-import com.localafis.sourceafis.FingerprintTemplate;
+import com.kit.fingerprintcapture.utils.TemplateUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,6 +105,15 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
 //    TextView logText ;
 
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(isDummyDevice){
+            mDeviceManager = new DummyDeviceManager(this,this);
+        } else{
+            mDeviceManager = new MorphoDeviceManager(this,this);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,17 +190,11 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
         for(Fingerprint fp:fingerprintList){
             fp.getFingerprintUI().getFingerprintBtn().setOnClickListener(mfpCaptureHandler);
         }
-
-
         mCurrentFingerprint = mfpCaptureHandler.getFingerprintByID(FingerprintID.RIGHT_THUMB);
-
         mCurrentAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.slide_in_bottom);
-
-
         loadFingerprintTemplates();
 
-
-}
+    }
 
     private void setupLoader() {
         loadingToFingerManager.observe(this, isLoading -> {
@@ -217,9 +221,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
                 for (FingerprintData fd : fingerprintsManager.getEnumeratorFingers()) {
                     Log.d(TAG, "Finger: \n" + fd.toString());
                 }
-                for (FingerprintTemplate fd : fingerprintsManager.getEnumeratorTemplates().values()) {
-                    Log.d(TAG, "Finger template size: " + fd.toString().length());
-                }
+
             } catch (Exception e) {
                 Log.e(TAG, "Error building templates", e);
             } finally {
@@ -230,14 +232,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
     }
 
 
-    @Override
-    public void onStart(){
-        super.onStart();
-        if(isDummyDevice)
-            mDeviceManager = new DummyDeviceManager(this,this);
-        else
-            mDeviceManager = new MorphoDeviceManager(this,this);
-    }
+
 
     @Override
     public void onPause(){
@@ -305,6 +300,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
                     dlgAlert.setCancelable(false);
                     dlgAlert.create().show();
                 }
+                mfpMatchHandler.setMorphoDevice( ((MorphoDeviceManager)mDeviceManager).getDeviceHandle());
             }
         }catch(Exception exc){
 
@@ -337,6 +333,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
         while(!taskExecutor.isTerminated()){}
         mNoFingerprintReasonList=null;
         mNoFingerprintReason = null;
+        mfpMatchHandler.setMorphoDevice(null);
         super.onDestroy();
 
         if(BuildConfig.isDebug) {
@@ -660,8 +657,8 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
         try {
             if (imgData != null && width > 0 && height > 0) {
                 FingerprintData candidateFingerprintData = FingerprintUtils.imageToFingerprintDataModel(imgData,score,width, height,mCurrentFingerprint.getFingerprintID());
-                FingerprintTemplate candidateTemplate =new FingerprintTemplate();
-                candidateTemplate.dpi(500).create(imgData, width, height);
+                ISOTemplate candidateTemplate = null;
+                candidateTemplate = TemplateUtils.createISOTemplate(imgData, width, height);
                 fingerprintsManager.removeTakenFingerFromFingerprintTemplate(candidateFingerprintData.getFingerprintId());
                 fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
                 List<MatchResult> matchListForTakenFingers = new ArrayList<>();
