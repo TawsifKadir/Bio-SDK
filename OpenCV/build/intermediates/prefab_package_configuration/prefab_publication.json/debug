@@ -1,5 +1,5 @@
 {
-  "installationFolder": "E:\\Bio-SDK-2-Morpho\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "installationFolder": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/build/intermediates/prefab_package/debug/prefab",
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -8,16 +8,40 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "E:\\Bio-SDK-2-Morpho\\OpenCV\\native\\jni\\include",
+        "moduleHeaders": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/native/jni/include",
         "moduleExportLibraries": [],
         "abis": [
+          {
+            "abiName": "armeabi-v7a",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/armeabi-v7a/libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/armeabi-v7a/android_gradle_build.json"
+          },
           {
             "abiName": "arm64-v8a",
             "abiApi": 21,
             "abiNdkMajor": 25,
             "abiStl": "c++_shared",
-            "abiLibrary": "E:\\Bio-SDK-2-Morpho\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\libopencv_jni_shared.a",
-            "abiAndroidGradleBuildJsonFile": "E:\\Bio-SDK-2-Morpho\\OpenCV\\.cxx\\Debug\\2x6j294r\\arm64-v8a\\android_gradle_build.json"
+            "abiLibrary": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/arm64-v8a/libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/arm64-v8a/android_gradle_build.json"
+          },
+          {
+            "abiName": "x86",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86/libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86/android_gradle_build.json"
+          },
+          {
+            "abiName": "x86_64",
+            "abiApi": 21,
+            "abiNdkMajor": 25,
+            "abiStl": "c++_shared",
+            "abiLibrary": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86_64/libopencv_jni_shared.a",
+            "abiAndroidGradleBuildJsonFile": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86_64/android_gradle_build.json"
           }
         ]
       }

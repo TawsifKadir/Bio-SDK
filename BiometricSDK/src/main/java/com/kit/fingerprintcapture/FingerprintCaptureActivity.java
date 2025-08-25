@@ -297,6 +297,8 @@ public class FingerprintCaptureActivity extends BaseActivityArr implements Adapt
                     dlgAlert.setCancelable(false);
                     dlgAlert.create().show();
                 }
+                mfpMatchHandler.setMorphoDevice( ((MorphoDeviceManager)mDeviceManager).getDeviceHandle());
+
             }
         }catch(Exception exc){
 
@@ -329,6 +331,7 @@ public class FingerprintCaptureActivity extends BaseActivityArr implements Adapt
         while(!taskExecutor.isTerminated()){}
         mNoFingerprintReasonList=null;
         mNoFingerprintReason = null;
+        mfpMatchHandler.setMorphoDevice(null);
         super.onDestroy();
 
         if(BuildConfig.isDebug) {

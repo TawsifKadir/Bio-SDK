@@ -1,0 +1,4 @@
+/home/anik/Android/Sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86_64 \
+  opencv_jni_shared

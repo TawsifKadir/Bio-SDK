@@ -11,10 +11,10 @@ import com.kit.fingerprintcapture.model.FingerprintID;
 import com.kit.fingerprintcapture.template.ISOTemplate;
 import com.kit.fingerprintcapture.template.MatchResult;
 import com.kit.fingerprintcapture.utils.TemplateConverter;
+import com.kit.fingerprintcapture.utils.TemplateUtils;
 import com.morpho.morphosmart.sdk.CustomInteger;
 import com.morpho.morphosmart.sdk.ErrorCodes;
 import com.morpho.morphosmart.sdk.MorphoDevice;
-import com.morpho.morphosmart.sdk.ResultMatching;
 import com.morpho.morphosmart.sdk.Template;
 import com.morpho.morphosmart.sdk.TemplateList;
 import com.morpho.morphosmart.sdk.TemplateType;
@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class FingerprintMatchingHandler {
 
@@ -52,102 +51,103 @@ public class FingerprintMatchingHandler {
     }
 
     public long verifyFingerPrint(FingerprintID nowID, byte[] nowImage, int nowWidth, int nowHeight, boolean[] matched) {
+        Log.d(TAG, "Entered verifyFingerPrint (Morpho-based)");
 
         long result = -1;
-//        boolean isError = false;
-//        Throwable errorObject = null;
-//        FingerprintTemplate nowFPTemplate = null;
-//
-//        if (matched == null) return result;
-//
-//        matched[0] = false;
-//
-//        try {
-//            Log.d(TAG, "Preparing template");
-//
-//            // Create the fingerprint template from the given image data
-//            nowFPTemplate = new FingerprintTemplate();
-//            nowFPTemplate.dpi(500).create(nowImage, nowWidth, nowHeight);
-//
-//            Log.d(TAG, "Height: "+ nowHeight + " Weifth: " + nowWidth);
-//
-//            // Initialize the fingerprint matcher if it is not already initialized
-//            if (mFPMatcher == null) {
-//                mFPMatcher = new FingerprintMatcher();
-//            }
-//
-//            // Iterate through the entire template list and match each template
-//            boolean matchFound = false;  // Flag to track if a match is found
-//            double highestMatch = 0; // Variable to store the highest match score
-//            FingerprintID matchedID = null;  // Store the ID of the matched template
-//
-//            if (!templateList.isEmpty()) {
-//                Iterator<Map.Entry<FingerprintID, FingerprintTemplate>> nowIterator = templateList.entrySet().iterator();
-//                while (nowIterator.hasNext()) {
-//                    Map.Entry<FingerprintID, FingerprintTemplate> mapElement = nowIterator.next();
-//
-//                    // Skip the current fingerprint if its ID matches the nowID (to avoid comparing the same template)
-//                    if (mapElement.getKey() == nowID) {
-//                        continue;
-//                    }
-//
-//                    // Get the existing template and index it
-//                    FingerprintTemplate existingTemplate = mapElement.getValue();
-//                    mFPMatcher.index(existingTemplate);
-//
-//                    // Perform the matching
-//                    double matchScore = mFPMatcher.match(nowFPTemplate);
-//                    Log.d(TAG, "Match score with ID " + mapElement.getKey() + ": " + matchScore);
-//
-//                    // Check if the match score exceeds the threshold (20 in this case)
-//                    if (matchScore > highestMatch) {
-//                        highestMatch = matchScore;
-//                        matchedID = mapElement.getKey();
-//                    }
-//
-//                    // Set the flag if a match is found
-//                    if (highestMatch > 20) {
-//                        matchFound = true;
-//                        break; // Exit loop early if a valid match is found
-//                    }
-//                }
-//            }
-//
-//            // If a match is found, update the matched array
-//            matched[0] = matchFound;
-//
-//            // Log the highest match score
-//            Log.d(TAG, "Highest match score: " + highestMatch);
-//
-//            // If no match is found, add the new template to the template list
-//            if (!matchFound) {
-//                templateList.put(nowID, nowFPTemplate);
-//            }
-//
-//            // Log the size of the template list
-//            Log.d(TAG, "Template list size is " + ((templateList != null) ? templateList.size() : 0));
-//
-//            result = 0;
-//
-//        } catch (Throwable t) {
-//            isError = true;
-//            errorObject = t;
-//
-//        } finally {
-//            if (isError) {
-//                Log.e(TAG, "Verify Fingerprint Error: " + errorObject.getMessage());
-//                errorObject.printStackTrace();
-//                result = -1;
-//                errorObject = null;
-//            }
-//            nowFPTemplate = null;
-//        }
-//
-//        if (BuildConfig.isDebug) {
-//            Log.d(TAG, "Leaving verifyFingerprint");
-//        }
+
+        // Validate inputs
+        if (matched == null || nowImage == null || nowWidth <= 0 || nowHeight <= 0) {
+            Log.d(TAG, "⚠️ Invalid input: matched=null or invalid image data");
+            return result;
+        }
+
+        matched[0] = false;
+
+        if (morphoDevice == null) {
+            Log.e(TAG, "⚠️ Morpho device not initialized");
+            return result;
+        }
+
+        ISOTemplate nowFPTemplate = null;
+
+        try {
+            // Build probe template (from the new fingerprint image)
+            nowFPTemplate = TemplateUtils.createISOTemplate(nowImage, nowWidth, nowHeight);
+
+            Template probeTemplate = new Template();
+            probeTemplate.setTemplateType(TemplateType.MORPHO_PK_ISO_FMR);
+            probeTemplate.setData(nowFPTemplate.getIsoTemplate());
+
+            TemplateList probeTemplateList = new TemplateList();
+            probeTemplateList.putTemplate(probeTemplate);
+
+            // Build candidate templates from our reference list
+            TemplateList candidateTemplateList = new TemplateList();
+            for (Map.Entry<FingerprintID, ISOTemplate> entry : templateList.entrySet()) {
+                if (entry.getKey().equals(nowID)) continue; // skip same finger
+
+                ISOTemplate refTemplate = entry.getValue();
+
+                Template candidate = new Template();
+                candidate.setTemplateType(TemplateType.MORPHO_PK_ISO_FMR);
+                candidate.setData(refTemplate.getIsoTemplate());
+
+                Log.d(TAG, "Template type is 2005?: " + TemplateConverter.isISO2005(refTemplate.getIsoTemplate()));
+                Log.d(TAG, "Template type is 2011?: " + TemplateConverter.isISO2011(refTemplate.getIsoTemplate()));
+
+                candidateTemplateList.putTemplate(candidate);
+            }
+
+            // Perform verification
+            CustomInteger matchingScore = new CustomInteger();
+            int ret = morphoDevice.verifyMatch(
+                    MORPHO_FAR_6,
+                    probeTemplateList,
+                    candidateTemplateList,
+                    matchingScore
+            );
+
+            if (ret == ErrorCodes.MORPHO_OK) {
+                int score = matchingScore.getValueOf();
+                Log.d(TAG, "✅ MATCH FOUND. Score = " + score);
+                matched[0] = true;
+                result = 0;
+            } else {
+                String err;
+                switch (ret) {
+                    case ErrorCodes.MORPHOERR_TIMEOUT:
+                        err = "Verify failed: timeout"; break;
+                    case ErrorCodes.MORPHOERR_CMDE_ABORTED:
+                        err = "Verify aborted"; break;
+                    case ErrorCodes.MORPHOERR_UNAVAILABLE:
+                        err = "Device unavailable"; break;
+                    case ErrorCodes.MORPHOERR_INVALID_FINGER:
+                    case ErrorCodes.MORPHOERR_NO_HIT:
+                        err = "Authentication failed (no match)"; break;
+                    default:
+                        err = "Error code: " + ret;
+                }
+                Log.e(TAG, "❌ NO MATCH FOUND. " + err);
+
+                // 👉 Add the probe template to the list if not matched
+                templateList.put(nowID, nowFPTemplate);
+                Log.d(TAG, "New template added to templateList. Current size=" + templateList.size());
+
+                result = -1;
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in verifyFingerPrint: " + e.getMessage(), e);
+            result = -1;
+        } finally {
+            Log.d(TAG, "Leaving verifyFingerPrint");
+        }
+
         return result;
     }
+
+
+
 
 //    public void verifyFingerPrint2(Integer fingerprintId, FingerprintTemplate searchTemplate,
 //                                   List<FingerprintTemplate> referenceFingerTemplateList,

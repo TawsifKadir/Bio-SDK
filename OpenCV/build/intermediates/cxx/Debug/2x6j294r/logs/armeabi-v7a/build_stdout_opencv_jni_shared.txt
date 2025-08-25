@@ -1,3 +1,2 @@
-ninja: Entering directory `E:\Bio-SDK-2-Morpho\OpenCV\.cxx\Debug\2x6j294r\armeabi-v7a'
-[1/2] Building CXX object CMakeFiles/opencv_jni_shared.dir/dummy.cpp.o
-[2/2] Linking CXX static library libopencv_jni_shared.a
+ninja: Entering directory `/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/armeabi-v7a'
+ninja: no work to do.

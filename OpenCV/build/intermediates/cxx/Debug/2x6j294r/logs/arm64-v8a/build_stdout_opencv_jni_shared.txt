@@ -1,2 +1,2 @@
-ninja: Entering directory `E:\Bio-SDK-2-Morpho\OpenCV\.cxx\Debug\2x6j294r\arm64-v8a'
+ninja: Entering directory `/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/arm64-v8a'
 ninja: no work to do.
