@@ -213,7 +213,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
 
         executorService.execute(() -> {
             try {
-                fingerprintsManager.buildEnumeratorFingerprintTemplates();
+                fingerprintsManager.buildEnumeratorISOTemplates();
 
                 Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " +
                         fingerprintsManager.getEnumeratorFingers().size());
@@ -659,13 +659,13 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
                 FingerprintData candidateFingerprintData = FingerprintUtils.imageToFingerprintDataModel(imgData,score,width, height,mCurrentFingerprint.getFingerprintID());
                 ISOTemplate candidateTemplate = null;
                 candidateTemplate = TemplateUtils.createISOTemplate(imgData, width, height);
-                fingerprintsManager.removeTakenFingerFromFingerprintTemplate(candidateFingerprintData.getFingerprintId());
+                fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
                 fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
                 List<MatchResult> matchListForTakenFingers = new ArrayList<>();
                 List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
 
-                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, fingerprintsManager.getTakenFingersTemplates(), matchListForTakenFingers);
-                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, fingerprintsManager.getEnumeratorTemplates(), matchListForEnumeratorFingers);
+                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, fingerprintsManager.getTakenFingersISOTemplates(), matchListForTakenFingers);
+                mfpMatchHandler.verifyFingerPrint2(candidateFingerprintData.getFingerprintId().getID(),candidateTemplate, fingerprintsManager.getEnumeratorISOTemplates(), matchListForEnumeratorFingers);
 
                 //log start
                 if (!matchListForTakenFingers.isEmpty()) {
@@ -713,7 +713,7 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
                     return;
                 }
 
-                fingerprintsManager.appendTakenFingerFingerTemplete(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
+                fingerprintsManager.appendTakenFingerIsoTemplete(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
     //                fingerprintsManager.appendTakenFingerFingerTempleteFromByteArray(mCurrentFingerprint.getFingerprintID(),candidateTemplate);
                 fingerprintsManager.appendTakenFingerData(candidateFingerprintData);
                 mfpCaptureHandler.setFingerprintData(mCurrentFingerprint.getFingerprintID(), candidateFingerprintData.getQualityScore(), candidateFingerprintData.getFingerprintData(),candidateFingerprintData.getIsoTemplate());

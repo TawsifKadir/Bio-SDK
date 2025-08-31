@@ -1,7 +1,6 @@
 package com.kit.fingerprintcapture.utils;
 
-import static com.kit.fingerprintcapture.utils.FingerprintsManager.nowHeight;
-import static com.kit.fingerprintcapture.utils.FingerprintsManager.nowWidth;
+
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

@@ -190,7 +190,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
 
         executorService.execute(() -> {
             try {
-                fingerprintsManager.buildEnumeratorFingerprintTemplates();
+                fingerprintsManager.buildEnumeratorISOTemplates();
 
                 Log.d(TAG, "Loaded enumeratorFingers from cache. Count: " +
                         fingerprintsManager.getEnumeratorFingers().size());
@@ -214,8 +214,8 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
         loadingText.setText("Preparing fingerprint templates...");
         executorService.submit(() -> {
             try {
-                fingerprintsManager.buildEnumeratorFingerprintTemplates();
-                Log.d(TAG, "Templates built: " + fingerprintsManager.getEnumeratorTemplates().size());
+                fingerprintsManager.buildEnumeratorISOTemplates();
+                Log.d(TAG, "Templates built: " + fingerprintsManager.getEnumeratorISOTemplates().size());
                 templatesReady = true;
                 checkReadyAndUnlockUI();
             } catch (Throwable t) {
@@ -299,7 +299,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
             mfpMatchHandler.verifyFingerPrint2(
                     FingerprintID.RIGHT_THUMB.getID(),
                     currentFingerprintTemplate,
-                    fingerprintsManager.getEnumeratorTemplates(),
+                    fingerprintsManager.getEnumeratorISOTemplates(),
                     matchList
             );
 

@@ -245,6 +245,9 @@ public class FingerprintMatchingHandler {
             TemplateList probeTemplateList = new TemplateList();
             probeTemplateList.putTemplate(probeTemplate);
 
+            Log.d(TAG, "search temple is 2011: "+ TemplateConverter.isISO2011(searchTemplate.getIsoTemplate()));
+            Log.d(TAG, "search temple is 2005: "+ TemplateConverter.isISO2005(searchTemplate.getIsoTemplate()));
+
             // Build candidate templates
             TemplateList candidateTemplateList = new TemplateList();
             for (ISOTemplate referenceTemplate : referenceTemplates.values()) {
@@ -252,7 +255,12 @@ public class FingerprintMatchingHandler {
                 candidate.setTemplateType(TemplateType.MORPHO_PK_ISO_FMR);
                 candidate.setData(referenceTemplate.getIsoTemplate());
                 candidateTemplateList.putTemplate(candidate);
+                Log.d(TAG, "candidate temple is 2011: "+ TemplateConverter.isISO2011(referenceTemplate.getIsoTemplate()));
+                Log.d(TAG, "candidate temple is 2005: "+ TemplateConverter.isISO2005(referenceTemplate.getIsoTemplate()));
+
             }
+
+
 
             // Perform verification
             CustomInteger matchingScore = new CustomInteger();

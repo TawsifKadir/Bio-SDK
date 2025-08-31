@@ -9,7 +9,6 @@ import com.kit.fingerprintcapture.template.TemplateExtractor;
 public class TemplateUtils {
     public static final String TAG = "TemplateUtils";
 
-
     public static ISOTemplate createISOTemplate(byte[] nowImage, int width , int height) throws Exception{
 
         byte[][] fmd = new byte[1][1000 + 256 * 6];
