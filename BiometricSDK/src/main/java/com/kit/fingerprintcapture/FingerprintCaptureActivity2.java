@@ -55,6 +55,7 @@ import com.kit.fingerprintcapture.utils.BaseActivityArr;
 import com.kit.fingerprintcapture.utils.FingerprintUtils;
 import com.kit.fingerprintcapture.utils.FingerprintsManager;
 import com.kit.fingerprintcapture.utils.ImageProc;
+import com.kit.fingerprintcapture.utils.TemplateConverter;
 import com.kit.fingerprintcapture.utils.TemplateUtils;
 
 import java.util.ArrayList;
@@ -657,9 +658,14 @@ public class FingerprintCaptureActivity2 extends BaseActivityArr implements Adap
         try {
             if (imgData != null && width > 0 && height > 0) {
                 FingerprintData candidateFingerprintData = FingerprintUtils.imageToFingerprintDataModel(imgData,score,width, height,mCurrentFingerprint.getFingerprintID());
-                ISOTemplate candidateTemplate = null;
-                candidateTemplate = TemplateUtils.createISOTemplate(imgData, width, height);
-                fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
+                ISOTemplate candidateTemplate = TemplateUtils.createISOTemplate(imgData, width, height);
+                candidateTemplate = TemplateConverter.checkAndGetISO2005Version(candidateTemplate);
+
+                assert candidateTemplate != null;
+                Log.d(TAG, "template type 2005 " + TemplateConverter.isISO2005(candidateTemplate.getIsoTemplate()));
+                Log.d(TAG, "Before conversion is 2011?: " + TemplateConverter.isISO2011(candidateTemplate.getIsoTemplate()));
+
+                fingerprintsManager.removeTakenFingerFromIsoTemplate(candidateFingerprintData.getFingerprintId());
                 fingerprintsManager.removeTakenFingerData(candidateFingerprintData.getFingerprintId());
                 List<MatchResult> matchListForTakenFingers = new ArrayList<>();
                 List<MatchResult> matchListForEnumeratorFingers = new ArrayList<>();
