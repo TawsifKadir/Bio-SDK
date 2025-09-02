@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "installationFolder": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/build/intermediates/prefab_package/release/prefab",
-=======
   "installationFolder": "/home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/build/intermediates/prefab_package/release/prefab",
->>>>>>> eaba2fc (stash)
   "gradlePath": ":OpenCV",
   "packageInfo": {
     "packageName": "OpenCV",
@@ -12,11 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-<<<<<<< HEAD
-        "moduleHeaders": "/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/native/jni/include",
-=======
         "moduleHeaders": "/home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/native/jni/include",
->>>>>>> eaba2fc (stash)
         "moduleExportLibraries": [],
         "abis": []
       }

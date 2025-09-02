@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +24,7 @@ import com.kit.common.CustomToastHandler;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
 import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
+import com.kit.fingerprintcapture.manager.DummyDeviceManager;
 import com.kit.fingerprintcapture.manager.IDeviceManager;
 import com.kit.fingerprintcapture.manager.MorphoDeviceManager;
 import com.kit.fingerprintcapture.model.FingerprintData;
@@ -62,11 +65,13 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
 
     private IDeviceManager mDeviceManager;
     private FingerprintMatchingHandler mfpMatchHandler;
+
+    private boolean isDummyDevice = false;
     private View loadingOverlay;
     private TextView loadingText;
     private volatile boolean templatesReady = false;
     private volatile boolean deviceReady = false;
-    private FingerprintCaptureHandler mfpCaptureHandler;
+
     private ISOTemplate currentFingerprintTemplate;
     private final FingerprintsManager fingerprintsManager = new FingerprintsManager();
 
@@ -92,7 +97,16 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
         executorService = Executors.newSingleThreadExecutor();
         captureExecutor = Executors.newSingleThreadExecutor();
 
-        mDeviceManager = new MorphoDeviceManager(this, this);
+
+
+        if(isDummyDevice)
+        {
+            mDeviceManager = new DummyDeviceManager(this,this);
+        } else
+        {
+            mDeviceManager = new MorphoDeviceManager(this, this);
+        }
+
         mfpMatchHandler = new FingerprintMatchingHandler(this);
         //mfpCaptureHandler = new FingerprintCaptureHandler(this, new ArrayList<>());
 
@@ -121,55 +135,6 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
 
     @Override
     public void onResume(){
-//        enableCapturing();
-//
-//        try {
-//            long result = mDeviceManager.initDevice();
-//            if(BuildConfig.isDebug){
-//                Log.d(TAG, "initDevice() returned : " + result);
-//            }
-//            if(result!=0){
-//                AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-//                dlgAlert.setMessage("Fingerprint device initialization failed with error : "+result);
-//                dlgAlert.setTitle("Fingerprint SDK");
-//                dlgAlert.setPositiveButton("OK",
-//                        new DialogInterface.OnClickListener() {
-//                            public void onClick(DialogInterface dialog,int whichButton){
-//                                finish();
-//                                return;
-//                            }
-//                        }
-//                );
-//                dlgAlert.setCancelable(false);
-//                dlgAlert.create().show();
-//            }
-//        }catch(Throwable t){
-//
-//            t.printStackTrace();
-//
-//        }
-//
-//        try{
-//            if(mDeviceManager.isPermissionAcquired()){
-//                long result = mDeviceManager.openDevice();
-//                if(result!=0) {
-//                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-//                    dlgAlert.setMessage("Fingerprint device open failed with error : " + result);
-//                    dlgAlert.setTitle("Fingerprint SDK");
-//                    dlgAlert.setPositiveButton("OK",
-//                            new DialogInterface.OnClickListener() {
-//                                public void onClick(DialogInterface dialog, int whichButton) {
-//                                    finish();
-//                                }
-//                            }
-//                    );
-//                    dlgAlert.setCancelable(false);
-//                    dlgAlert.create().show();
-//                }
-//            }
-//        }catch(Exception exc){
-//
-//        }
         super.onResume();
     }
 
@@ -237,7 +202,13 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
                 return;
             }
 
-            mfpMatchHandler.setMorphoDevice( ((MorphoDeviceManager)mDeviceManager).getDeviceHandle() );
+            if (!isDummyDevice) {
+                mfpMatchHandler.setMorphoDevice( ((MorphoDeviceManager)mDeviceManager).getDeviceHandle() );
+            }else {
+                mfpMatchHandler.setMorphoDevice(null);
+            }
+
+
 
             deviceReady = true;
             checkReadyAndUnlockUI();
@@ -284,7 +255,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
         captureExecutor.submit(() -> {
             try {
                 mDeviceManager.startCapture();
-               // runOnUiThread(() -> Toast.makeText(this, "Capture started", Toast.LENGTH_SHORT).show());
+
             } catch (Throwable t) {
                 Log.e(TAG, "Capture start error", t);
                 showErrorDialogOnUi("Failed to start capture");
@@ -333,8 +304,18 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
 
             runOnUiThread(() -> {
                 fingerprintImage.setImageBitmap(ImageProc.toGrayscale(imgData, width, height));
-                startVerification();
-//                enableVerification();
+//                startVerification();
+
+                if (!isDummyDevice){
+                    startVerification();
+                }else{
+                    disableButtonControls();
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        fingerprintText.setText("Fingerprint Mathed");
+                        CustomToastHandler.showErrorToast(this, "Successfully matched!!");
+                        enableProceedButton();
+                    }, 500); // delay 2 seconds
+                }
             });
         }
     }
