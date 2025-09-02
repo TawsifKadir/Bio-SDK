@@ -1,5 +1,9 @@
 /home/anik/Android/Sdk/cmake/3.22.1/bin/cmake \
+<<<<<<< HEAD
   -H/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/libcxx_helper \
+=======
+  -H/home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/libcxx_helper \
+>>>>>>> eaba2fc (stash)
   -DCMAKE_SYSTEM_NAME=Android \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DCMAKE_SYSTEM_VERSION=21 \
@@ -10,9 +14,16 @@
   -DCMAKE_ANDROID_NDK=/home/anik/Android/Sdk/ndk/25.1.8937393 \
   -DCMAKE_TOOLCHAIN_FILE=/home/anik/Android/Sdk/ndk/25.1.8937393/build/cmake/android.toolchain.cmake \
   -DCMAKE_MAKE_PROGRAM=/home/anik/Android/Sdk/cmake/3.22.1/bin/ninja \
+<<<<<<< HEAD
   -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/build/intermediates/cxx/Debug/2x6j294r/obj/x86 \
   -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/build/intermediates/cxx/Debug/2x6j294r/obj/x86 \
   -DCMAKE_BUILD_TYPE=Debug \
   -B/home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86 \
+=======
+  -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/build/intermediates/cxx/Debug/2x6j294r/obj/x86 \
+  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/build/intermediates/cxx/Debug/2x6j294r/obj/x86 \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -B/home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/.cxx/Debug/2x6j294r/x86 \
+>>>>>>> eaba2fc (stash)
   -GNinja \
   -DANDROID_STL=c++_shared

@@ -12,4 +12,8 @@
 -- Detecting CXX compile features - done
 -- Configuring done
 -- Generating done
+<<<<<<< HEAD
 -- Build files have been written to: /home/anik/Documents/Kit_Project/Bio_SDK_Morpo/OpenCV/.cxx/Debug/2x6j294r/x86
+=======
+-- Build files have been written to: /home/anik/Documents/KIT/Bio-SDK-Morpho/OpenCV/.cxx/Debug/2x6j294r/x86
+>>>>>>> eaba2fc (stash)
