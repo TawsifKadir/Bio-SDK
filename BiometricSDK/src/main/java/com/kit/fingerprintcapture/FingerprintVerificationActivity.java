@@ -1,13 +1,11 @@
 package com.kit.fingerprintcapture;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -18,11 +16,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.material.button.MaterialButton;
-import com.kit.BuildConfig;
 import com.kit.biometricsdk.R;
 import com.kit.common.CustomToastHandler;
 import com.kit.fingerprintcapture.callback.DeviceDataCallback;
-import com.kit.fingerprintcapture.handlers.FingerprintCaptureHandler;
 import com.kit.fingerprintcapture.handlers.FingerprintMatchingHandler;
 import com.kit.fingerprintcapture.manager.DummyDeviceManager;
 import com.kit.fingerprintcapture.manager.IDeviceManager;
@@ -280,7 +276,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
                 if (!matchList.isEmpty()) {
                     fingerprintText.setText("Fingerprint Mathed");
                     Log.d(TAG, "startVerification() called matched");
-                    CustomToastHandler.showErrorToast(this, "Successfully matched!!");
+                    CustomToastHandler.showSuccessToast(this, "Successfully matched!!");
                     enableProceedButton();
                 } else {
                     fingerprintText.setText("Fingerprint Not Mathed");
@@ -312,7 +308,7 @@ public class FingerprintVerificationActivity extends BaseActivityArr implements 
                     disableButtonControls();
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         fingerprintText.setText("Fingerprint Mathed");
-                        CustomToastHandler.showErrorToast(this, "Successfully matched!!");
+                        CustomToastHandler.showSuccessToast(this, "Successfully matched!!");
                         enableProceedButton();
                     }, 500); // delay 2 seconds
                 }

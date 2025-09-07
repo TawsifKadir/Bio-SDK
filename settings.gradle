@@ -24,6 +24,6 @@ dependencyResolutionManagement {
 
 }
 
-rootProject.name = "BiometricSDK"
+rootProject.name = "BiometricSDK-Morpho"
 include ':BiometricSDK'
 include ':OpenCV'
