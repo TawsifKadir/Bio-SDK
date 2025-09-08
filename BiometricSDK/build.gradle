@@ -119,3 +119,28 @@ def static genVersionName(Integer major, Integer minor, Integer patch) {
 def static genVersion(Integer major, Integer minor, Integer patch) {
     return major * 10000 + minor * 100 + patch
 }
+
+tasks.register("buildBiometricSdkDebug") {
+    dependsOn (
+            ":BiometricSDK:externalNativeBuildCleanDebug", ":OpenCV:externalNativeBuildCleanDebug",
+            ":BiometricSDK:assembleDebug", ":OpenCV:assembleDebug"
+    )
+    doLast {
+        def aarDir = project(":BiometricSDK").layout.buildDirectory.dir("outputs/aar").get().asFile
+        exec {
+            commandLine "cmd", "/c", "start", aarDir.absolutePath
+        }
+    }
+}
+tasks.register("buildBiometricSdkRelease") {
+    dependsOn (
+            ":BiometricSDK:externalNativeBuildCleanRelease", ":OpenCV:externalNativeBuildCleanRelease",
+            ":BiometricSDK:assembleRelease", ":OpenCV:assembleRelease"
+    )
+    doLast {
+        def aarDir = project(":BiometricSDK").layout.buildDirectory.dir("outputs/aar").get().asFile
+        exec {
+            commandLine "cmd", "/c", "start", aarDir.absolutePath
+        }
+    }
+}
