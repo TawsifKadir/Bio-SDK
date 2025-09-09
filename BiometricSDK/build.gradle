@@ -120,6 +120,20 @@ def static genVersion(Integer major, Integer minor, Integer patch) {
     return major * 10000 + minor * 100 + patch
 }
 
+def openFolder = { File path ->
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (!path.exists()) path.mkdirs()
+    exec {
+        ignoreExitValue true
+        if (os.isWindows())
+            commandLine "cmd", "/c", "start", path.absolutePath
+        else if (os.isMacOsX())
+            commandLine "open", path.absolutePath
+        else if (os.isLinux())
+            commandLine "xdg-open", path.absolutePath
+    }
+}
+
 tasks.register("buildBiometricSdkDebug") {
     dependsOn (
             ":BiometricSDK:externalNativeBuildCleanDebug", ":OpenCV:externalNativeBuildCleanDebug",
@@ -127,9 +141,7 @@ tasks.register("buildBiometricSdkDebug") {
     )
     doLast {
         def aarDir = project(":BiometricSDK").layout.buildDirectory.dir("outputs/aar").get().asFile
-        exec {
-            commandLine "cmd", "/c", "start", aarDir.absolutePath
-        }
+        openFolder(aarDir)
     }
 }
 tasks.register("buildBiometricSdkRelease") {
@@ -139,8 +151,6 @@ tasks.register("buildBiometricSdkRelease") {
     )
     doLast {
         def aarDir = project(":BiometricSDK").layout.buildDirectory.dir("outputs/aar").get().asFile
-        exec {
-            commandLine "cmd", "/c", "start", aarDir.absolutePath
-        }
+        openFolder(aarDir)
     }
 }
